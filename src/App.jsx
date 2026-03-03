@@ -1,15 +1,35 @@
-import React from 'react';
+// Market Brief Application
+// This application provides market insights and data analysis based on real-time instruments detection.
 
-function App() {
-  const data = [{ id: 1, name: 'Item 1' }, { id: 2, name: 'Item 2' }];
+import React, { useState, useEffect } from 'react';
+import InstrumentDetection from './components/InstrumentDetection';
+import BriefFetch from './components/BriefFetch';
+import ScalperMode from './components/ScalperMode';
+import JournalTab from './components/JournalTab';
+import LearningConcepts from './components/LearningConcepts';
 
-  return (
-    <div>
-      {data.map((item) => (
-        <div key={item.id}>{item.name}</div>
-      ))}
-    </div>
-  );
-}
+const App = () => {
+    const [data, setData] = useState([]);
+
+    useEffect(() => {
+        // Fetch initial market data here
+        fetchMarketData();
+    }, []);
+
+    const fetchMarketData = () => {
+        // Logic for market data fetching 
+    };
+
+    return (
+        <div>
+            <h1>Market Brief Application</h1>
+            <InstrumentDetection />
+            <BriefFetch />
+            <ScalperMode />
+            <JournalTab />
+            <LearningConcepts />
+        </div>
+    );
+};
 
 export default App;
