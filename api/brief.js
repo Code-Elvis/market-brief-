@@ -15,7 +15,14 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    return res.status(200).json(data);
+
+    // Keep calling until we get a final text response
+    const text = (data.content || [])
+      .filter(b => b.type === "text")
+      .map(b => b.text)
+      .join("");
+
+    return res.status(200).json({ ...data, extractedText: text });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
