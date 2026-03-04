@@ -40,43 +40,25 @@ function detect(query) {
 }
 
 function sysPrompt(mode) {
-  const base = [
-    "You are a professional market intelligence analyst.",
-    "Respond ONLY with valid JSON.",
-    "No markdown, no backticks, no preamble.",
-    "Start your response with { and end with }."
-  ].join(" ");
-
+  const base = "You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.";
   if (mode === "scalper") {
-    return base + " SCALPER MODE: trader is about to trade RIGHT NOW. Be brief." +
-      ' Schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string",' +
-      '"breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],' +
-      '"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}';
+    return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}';
   }
-  return base + " FULL BRIEF MODE: search for today high-impact news and economic events." +
-    ' Schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string",' +
-    '"events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL",' +
-    '"summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],' +
-    '"geopolitical_risks":"string","key_levels_context":"string","teaching_moment":"string"}';
+  return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","key_levels_context":"string","teaching_moment":"string"}';
 }
 
 function userPrompt(inst, mode) {
-  const now = new Date().toLocaleString("en-GB", {
-    weekday: "long", year: "numeric", month: "long",
-    day: "numeric", hour: "2-digit", minute: "2-digit"
-  });
+  const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
   if (mode === "scalper") {
-    return "Time: " + now + ". About to trade " + inst.label + ". What hit in last 10 min? What is due next 15 min? GREEN YELLOW or RED?";
+    return "Time: " + now + ". About to trade " + inst.label + ". What are the key macro risks right now? GREEN YELLOW or RED?";
   }
-  return "Today: " + now + ". Full high-impact briefing for " + inst.label + ". Search economic events, central bank news, geopolitical developments. Explain WHY each moves price.";
+  return "Today: " + now + ". Full macro briefing for " + inst.label + ". What are the key events, central bank stance, geopolitical risks, and why they move price?";
 }
 
 async function getBriefing(inst, mode) {
   const res = await fetch("/api/brief", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514",
       max_tokens: 1000,
@@ -86,8 +68,8 @@ async function getBriefing(inst, mode) {
   });
   if (!res.ok) throw new Error("API error " + res.status);
   const data = await res.json();
-const raw = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
-const text = raw.replace(/<cite[^>]*>|<\/cite>/g, "");
+  if (data.error) throw new Error(data.error.message || "API error");
+  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) throw new Error("No JSON in response");
   return JSON.parse(match[0]);
@@ -101,12 +83,7 @@ function Loader() {
     <div>
       <style>{"@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
       {[90, 65, 80].map((h, i) => (
-        <div key={i} style={{
-          height: h, borderRadius: 8, marginBottom: 12,
-          background: "linear-gradient(90deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 100%)",
-          backgroundSize: "200% 100%",
-          animation: "sh 1.4s " + (i * 0.15) + "s infinite"
-        }} />
+        <div key={i} style={{ height: h, borderRadius: 8, marginBottom: 12, background: "linear-gradient(90deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 100%)", backgroundSize: "200% 100%", animation: "sh 1.4s " + (i * 0.15) + "s infinite" }} />
       ))}
     </div>
   );
@@ -116,19 +93,12 @@ function EventCard({ ev }) {
   const [open, setOpen] = useState(false);
   const c = DC[ev.direction] || "#666";
   return (
-    <div onClick={() => setOpen(o => !o)} style={{
-      background: DB[ev.direction] || "rgba(255,255,255,.02)",
-      borderLeft: "3px solid " + c,
-      border: "1px solid " + c + "22",
-      borderRadius: 8, padding: "13px 15px", marginBottom: 9, cursor: "pointer"
-    }}>
+    <div onClick={() => setOpen(o => !o)} style={{ background: DB[ev.direction] || "rgba(255,255,255,.02)", borderLeft: "3px solid " + c, border: "1px solid " + c + "22", borderRadius: 8, padding: "13px 15px", marginBottom: 9, cursor: "pointer" }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", gap: 7, marginBottom: 4, flexWrap: "wrap", alignItems: "center" }}>
             <span style={{ fontFamily: "monospace", fontSize: 10, color: "#777" }}>{ev.time}</span>
-            {ev.impact === "HIGH" && (
-              <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, fontWeight: 700, background: "rgba(255,71,87,.15)", color: "#ff4757" }}>HIGH</span>
-            )}
+            {ev.impact === "HIGH" && <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, fontWeight: 700, background: "rgba(255,71,87,.15)", color: "#ff4757" }}>HIGH</span>}
           </div>
           <div style={{ fontSize: 14, fontWeight: 600, color: "#f0f0f0", marginBottom: 3 }}>{ev.title}</div>
           <div style={{ fontSize: 12, color: "#999", lineHeight: 1.5 }}>{ev.summary}</div>
@@ -141,14 +111,10 @@ function EventCard({ ev }) {
       {open && (
         <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,.06)" }}>
           <div style={{ fontSize: 9, color: "#444", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>WHY IT MOVES PRICE</div>
-          <div style={{ fontSize: 13, color: "#c8d6e5", lineHeight: 1.75, background: "rgba(0,0,0,.25)", padding: 11, borderRadius: 6 }}>
-            {ev.why_it_moves_price}
-          </div>
+          <div style={{ fontSize: 13, color: "#c8d6e5", lineHeight: 1.75, background: "rgba(0,0,0,.25)", padding: 11, borderRadius: 6 }}>{ev.why_it_moves_price}</div>
         </div>
       )}
-      <div style={{ fontSize: 10, color: "#333", marginTop: 6, textAlign: "right" }}>
-        {open ? "collapse" : "tap to understand why"}
-      </div>
+      <div style={{ fontSize: 10, color: "#333", marginTop: 6, textAlign: "right" }}>{open ? "collapse" : "tap to understand why"}</div>
     </div>
   );
 }
@@ -238,14 +204,7 @@ function ScalperView({ inst, data }) {
   );
 }
 
-const PROMPTS = [
-  "What did the market do today that surprised you?",
-  "Did you follow your plan? What made it hard?",
-  "What did the market try to teach you today?",
-  "What emotion showed up most in your trading today?",
-  "What will you do differently tomorrow?",
-  "One thing you are proud of from today."
-];
+const PROMPTS = ["What did the market do today that surprised you?", "Did you follow your plan? What made it hard?", "What did the market try to teach you today?", "What emotion showed up most in your trading today?", "What will you do differently tomorrow?", "One thing you are proud of from today."];
 
 function Journal() {
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
@@ -258,25 +217,17 @@ function Journal() {
         <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: 1 }}>{today.toUpperCase()}</div>
       </div>
       <div style={{ background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.12)", borderRadius: 8, padding: 13, marginBottom: 22 }}>
-        <div style={{ fontSize: 13, color: "#c8a84b", lineHeight: 1.7, fontStyle: "italic" }}>
-          The goal is not to be right about the market. The goal is to understand it better each day.
-        </div>
+        <div style={{ fontSize: 13, color: "#c8a84b", lineHeight: 1.7, fontStyle: "italic" }}>The goal is not to be right about the market. The goal is to understand it better each day.</div>
       </div>
       {PROMPTS.map((p, i) => (
         <div key={i} style={{ marginBottom: 18 }}>
           <label style={{ display: "block", fontSize: 13, color: "#777", marginBottom: 7 }}>
             <span style={{ color: "#333", marginRight: 8, fontFamily: "monospace" }}>0{i + 1}.</span>{p}
           </label>
-          <textarea
-            value={entries[i] || ""}
-            onChange={e => setEntries(en => ({ ...en, [i]: e.target.value }))}
-            placeholder="Write freely..."
-            style={{ width: "100%", minHeight: 68, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, color: "#e0e0e0", fontSize: 13, padding: 11, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6, outline: "none", boxSizing: "border-box" }}
-          />
+          <textarea value={entries[i] || ""} onChange={e => setEntries(en => ({ ...en, [i]: e.target.value }))} placeholder="Write freely..." style={{ width: "100%", minHeight: 68, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, color: "#e0e0e0", fontSize: 13, padding: 11, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6, outline: "none", boxSizing: "border-box" }} />
         </div>
       ))}
-      <button onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2200); }}
-        style={{ width: "100%", padding: 13, borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit", background: saved ? "rgba(0,212,170,.14)" : "rgba(192,132,252,.1)", color: saved ? "#00d4aa" : "#c084fc", fontSize: 13, fontWeight: 700 }}>
+      <button onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2200); }} style={{ width: "100%", padding: 13, borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit", background: saved ? "rgba(0,212,170,.14)" : "rgba(192,132,252,.1)", color: saved ? "#00d4aa" : "#c084fc", fontSize: 13, fontWeight: 700 }}>
         {saved ? "REFLECTION SAVED" : "SAVE REFLECTION"}
       </button>
     </div>
@@ -285,12 +236,12 @@ function Journal() {
 
 const CONCEPTS = [
   { title: "Why High-Impact News Moves Markets", body: "Markets are priced on expectations. When actual data differs from forecasts, the gap triggers rapid repositioning. A jobs report beat does not just mean employment is good — traders positioned for a miss must cover fast, compounding the move." },
-  { title: "The Dollar Role in Everything", body: "The US Dollar DXY is the world reserve currency. When the dollar strengthens, commodities priced in USD like gold and oil get more expensive for foreign buyers — demand falls, price falls. Dollar strength also weighs on EUR/USD, GBP/USD, AUD/USD." },
-  { title: "Risk-On vs Risk-Off", body: "In times of fear such as wars and crashes, money flows to safe havens: USD, JPY, CHF, Gold. These are risk-off trades. When confidence returns, money flows to equities, AUD, NZD, crude oil. Identify which regime you are in — it shapes every trade." },
-  { title: "Futures Contracts ES NQ CL Explained", body: "ES (S&P 500 futures), NQ (Nasdaq futures), CL (crude oil futures) trade nearly 24 hours and gap up or down at the open based on overnight news. Futures lead spot markets. Scalpers watch futures because they react fastest to breaking news." },
-  { title: "Interest Rates and Currency Value", body: "Higher rates make a currency more attractive. When the Fed raises rates, USD strengthens. When ECB cuts, EUR weakens. Key insight: it is rate expectations, not the rate itself, that drive moves. Markets price in the future." },
-  { title: "Geopolitical Events and Market Impact", body: "War, sanctions, and political instability create uncertainty — and markets hate uncertainty. When conflict escalates in oil-producing regions, oil spikes. Always ask: who is affected in the supply chain or trade relationship?" },
-  { title: "Reading News Like a Trader", body: "The question is not whether news is good or bad. It is whether it is better or worse than expected. Markets are forward-looking. This is why price drops on good news — it was already priced in. Always check consensus forecasts before reacting." }
+  { title: "The Dollar Role in Everything", body: "The US Dollar DXY is the world reserve currency. When the dollar strengthens, commodities priced in USD like gold and oil get more expensive for foreign buyers — demand falls, price falls." },
+  { title: "Risk-On vs Risk-Off", body: "In times of fear such as wars and crashes, money flows to safe havens: USD, JPY, CHF, Gold. When confidence returns, money flows to equities, AUD, NZD, crude oil. Identify which regime you are in." },
+  { title: "Futures Contracts ES NQ CL Explained", body: "ES (S&P 500 futures), NQ (Nasdaq futures), CL (crude oil futures) trade nearly 24 hours and gap up or down at the open based on overnight news. Futures lead spot markets." },
+  { title: "Interest Rates and Currency Value", body: "Higher rates make a currency more attractive. When the Fed raises rates, USD strengthens. When ECB cuts, EUR weakens. It is rate expectations, not the rate itself, that drive moves." },
+  { title: "Geopolitical Events and Market Impact", body: "War, sanctions, and political instability create uncertainty. When conflict escalates in oil-producing regions, oil spikes. Always ask: who is affected in the supply chain or trade relationship?" },
+  { title: "Reading News Like a Trader", body: "The question is not whether news is good or bad. It is whether it is better or worse than expected. This is why price drops on good news — it was already priced in. Always check consensus forecasts." }
 ];
 
 function Learn() {
@@ -332,23 +283,15 @@ export default function App() {
       const result = await getBriefing(found, mm);
       setData(result);
     } catch (e) {
-      setError("Fetch failed. Please try again.");
+      setError(e.message || "Fetch failed. Please try again.");
       console.error(e);
     } finally {
       setLoading(false);
     }
   };
 
-  const switchMode = (m) => {
-    setMode(m);
-    if (inst && data) run(inst.label, m);
-  };
-
-  const TABS = [
-    { id: "intel", label: "Intelligence" },
-    { id: "journal", label: "Reflection" },
-    { id: "learn", label: "Learn" }
-  ];
+  const switchMode = (m) => { setMode(m); if (inst && data) run(inst.label, m); };
+  const TABS = [{ id: "intel", label: "Intelligence" }, { id: "journal", label: "Reflection" }, { id: "learn", label: "Learn" }];
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -359,9 +302,7 @@ export default function App() {
               <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff" }}>MARKET BRIEF</div>
               <div style={{ fontSize: 9, color: "#2a2a2a", letterSpacing: 2, fontFamily: "monospace" }}>INTELLIGENCE - REFLECTION - EDUCATION</div>
             </div>
-            <div style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4 }}>
-              {new Date().toLocaleDateString("en-GB", { month: "short", day: "numeric" }).toUpperCase()}
-            </div>
+            <div style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4 }}>{new Date().toLocaleDateString("en-GB", { month: "short", day: "numeric" }).toUpperCase()}</div>
           </div>
           <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
             {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Scalper Mode", sub: "Last 10 min" }].map(m => (
@@ -372,28 +313,19 @@ export default function App() {
             ))}
           </div>
           <div style={{ display: "flex", gap: 7, marginBottom: 11 }}>
-            <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && run(query.trim())}
-              placeholder={mode === "scalper" ? "ES, NQ, CL, GC, 6E..." : "Euro, Gold, GBP, ES, NQ, Oil, BTC..."}
-              style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.09)", borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit" }} />
-            <button onClick={() => run(query.trim())} disabled={loading}
-              style={{ padding: "10px 16px", borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", background: loading ? "rgba(255,255,255,.02)" : "rgba(0,212,255,.1)", color: loading ? "#2a2a2a" : "#00d4ff", border: "1px solid rgba(0,212,255,.2)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+            <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && run(query.trim())} placeholder={mode === "scalper" ? "ES, NQ, CL, GC, 6E..." : "Euro, Gold, GBP, ES, NQ, Oil, BTC..."} style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.09)", borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit" }} />
+            <button onClick={() => run(query.trim())} disabled={loading} style={{ padding: "10px 16px", borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", background: loading ? "rgba(255,255,255,.02)" : "rgba(0,212,255,.1)", color: loading ? "#2a2a2a" : "#00d4ff", border: "1px solid rgba(0,212,255,.2)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
               {loading ? "..." : "BRIEF ME"}
             </button>
           </div>
           <div style={{ display: "flex", gap: 5, marginBottom: 13, flexWrap: "wrap" }}>
             {CHIPS.map(({ label, key }) => (
-              <button key={key} onClick={() => { setQuery(label); run(label); }}
-                style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", color: "#444" }}>
-                {label}
-              </button>
+              <button key={key} onClick={() => { setQuery(label); run(label); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", color: "#444" }}>{label}</button>
             ))}
           </div>
           <div style={{ display: "flex" }}>
             {TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                style={{ flex: 1, padding: "9px 6px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent") }}>
-                {t.label}
-              </button>
+              <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, padding: "9px 6px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent") }}>{t.label}</button>
             ))}
           </div>
         </div>
@@ -406,12 +338,8 @@ export default function App() {
             {!loading && !error && !data && (
               <div style={{ textAlign: "center", padding: "56px 20px" }}>
                 <div style={{ fontSize: 44, marginBottom: 14 }}>+</div>
-                <div style={{ fontSize: 14, color: "#444", marginBottom: 7 }}>
-                  {mode === "scalper" ? "Enter your futures contract for a live risk check" : "Enter an instrument for your full market briefing"}
-                </div>
-                <div style={{ fontSize: 11, color: "#2a2a2a" }}>
-                  {mode === "scalper" ? "ES - NQ - CL - GC - 6E - RTY - YM" : "Euro - Gold - GBP - Oil - Bitcoin - ES - NQ - VIX"}
-                </div>
+                <div style={{ fontSize: 14, color: "#444", marginBottom: 7 }}>{mode === "scalper" ? "Enter your futures contract for a live risk check" : "Enter an instrument for your full market briefing"}</div>
+                <div style={{ fontSize: 11, color: "#2a2a2a" }}>{mode === "scalper" ? "ES - NQ - CL - GC - 6E - RTY - YM" : "Euro - Gold - GBP - Oil - Bitcoin - ES - NQ - VIX"}</div>
               </div>
             )}
             {!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}
