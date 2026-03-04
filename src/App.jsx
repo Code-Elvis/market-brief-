@@ -87,7 +87,7 @@ async function getBriefing(inst, mode) {
   });
   if (!res.ok) throw new Error("API error " + res.status);
   const data = await res.json();
-  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+const text = data.extractedText || (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) throw new Error("No JSON in response");
   return JSON.parse(match[0]);
