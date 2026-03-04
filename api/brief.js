@@ -9,6 +9,8 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
+    const { tools, ...bodyWithoutTools } = body;
+    
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -16,7 +18,7 @@ export default async function handler(req) {
         "x-api-key": process.env.VITE_ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(bodyWithoutTools),
     });
 
     const data = await response.json();
