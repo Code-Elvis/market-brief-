@@ -72,7 +72,8 @@ function userPrompt(inst, mode) {
 }
 
 async function getBriefing(inst, mode) {
-  const key = import.meta.env.VITE_ANTHROPIC_API_KEY;
+const key = import.meta.env.VITE_ANTHROPIC_API_KEY || "";
+console.log("Key loaded:", key ? "YES - length " + key.length : "NO - undefined");
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
