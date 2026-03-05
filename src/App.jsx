@@ -1,20 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const INSTRUMENTS = {
-  euro: { label: "EUR/USD", aliases: ["euro","eurusd","eur","6e"], color: "#00d4ff", flag: "EU" },
-  gbp: { label: "GBP/USD", aliases: ["gbp","pound","cable","gbpusd","6b"], color: "#7fff7f", flag: "GB" },
-  gold: { label: "XAU/USD Gold", aliases: ["gold","xauusd","xau","gc","gc1"], color: "#ffd700", flag: "XAU" },
-  oil: { label: "WTI Crude", aliases: ["oil","crude","wti","usoil","cl","cl1"], color: "#ff8c42", flag: "OIL" },
-  dxy: { label: "US Dollar DXY", aliases: ["dxy","dollar","usd","dx"], color: "#c084fc", flag: "USD" },
-  es: { label: "ES S&P 500", aliases: ["es","es1","sp500","spx","spy","s&p"], color: "#00ffcc", flag: "ES" },
-  nq: { label: "NQ NASDAQ 100", aliases: ["nq","nq1","nasdaq","nas100","ndx","qqq"], color: "#f472b6", flag: "NQ" },
-  rty: { label: "RTY Russell 2000", aliases: ["rty","russell","iwm"], color: "#fb923c", flag: "RTY" },
-  ym: { label: "YM Dow Jones", aliases: ["ym","ym1","dow","djia","dia"], color: "#a78bfa", flag: "YM" },
-  btc: { label: "Bitcoin", aliases: ["btc","bitcoin","crypto","btcusd"], color: "#f7931a", flag: "BTC" },
-  eth: { label: "Ethereum", aliases: ["eth","ethereum","ethusd"], color: "#627eea", flag: "ETH" },
-  jpy: { label: "USD/JPY", aliases: ["jpy","yen","usdjpy","6j"], color: "#ff6b6b", flag: "JPY" },
-  aud: { label: "AUD/USD", aliases: ["aud","aussie","audusd","6a"], color: "#34d399", flag: "AUD" },
-  vix: { label: "VIX Fear Index", aliases: ["vix","volatility","fear"], color: "#f87171", flag: "VIX" },
+  euro: { label: "EUR/USD", aliases: ["euro","eurusd","eur","6e"], color: "#00d4ff", flag: "EU", optionsTicker: null },
+  gbp: { label: "GBP/USD", aliases: ["gbp","pound","cable","gbpusd","6b"], color: "#7fff7f", flag: "GB", optionsTicker: null },
+  gold: { label: "XAU/USD Gold", aliases: ["gold","xauusd","xau","gc","gc1"], color: "#ffd700", flag: "XAU", optionsTicker: "GLD" },
+  oil: { label: "WTI Crude", aliases: ["oil","crude","wti","usoil","cl","cl1"], color: "#ff8c42", flag: "OIL", optionsTicker: "USO" },
+  dxy: { label: "US Dollar DXY", aliases: ["dxy","dollar","usd","dx"], color: "#c084fc", flag: "USD", optionsTicker: "UUP" },
+  es: { label: "ES S&P 500", aliases: ["es","es1","sp500","spx","spy","s&p"], color: "#00ffcc", flag: "ES", optionsTicker: "SPY" },
+  nq: { label: "NQ NASDAQ 100", aliases: ["nq","nq1","nasdaq","nas100","ndx","qqq"], color: "#f472b6", flag: "NQ", optionsTicker: "QQQ" },
+  rty: { label: "RTY Russell 2000", aliases: ["rty","russell","iwm"], color: "#fb923c", flag: "RTY", optionsTicker: "IWM" },
+  ym: { label: "YM Dow Jones", aliases: ["ym","ym1","dow","djia","dia"], color: "#a78bfa", flag: "YM", optionsTicker: "DIA" },
+  btc: { label: "Bitcoin", aliases: ["btc","bitcoin","crypto","btcusd"], color: "#f7931a", flag: "BTC", optionsTicker: null },
+  eth: { label: "Ethereum", aliases: ["eth","ethereum","ethusd"], color: "#627eea", flag: "ETH", optionsTicker: null },
+  jpy: { label: "USD/JPY", aliases: ["jpy","yen","usdjpy","6j"], color: "#ff6b6b", flag: "JPY", optionsTicker: null },
+  aud: { label: "AUD/USD", aliases: ["aud","aussie","audusd","6a"], color: "#34d399", flag: "AUD", optionsTicker: null },
+  vix: { label: "VIX Fear Index", aliases: ["vix","volatility","fear"], color: "#f87171", flag: "VIX", optionsTicker: "VIXY" },
 };
 
 const CHIPS = [
@@ -47,6 +47,35 @@ function sysPrompt(mode) {
   return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","key_levels_context":"string","teaching_moment":"string"}';
 }
 
+function optionsPrompt(inst) {
+  const ticker = inst.optionsTicker || inst.label;
+  const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  return `Today: ${now}. You are a senior options market analyst providing dealer positioning and options flow intelligence for ${inst.label} (ETF proxy: ${ticker}).
+
+Based on current market conditions, provide a professional options market structure briefing. Focus on:
+1. Key gamma exposure (GEX) strike levels where dealers are likely hedging
+2. Max pain strike for nearest expiry
+3. Key call wall and put wall levels  
+4. Put/Call ratio context and what it suggests about market positioning
+5. Notable flow patterns or unusual activity worth watching
+
+This is GUIDANCE and INTELLIGENCE only — no trade signals, no entry/exit recommendations. Format as analytical context a trader can use to understand market structure.
+
+Respond ONLY with valid JSON. No markdown, no backticks. Schema:
+{
+  "ticker": "string",
+  "as_of": "string",
+  "max_pain": {"strike": number, "context": "string"},
+  "gamma_levels": [{"strike": number, "type": "CALL_WALL|PUT_WALL|GEX_FLIP|PIN_RISK", "label": "string", "context": "string"}],
+  "put_call_ratio": {"value": "string", "interpretation": "string"},
+  "dealer_positioning": "string",
+  "flow_notes": [{"observation": "string", "significance": "string"}],
+  "options_available": true
+}
+
+If this instrument has no meaningful options market (e.g. spot forex), set options_available to false and return minimal fields.`;
+}
+
 function userPrompt(inst, mode) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
   if (mode === "scalper") {
@@ -55,15 +84,15 @@ function userPrompt(inst, mode) {
   return "Today: " + now + ". Full macro briefing for " + inst.label + ". What are the key events, central bank stance, geopolitical risks, and why they move price?";
 }
 
-async function getBriefing(inst, mode) {
+async function callClaude(system, userMsg) {
   const res = await fetch("/api/brief", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514",
       max_tokens: 1000,
-      system: sysPrompt(mode),
-      messages: [{ role: "user", content: userPrompt(inst, mode) }]
+      system,
+      messages: [{ role: "user", content: userMsg }]
     })
   });
   if (!res.ok) throw new Error("API error " + res.status);
@@ -75,14 +104,29 @@ async function getBriefing(inst, mode) {
   return JSON.parse(match[0]);
 }
 
+async function getBriefing(inst, mode) {
+  return callClaude(sysPrompt(mode), userPrompt(inst, mode));
+}
+
+async function getOptionsFlow(inst) {
+  return callClaude("You are a senior options market structure analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.", optionsPrompt(inst));
+}
+
 const DC = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
 const DB = { BULLISH: "rgba(0,212,170,.08)", BEARISH: "rgba(255,71,87,.08)", NEUTRAL: "rgba(255,215,0,.06)" };
+
+const TYPE_COLORS = {
+  CALL_WALL: { color: "#00d4aa", bg: "rgba(0,212,170,.08)", label: "CALL WALL" },
+  PUT_WALL: { color: "#ff4757", bg: "rgba(255,71,87,.08)", label: "PUT WALL" },
+  GEX_FLIP: { color: "#c084fc", bg: "rgba(192,132,252,.08)", label: "GEX FLIP" },
+  PIN_RISK: { color: "#ffd700", bg: "rgba(255,215,0,.08)", label: "PIN RISK" },
+};
 
 function Loader() {
   return (
     <div>
       <style>{"@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
-      {[90, 65, 80].map((h, i) => (
+      {[90, 65, 80, 55].map((h, i) => (
         <div key={i} style={{ height: h, borderRadius: 8, marginBottom: 12, background: "linear-gradient(90deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 100%)", backgroundSize: "200% 100%", animation: "sh 1.4s " + (i * 0.15) + "s infinite" }} />
       ))}
     </div>
@@ -204,7 +248,185 @@ function ScalperView({ inst, data }) {
   );
 }
 
-const PROMPTS = ["What did the market do today that surprised you?", "Did you follow your plan? What made it hard?", "What did the market try to teach you today?", "What emotion showed up most in your trading today?", "What will you do differently tomorrow?", "One thing you are proud of from today."];
+// ─── OPTIONS FLOW TAB ────────────────────────────────────────────────────────
+
+function GammaLevelCard({ level }) {
+  const [open, setOpen] = useState(false);
+  const meta = TYPE_COLORS[level.type] || { color: "#888", bg: "rgba(255,255,255,.04)", label: level.type };
+  return (
+    <div
+      onClick={() => setOpen(o => !o)}
+      style={{
+        background: meta.bg,
+        border: "1px solid " + meta.color + "33",
+        borderLeft: "3px solid " + meta.color,
+        borderRadius: 8,
+        padding: "13px 15px",
+        marginBottom: 8,
+        cursor: "pointer",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
+            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.2, color: meta.color, border: "1px solid " + meta.color + "44", padding: "2px 7px", borderRadius: 3 }}>{meta.label}</span>
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: "#f0f0f0", fontFamily: "monospace", letterSpacing: 0.5 }}>{level.label}</div>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: meta.color, fontFamily: "monospace" }}>{level.strike.toLocaleString()}</div>
+        </div>
+      </div>
+      {open && (
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,.06)" }}>
+          <div style={{ fontSize: 13, color: "#b0c4d8", lineHeight: 1.7 }}>{level.context}</div>
+        </div>
+      )}
+      <div style={{ fontSize: 10, color: "#333", marginTop: 5, textAlign: "right" }}>{open ? "collapse" : "tap for context"}</div>
+    </div>
+  );
+}
+
+function OptionsFlowView({ inst, data, loading, error, onFetch, lastUpdated }) {
+  if (!inst) {
+    return (
+      <div style={{ textAlign: "center", padding: "56px 20px" }}>
+        <div style={{ fontSize: 38, marginBottom: 14, opacity: 0.3 }}>⊕</div>
+        <div style={{ fontSize: 14, color: "#444" }}>Run a brief first to load Options Flow</div>
+      </div>
+    );
+  }
+
+  if (!inst.optionsTicker) {
+    return (
+      <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: 24, textAlign: "center" }}>
+        <div style={{ fontSize: 13, color: "#555", marginBottom: 6 }}>No listed options market</div>
+        <div style={{ fontSize: 12, color: "#333", lineHeight: 1.6 }}>{inst.label} trades as spot/futures only. Options flow data is not available for this instrument.</div>
+      </div>
+    );
+  }
+
+  if (loading) return <Loader />;
+
+  if (error) return (
+    <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>
+  );
+
+  if (!data) {
+    return (
+      <div style={{ textAlign: "center", padding: "40px 20px" }}>
+        <div style={{ fontSize: 13, color: "#555", marginBottom: 16 }}>
+          Options flow for <span style={{ color: inst.color }}>{inst.label}</span> via {inst.optionsTicker}
+        </div>
+        <button
+          onClick={onFetch}
+          style={{ padding: "11px 24px", borderRadius: 8, cursor: "pointer", background: "rgba(0,212,255,.1)", color: "#00d4ff", border: "1px solid rgba(0,212,255,.25)", fontSize: 12, fontWeight: 700, fontFamily: "inherit" }}
+        >
+          LOAD OPTIONS FLOW
+        </button>
+      </div>
+    );
+  }
+
+  if (data.options_available === false) {
+    return (
+      <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: 24, textAlign: "center" }}>
+        <div style={{ fontSize: 13, color: "#555" }}>No meaningful options market available for {inst.label}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ background: "linear-gradient(135deg," + inst.color + "12,transparent)", border: "1px solid " + inst.color + "2a", borderRadius: 12, padding: "16px 18px", marginBottom: 18, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: inst.color, marginBottom: 2 }}>{inst.flag} {inst.label} — Options Flow</div>
+          <div style={{ fontSize: 10, color: "#444", fontFamily: "monospace" }}>via {data.ticker} · {data.as_of}</div>
+        </div>
+        {lastUpdated && (
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "monospace" }}>UPDATED</div>
+            <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace" }}>{lastUpdated}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Max Pain */}
+      {data.max_pain && (
+        <div style={{ background: "rgba(255,215,0,.06)", border: "1px solid rgba(255,215,0,.2)", borderRadius: 10, padding: "14px 16px", marginBottom: 14 }}>
+          <div style={{ fontSize: 9, color: "#ffd700", fontWeight: 700, letterSpacing: 1.5, marginBottom: 6 }}>MAX PAIN STRIKE</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#ffd700", fontFamily: "monospace" }}>{data.max_pain.strike?.toLocaleString()}</div>
+            <div style={{ fontSize: 9, color: "#555", padding: "3px 8px", border: "1px solid rgba(255,215,0,.15)", borderRadius: 4 }}>NEAREST EXPIRY</div>
+          </div>
+          <div style={{ fontSize: 13, color: "#c8a84b", lineHeight: 1.6 }}>{data.max_pain.context}</div>
+        </div>
+      )}
+
+      {/* Key Strike Levels */}
+      {data.gamma_levels && data.gamma_levels.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 9, color: "#444", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>KEY STRIKE LEVELS</div>
+          {data.gamma_levels.map((level, i) => <GammaLevelCard key={i} level={level} />)}
+        </div>
+      )}
+
+      {/* Dealer Positioning */}
+      {data.dealer_positioning && (
+        <div style={{ background: "rgba(192,132,252,.06)", border: "1px solid rgba(192,132,252,.18)", borderRadius: 10, padding: "14px 16px", marginBottom: 14 }}>
+          <div style={{ fontSize: 9, color: "#c084fc", fontWeight: 700, letterSpacing: 1.5, marginBottom: 6 }}>DEALER POSITIONING</div>
+          <div style={{ fontSize: 13, color: "#d4b8f7", lineHeight: 1.7 }}>{data.dealer_positioning}</div>
+        </div>
+      )}
+
+      {/* Put/Call Ratio */}
+      {data.put_call_ratio && (
+        <div style={{ background: "rgba(0,212,255,.05)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 10, padding: "14px 16px", marginBottom: 14 }}>
+          <div style={{ fontSize: 9, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 6 }}>PUT / CALL RATIO</div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 6 }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#00d4ff", fontFamily: "monospace" }}>{data.put_call_ratio.value}</div>
+          </div>
+          <div style={{ fontSize: 13, color: "#a8d8ea", lineHeight: 1.6 }}>{data.put_call_ratio.interpretation}</div>
+        </div>
+      )}
+
+      {/* Flow Notes */}
+      {data.flow_notes && data.flow_notes.length > 0 && (
+        <div>
+          <div style={{ fontSize: 9, color: "#ff8c00", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>NOTABLE FLOW</div>
+          {data.flow_notes.map((note, i) => (
+            <div key={i} style={{ background: "rgba(255,140,0,.05)", border: "1px solid rgba(255,140,0,.15)", borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
+              <div style={{ fontSize: 13, color: "#e0c88a", fontWeight: 600, marginBottom: 5 }}>{note.observation}</div>
+              <div style={{ fontSize: 12, color: "#7a6a40", lineHeight: 1.6 }}>{note.significance}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Refresh Button */}
+      <div style={{ marginTop: 20, textAlign: "center" }}>
+        <button
+          onClick={onFetch}
+          style={{ padding: "9px 20px", borderRadius: 7, cursor: "pointer", background: "rgba(255,255,255,.02)", color: "#333", border: "1px solid rgba(255,255,255,.06)", fontSize: 11, fontWeight: 600, fontFamily: "inherit" }}
+        >
+          ↻ REFRESH OPTIONS DATA
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── JOURNAL ─────────────────────────────────────────────────────────────────
+
+const PROMPTS = [
+  "What did the market do today that surprised you?",
+  "Did you follow your plan? What made it hard?",
+  "What did the market try to teach you today?",
+  "What emotion showed up most in your trading today?",
+  "What will you do differently tomorrow?",
+  "One thing you are proud of from today.",
+];
 
 function Journal() {
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
@@ -224,15 +446,25 @@ function Journal() {
           <label style={{ display: "block", fontSize: 13, color: "#777", marginBottom: 7 }}>
             <span style={{ color: "#333", marginRight: 8, fontFamily: "monospace" }}>0{i + 1}.</span>{p}
           </label>
-          <textarea value={entries[i] || ""} onChange={e => setEntries(en => ({ ...en, [i]: e.target.value }))} placeholder="Write freely..." style={{ width: "100%", minHeight: 68, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, color: "#e0e0e0", fontSize: 13, padding: 11, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6, outline: "none", boxSizing: "border-box" }} />
+          <textarea
+            value={entries[i] || ""}
+            onChange={e => setEntries(en => ({ ...en, [i]: e.target.value }))}
+            placeholder="Write freely..."
+            style={{ width: "100%", minHeight: 68, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, color: "#e0e0e0", fontSize: 13, padding: 11, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6, outline: "none", boxSizing: "border-box" }}
+          />
         </div>
       ))}
-      <button onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2200); }} style={{ width: "100%", padding: 13, borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit", background: saved ? "rgba(0,212,170,.14)" : "rgba(192,132,252,.1)", color: saved ? "#00d4aa" : "#c084fc", fontSize: 13, fontWeight: 700 }}>
+      <button
+        onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2200); }}
+        style={{ width: "100%", padding: 13, borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit", background: saved ? "rgba(0,212,170,.14)" : "rgba(192,132,252,.1)", color: saved ? "#00d4aa" : "#c084fc", fontSize: 13, fontWeight: 700 }}
+      >
         {saved ? "REFLECTION SAVED" : "SAVE REFLECTION"}
       </button>
     </div>
   );
 }
+
+// ─── LEARN ───────────────────────────────────────────────────────────────────
 
 const CONCEPTS = [
   { title: "Why High-Impact News Moves Markets", body: "Markets are priced on expectations. When actual data differs from forecasts, the gap triggers rapid repositioning. A jobs report beat does not just mean employment is good — traders positioned for a miss must cover fast, compounding the move." },
@@ -241,7 +473,8 @@ const CONCEPTS = [
   { title: "Futures Contracts ES NQ CL Explained", body: "ES (S&P 500 futures), NQ (Nasdaq futures), CL (crude oil futures) trade nearly 24 hours and gap up or down at the open based on overnight news. Futures lead spot markets." },
   { title: "Interest Rates and Currency Value", body: "Higher rates make a currency more attractive. When the Fed raises rates, USD strengthens. When ECB cuts, EUR weakens. It is rate expectations, not the rate itself, that drive moves." },
   { title: "Geopolitical Events and Market Impact", body: "War, sanctions, and political instability create uncertainty. When conflict escalates in oil-producing regions, oil spikes. Always ask: who is affected in the supply chain or trade relationship?" },
-  { title: "Reading News Like a Trader", body: "The question is not whether news is good or bad. It is whether it is better or worse than expected. This is why price drops on good news — it was already priced in. Always check consensus forecasts." }
+  { title: "Reading News Like a Trader", body: "The question is not whether news is good or bad. It is whether it is better or worse than expected. This is why price drops on good news — it was already priced in. Always check consensus forecasts." },
+  { title: "Options Flow and Dealer Gamma", body: "Dealers who sell options must hedge by buying or selling the underlying. At large call walls, dealers buy as price rises — this can act like a magnet. At put walls, dealers sell as price falls — this can accelerate drops. Max pain is the strike where options expire worthless for the most buyers." },
 ];
 
 function Learn() {
@@ -265,6 +498,8 @@ function Learn() {
   );
 }
 
+// ─── APP ROOT ─────────────────────────────────────────────────────────────────
+
 export default function App() {
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("intel");
@@ -274,81 +509,178 @@ export default function App() {
   const [inst, setInst] = useState(null);
   const [error, setError] = useState(null);
 
+  // Options flow state
+  const [optData, setOptData] = useState(null);
+  const [optLoading, setOptLoading] = useState(false);
+  const [optError, setOptError] = useState(null);
+  const [optLastUpdated, setOptLastUpdated] = useState(null);
+
+  const fetchOptions = useCallback(async (instrument) => {
+    if (!instrument || !instrument.optionsTicker) return;
+    setOptLoading(true);
+    setOptError(null);
+    try {
+      const result = await getOptionsFlow(instrument);
+      setOptData(result);
+      setOptLastUpdated(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }));
+    } catch (e) {
+      setOptError(e.message || "Options data fetch failed.");
+    } finally {
+      setOptLoading(false);
+    }
+  }, []);
+
   const run = async (q, m) => {
     const mm = m !== undefined ? m : mode;
     const found = detect(q);
     if (!found) { setError("Not recognised. Try: ES, NQ, Euro, Gold, GBP, Oil, BTC"); return; }
-    setInst(found); setLoading(true); setError(null); setData(null); setTab("intel");
+    setInst(found);
+    setLoading(true);
+    setError(null);
+    setData(null);
+    setTab("intel");
+    // Reset options when instrument changes
+    setOptData(null);
+    setOptError(null);
+    setOptLastUpdated(null);
     try {
       const result = await getBriefing(found, mm);
       setData(result);
     } catch (e) {
       setError(e.message || "Fetch failed. Please try again.");
-      console.error(e);
     } finally {
       setLoading(false);
     }
   };
 
   const switchMode = (m) => { setMode(m); if (inst && data) run(inst.label, m); };
-  const TABS = [{ id: "intel", label: "Intelligence" }, { id: "journal", label: "Reflection" }, { id: "learn", label: "Learn" }];
+
+  const TABS = [
+    { id: "intel", label: "Intelligence" },
+    { id: "options", label: "Options Flow" },
+    { id: "journal", label: "Reflection" },
+    { id: "learn", label: "Learn" },
+  ];
+
+  // Auto-fetch options when switching to that tab if data not loaded yet
+  const handleTabChange = (id) => {
+    setTab(id);
+    if (id === "options" && inst && inst.optionsTicker && !optData && !optLoading) {
+      fetchOptions(inst);
+    }
+  };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
-      <div style={{ background: "linear-gradient(180deg,#0d1117,#0a0c0f)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "16px 18px 0", position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 620, margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 13 }}>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff" }}>MARKET BRIEF</div>
-              <div style={{ fontSize: 9, color: "#2a2a2a", letterSpacing: 2, fontFamily: "monospace" }}>INTELLIGENCE - REFLECTION - EDUCATION</div>
+    <>
+      {/* Global responsive styles */}
+      <style>{`
+        *, *::before, *::after { box-sizing: border-box; }
+        html { font-size: 16px; }
+        body { margin: 0; padding: 0; }
+        textarea { box-sizing: border-box; }
+        @media (max-width: 480px) {
+          .main-content { padding: 14px 14px 60px !important; }
+          .header-inner { padding: 14px 14px 0 !important; }
+        }
+      `}</style>
+
+      <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
+        {/* ── STICKY HEADER ── */}
+        <div className="header-inner" style={{ background: "linear-gradient(180deg,#0d1117,#0a0c0f)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "16px 20px 0", position: "sticky", top: 0, zIndex: 100 }}>
+          <div style={{ maxWidth: 860, margin: "0 auto", width: "100%" }}>
+            {/* Brand row */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 13 }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff" }}>MARKET BRIEF</div>
+                <div style={{ fontSize: 9, color: "#2a2a2a", letterSpacing: 2, fontFamily: "monospace" }}>INTELLIGENCE — REFLECTION — EDUCATION</div>
+              </div>
+              <div style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4 }}>
+                {new Date().toLocaleDateString("en-GB", { month: "short", day: "numeric" }).toUpperCase()}
+              </div>
             </div>
-            <div style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4 }}>{new Date().toLocaleDateString("en-GB", { month: "short", day: "numeric" }).toUpperCase()}</div>
-          </div>
-          <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
-            {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Scalper Mode", sub: "Last 10 min" }].map(m => (
-              <button key={m.id} onClick={() => switchMode(m.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: mode === m.id ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.02)", border: mode === m.id ? "1px solid rgba(0,212,255,.25)" : "1px solid rgba(255,255,255,.05)", color: mode === m.id ? "#00d4ff" : "#444" }}>
-                <div style={{ fontSize: 11, fontWeight: 700 }}>{m.label}</div>
-                <div style={{ fontSize: 9, marginTop: 2, opacity: 0.7 }}>{m.sub}</div>
+
+            {/* Mode toggle */}
+            <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
+              {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Scalper Mode", sub: "Last 10 min" }].map(m => (
+                <button key={m.id} onClick={() => switchMode(m.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: mode === m.id ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.02)", border: mode === m.id ? "1px solid rgba(0,212,255,.25)" : "1px solid rgba(255,255,255,.05)", color: mode === m.id ? "#00d4ff" : "#444" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700 }}>{m.label}</div>
+                  <div style={{ fontSize: 9, marginTop: 2, opacity: 0.7 }}>{m.sub}</div>
+                </button>
+              ))}
+            </div>
+
+            {/* Search row */}
+            <div style={{ display: "flex", gap: 7, marginBottom: 11 }}>
+              <input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && run(query.trim())}
+                placeholder={mode === "scalper" ? "ES, NQ, CL, GC, 6E..." : "Euro, Gold, GBP, ES, NQ, Oil, BTC..."}
+                style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.09)", borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
+              />
+              <button onClick={() => run(query.trim())} disabled={loading} style={{ padding: "10px 16px", borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", background: loading ? "rgba(255,255,255,.02)" : "rgba(0,212,255,.1)", color: loading ? "#2a2a2a" : "#00d4ff", border: "1px solid rgba(0,212,255,.2)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+                {loading ? "..." : "BRIEF ME"}
               </button>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 7, marginBottom: 11 }}>
-            <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && run(query.trim())} placeholder={mode === "scalper" ? "ES, NQ, CL, GC, 6E..." : "Euro, Gold, GBP, ES, NQ, Oil, BTC..."} style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.09)", borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit" }} />
-            <button onClick={() => run(query.trim())} disabled={loading} style={{ padding: "10px 16px", borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", background: loading ? "rgba(255,255,255,.02)" : "rgba(0,212,255,.1)", color: loading ? "#2a2a2a" : "#00d4ff", border: "1px solid rgba(0,212,255,.2)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
-              {loading ? "..." : "BRIEF ME"}
-            </button>
-          </div>
-          <div style={{ display: "flex", gap: 5, marginBottom: 13, flexWrap: "wrap" }}>
-            {CHIPS.map(({ label, key }) => (
-              <button key={key} onClick={() => { setQuery(label); run(label); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", color: "#444" }}>{label}</button>
-            ))}
-          </div>
-          <div style={{ display: "flex" }}>
-            {TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, padding: "9px 6px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent") }}>{t.label}</button>
-            ))}
+            </div>
+
+            {/* Chips */}
+            <div style={{ display: "flex", gap: 5, marginBottom: 13, flexWrap: "wrap" }}>
+              {CHIPS.map(({ label, key }) => (
+                <button key={key} onClick={() => { setQuery(label); run(label); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", color: "#444" }}>{label}</button>
+              ))}
+            </div>
+
+            {/* Tabs */}
+            <div style={{ display: "flex", overflowX: "auto" }}>
+              {TABS.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => handleTabChange(t.id)}
+                  style={{ flex: 1, minWidth: 70, padding: "9px 6px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent"), whiteSpace: "nowrap" }}
+                >
+                  {t.label}
+                  {t.id === "options" && inst && inst.optionsTicker && (
+                    <span style={{ marginLeft: 4, fontSize: 8, color: "#00d4ff", opacity: 0.5 }}>●</span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+
+        {/* ── MAIN CONTENT ── */}
+        <div className="main-content" style={{ maxWidth: 860, margin: "0 auto", padding: "20px 20px 60px", width: "100%" }}>
+          {tab === "intel" && (
+            <div>
+              {loading && <Loader />}
+              {error && <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>}
+              {!loading && !error && !data && (
+                <div style={{ textAlign: "center", padding: "56px 20px" }}>
+                  <div style={{ fontSize: 44, marginBottom: 14 }}>+</div>
+                  <div style={{ fontSize: 14, color: "#444", marginBottom: 7 }}>{mode === "scalper" ? "Enter your futures contract for a live risk check" : "Enter an instrument for your full market briefing"}</div>
+                  <div style={{ fontSize: 11, color: "#2a2a2a" }}>{mode === "scalper" ? "ES · NQ · CL · GC · 6E · RTY · YM" : "Euro · Gold · GBP · Oil · Bitcoin · ES · NQ · VIX"}</div>
+                </div>
+              )}
+              {!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}
+              {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} />}
+            </div>
+          )}
+
+          {tab === "options" && (
+            <OptionsFlowView
+              inst={inst}
+              data={optData}
+              loading={optLoading}
+              error={optError}
+              onFetch={() => fetchOptions(inst)}
+              lastUpdated={optLastUpdated}
+            />
+          )}
+
+          {tab === "journal" && <Journal />}
+          {tab === "learn" && <Learn />}
+        </div>
       </div>
-      <div style={{ maxWidth: 620, margin: "0 auto", padding: "18px 18px 48px" }}>
-        {tab === "intel" && (
-          <div>
-            {loading && <Loader />}
-            {error && <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>}
-            {!loading && !error && !data && (
-              <div style={{ textAlign: "center", padding: "56px 20px" }}>
-                <div style={{ fontSize: 44, marginBottom: 14 }}>+</div>
-                <div style={{ fontSize: 14, color: "#444", marginBottom: 7 }}>{mode === "scalper" ? "Enter your futures contract for a live risk check" : "Enter an instrument for your full market briefing"}</div>
-                <div style={{ fontSize: 11, color: "#2a2a2a" }}>{mode === "scalper" ? "ES - NQ - CL - GC - 6E - RTY - YM" : "Euro - Gold - GBP - Oil - Bitcoin - ES - NQ - VIX"}</div>
-              </div>
-            )}
-            {!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}
-            {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} />}
-          </div>
-        )}
-        {tab === "journal" && <Journal />}
-        {tab === "learn" && <Learn />}
-      </div>
-    </div>
+    </>
   );
 }
