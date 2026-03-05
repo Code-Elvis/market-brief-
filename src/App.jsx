@@ -60,10 +60,6 @@ async function getOptionsFlow(inst) {
 }
 
 
-async function getOptionsFlow(inst) {
-  // inst.key must be present for price anchoring
-  return callClaude("You are a senior options market structure analyst. You ALWAYS anchor all strike levels to the CURRENT trading price provided in the user message. Never use outdated historical price ranges. Respond ONLY with valid JSON. No markdown, no backticks, no preamble.", optionsPrompt(inst));
-}
 
 const DC = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
 const DB = { BULLISH: "rgba(0,212,170,.08)", BEARISH: "rgba(255,71,87,.08)", NEUTRAL: "rgba(255,215,0,.06)" };
