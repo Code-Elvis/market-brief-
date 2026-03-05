@@ -80,7 +80,7 @@ async function fetchChain(ticker, apiKey) {
   let data;
   try { data = JSON.parse(text); } catch { throw new Error(`Polygon non-JSON (HTTP ${res.status}): ${text.slice(0, 300)}`); }
 
-  if (res.status === 403) throw new Error("Polygon 403: Options snapshot data requires a paid Polygon plan. Free tier does not include options chains. Upgrade at polygon.io.");
+  if (res.status === 403) throw new Error("COMING_SOON");
   if (res.status === 404) throw new Error(`Polygon 404: Ticker ${ticker} not found.`);
   if (!res.ok)            throw new Error(`Polygon HTTP ${res.status}: ${data?.error || text.slice(0, 200)}`);
   if (data.status === "ERROR") throw new Error(`Polygon API error: ${data.error || JSON.stringify(data).slice(0, 200)}`);
@@ -171,7 +171,11 @@ export default async function handler(req) {
     });
 
   } catch (err) {
-    // Always 200 so App.jsx reads the message
-    return json({ options_available: false, error: err.message || "Options fetch failed" });
+    const isComingSoon = err.message === "COMING_SOON";
+    return json({
+      options_available: false,
+      coming_soon: isComingSoon,
+      error: isComingSoon ? null : (err.message || "Options fetch failed"),
+    });
   }
 }
