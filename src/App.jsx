@@ -47,69 +47,22 @@ function sysPrompt(mode) {
   return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","key_levels_context":"string","teaching_moment":"string"}';
 }
 
-function optionsPrompt(inst) {
-  const ticker = inst.optionsTicker || inst.label;
-  const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  return `Today: ${now}. You are a senior options market analyst providing dealer positioning and options flow intelligence for ${inst.label} (ETF proxy: ${ticker}).
-
-Based on current market conditions, provide a professional options market structure briefing. Focus on:
-1. Key gamma exposure (GEX) strike levels where dealers are likely hedging
-2. Max pain strike for nearest expiry
-3. Key call wall and put wall levels  
-4. Put/Call ratio context and what it suggests about market positioning
-5. Notable flow patterns or unusual activity worth watching
-
-This is GUIDANCE and INTELLIGENCE only — no trade signals, no entry/exit recommendations. Format as analytical context a trader can use to understand market structure.
-
-Respond ONLY with valid JSON. No markdown, no backticks. Schema:
-{
-  "ticker": "string",
-  "as_of": "string",
-  "max_pain": {"strike": number, "context": "string"},
-  "gamma_levels": [{"strike": number, "type": "CALL_WALL|PUT_WALL|GEX_FLIP|PIN_RISK", "label": "string", "context": "string"}],
-  "put_call_ratio": {"value": "string", "interpretation": "string"},
-  "dealer_positioning": "string",
-  "flow_notes": [{"observation": "string", "significance": "string"}],
-  "options_available": true
-}
-
-If this instrument has no meaningful options market (e.g. spot forex), set options_available to false and return minimal fields.`;
-}
-
-function userPrompt(inst, mode) {
-  const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  if (mode === "scalper") {
-    return "Time: " + now + ". About to trade " + inst.label + ". What are the key macro risks right now? GREEN YELLOW or RED?";
-  }
-  return "Today: " + now + ". Full macro briefing for " + inst.label + ". What are the key events, central bank stance, geopolitical risks, and why they move price?";
-}
-
-async function callClaude(system, userMsg) {
-  const res = await fetch("/api/brief", {
+async function getOptionsFlow(inst) {
+  const res = await fetch("/api/options", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system,
-      messages: [{ role: "user", content: userMsg }]
-    })
+    body: JSON.stringify({ instKey: inst.key, instLabel: inst.label }),
   });
-  if (!res.ok) throw new Error("API error " + res.status);
+  if (!res.ok) throw new Error("Options API error " + res.status);
   const data = await res.json();
-  if (data.error) throw new Error(data.error.message || "API error");
-  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error("No JSON in response");
-  return JSON.parse(match[0]);
+  if (data.error) throw new Error(data.error);
+  return data;
 }
 
-async function getBriefing(inst, mode) {
-  return callClaude(sysPrompt(mode), userPrompt(inst, mode));
-}
 
 async function getOptionsFlow(inst) {
-  return callClaude("You are a senior options market structure analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.", optionsPrompt(inst));
+  // inst.key must be present for price anchoring
+  return callClaude("You are a senior options market structure analyst. You ALWAYS anchor all strike levels to the CURRENT trading price provided in the user message. Never use outdated historical price ranges. Respond ONLY with valid JSON. No markdown, no backticks, no preamble.", optionsPrompt(inst));
 }
 
 const DC = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
