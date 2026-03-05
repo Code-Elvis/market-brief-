@@ -1,32 +1,1382 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Market Debriefs — Trading Intelligence</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Debriefs — Trading Intelligence, Refined</title>
+  <meta name="description" content="Institutional-grade market intelligence for independent traders. Real-time briefings, scalper risk checks, and dealer positioning — before every trade." />
 
-    <!-- PWA -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0a0c0f" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Market Debriefs" />
-    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0a0c0f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Market Debriefs" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
-    <!-- SEO -->
-    <meta name="description" content="Institutional-grade market intelligence for independent traders. Instant debriefs for every instrument." />
-  </head>
-  <body style="background:#0a0c0f;margin:0;">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .catch(err => console.log('SW:', err));
-        });
+  <!-- OG -->
+  <meta property="og:title" content="Market Debriefs — Trading Intelligence" />
+  <meta property="og:description" content="Know the macro before you trade. Instant debriefs for every instrument." />
+  <meta property="og:type" content="website" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #070809;
+      --bg2:       #0d1117;
+      --border:    rgba(255,255,255,.06);
+      --text:      #e8eaed;
+      --muted:     #6b7a8d;
+      --cyan:      #00d4ff;
+      --green:     #00ffcc;
+      --gold:      #f5c842;
+      --red:       #ff4757;
+      --purple:    #c084fc;
+      --font-head: 'Syne', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; background: #070809; }
+    body { background: #070809 !important; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-head);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── GRID LINES ── */
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      background: rgba(7,8,9,.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--font-head);
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 1px;
+      color: #fff;
+    }
+
+    .nav-logo span {
+      color: var(--cyan);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color .2s;
+    }
+
+    .nav-links a:hover { color: var(--cyan); }
+
+    .nav-cta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 8px 20px;
+      border-radius: 6px;
+      background: rgba(0,212,255,.08);
+      border: 1px solid rgba(0,212,255,.25);
+      color: var(--cyan);
+      text-decoration: none;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: background .2s, border-color .2s;
+    }
+
+    .nav-cta:hover {
+      background: rgba(0,212,255,.15);
+      border-color: rgba(0,212,255,.5);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: #070809;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      overflow: hidden;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(0,212,255,.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp .6s .2s forwards;
+    }
+
+    .hero-title {
+      font-family: var(--font-head);
+      font-weight: 800;
+      font-size: clamp(36px, 7vw, 80px);
+      line-height: 1.05;
+      letter-spacing: -2px;
+      color: #ffffff;
+      margin-bottom: 28px;
+      max-width: 800px;
+      opacity: 0;
+      animation: fadeUp .6s .35s forwards;
+    }
+
+    .hero-title .accent { color: var(--cyan); }
+    .hero-title .accent-gold { color: var(--gold); }
+
+    .hero-sub {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      color: #6b7a8d;
+      max-width: 520px;
+      line-height: 1.8;
+      margin-bottom: 44px;
+      opacity: 0;
+      animation: fadeUp .6s .5s forwards;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 70px;
+      opacity: 0;
+      animation: fadeUp .6s .65s forwards;
+    }
+
+    .btn-primary {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 14px 32px;
+      border-radius: 8px;
+      background: var(--cyan);
+      color: #000;
+      text-decoration: none;
+      letter-spacing: .5px;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 0 30px rgba(0,212,255,.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 45px rgba(0,212,255,.5);
+    }
+
+    .btn-ghost {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 14px 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: .5px;
+      transition: border-color .2s, color .2s;
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,.2);
+      color: var(--text);
+    }
+
+    /* ── APP PREVIEW MOCKUP ── */
+    .mockup-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 740px;
+      opacity: 0;
+      animation: fadeUp .8s .8s forwards;
+    }
+
+    .mockup-frame {
+      background: var(--bg2);
+      border: 1px solid rgba(0,212,255,.15);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,.6), 0 0 60px rgba(0,212,255,.05);
+    }
+
+    .mockup-bar {
+      background: #0d1117;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+
+    .mockup-url {
+      flex: 1;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .mockup-body {
+      padding: 20px;
+    }
+
+    /* Animated brief cards inside mockup */
+    .brief-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .brief-logo {
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: #fff;
+    }
+
+    .brief-date {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: #222;
+      padding: 3px 7px;
+      border: 1px solid #181818;
+      border-radius: 3px;
+    }
+
+    .mode-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .mode-tab {
+      flex: 1;
+      padding: 7px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .mode-active {
+      background: rgba(0,212,255,.1);
+      border: 1px solid rgba(0,212,255,.25);
+      color: var(--cyan);
+    }
+
+    .mode-inactive {
+      background: rgba(255,255,255,.02);
+      border: 1px solid rgba(255,255,255,.05);
+      color: #333;
+    }
+
+    .signal-card {
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 10px;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    .signal-green {
+      background: rgba(0,255,204,.06);
+      border: 1px solid rgba(0,255,204,.2);
+    }
+
+    .signal-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .signal-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 6px;
+    }
+
+    .signal-text {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .event-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,.02);
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 7px;
+      padding: 10px 12px;
+      margin-bottom: 7px;
+    }
+
+    .event-title { font-size: 11px; font-weight: 600; color: #ccc; }
+    .event-tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+
+    .tag-bearish { color: var(--red); background: rgba(255,71,87,.1); border: 1px solid rgba(255,71,87,.2); }
+    .tag-neutral { color: var(--gold); background: rgba(245,200,66,.08); border: 1px solid rgba(245,200,66,.15); }
+    .tag-bullish { color: var(--green); background: rgba(0,255,204,.06); border: 1px solid rgba(0,255,204,.15); }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 rgba(0,255,204,0); }
+      50% { box-shadow: 0 0 20px rgba(0,255,204,.06); }
+    }
+
+    /* ── TICKER TAPE ── */
+    .ticker-wrap {
+      background: #070809;
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,212,255,.02);
+      padding: 10px 0;
+      margin: 0;
+    }
+
+    .ticker-track {
+      display: flex;
+      gap: 40px;
+      animation: ticker 25s linear infinite;
+      white-space: nowrap;
+    }
+
+    .ticker-item {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+
+    .ticker-item span { color: var(--cyan); margin-right: 8px; }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── FEATURES ── */
+    .section {
+      background: #070809;
+      position: relative;
+      padding: 100px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: -1px;
+      color: #fff;
+      margin-bottom: 60px;
+      line-height: 1.1;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: #0d1117;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s, transform .2s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(0,212,255,.2);
+      transform: translateY(-3px);
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,212,255,.3), transparent);
+    }
+
+    .feature-icon {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      color: var(--cyan);
+      margin-bottom: 16px;
+      padding: 5px 10px;
+      background: rgba(0,212,255,.06);
+      border: 1px solid rgba(0,212,255,.15);
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .feature-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+      letter-spacing: -.3px;
+    }
+
+    .feature-body {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: 15%;
+      right: 15%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), var(--border), transparent);
+    }
+
+    .step {
+      text-align: center;
+      padding: 0 24px;
+    }
+
+    .step-num {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--cyan);
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .step-body {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    /* ── PRICING ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: #0d1117;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pricing-card.featured {
+      border-color: rgba(0,212,255,.3);
+      background: linear-gradient(160deg, rgba(0,212,255,.05), var(--bg2));
+    }
+
+    .pricing-card.featured::before {
+      content: 'MOST POPULAR';
+      position: absolute;
+      top: 16px; right: 16px;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: 2px;
+      color: var(--cyan);
+      padding: 4px 8px;
+      border: 1px solid rgba(0,212,255,.3);
+      border-radius: 3px;
+    }
+
+    .plan-name {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .plan-price {
+      font-size: 48px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -2px;
+      margin-bottom: 4px;
+      line-height: 1;
+    }
+
+    .plan-price sup {
+      font-size: 20px;
+      vertical-align: super;
+      letter-spacing: 0;
+      color: var(--muted);
+    }
+
+    .plan-price sub {
+      font-size: 14px;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      letter-spacing: 0;
+      font-weight: 400;
+    }
+
+    .plan-desc {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .plan-features {
+      list-style: none;
+      margin-bottom: 32px;
+    }
+
+    .plan-features li {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #888;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .plan-features li::before { content: '—'; color: var(--border); }
+    .plan-features li.active { color: var(--text); }
+    .plan-features li.active::before { content: '✓'; color: var(--cyan); }
+
+    .plan-btn {
+      display: block;
+      text-align: center;
+      padding: 13px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      letter-spacing: .5px;
+      transition: all .2s;
+    }
+
+    .plan-btn-primary {
+      background: var(--cyan);
+      color: #000;
+      box-shadow: 0 0 24px rgba(0,212,255,.25);
+    }
+
+    .plan-btn-primary:hover { box-shadow: 0 0 40px rgba(0,212,255,.4); transform: translateY(-1px); }
+
+    .plan-btn-ghost {
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .plan-btn-ghost:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
+
+    /* ── INSTRUMENTS STRIP ── */
+    .instruments {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      padding: 60px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .inst-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: rgba(255,255,255,.01);
+      transition: all .2s;
+    }
+
+    .inst-pill:hover {
+      border-color: rgba(0,212,255,.3);
+      color: var(--cyan);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #070809;
+      border-top: 1px solid var(--border);
+      padding: 40px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-logo {
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: #fff;
+    }
+
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #2a2a2a;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+
+    /* ── WAITLIST ── */
+    .waitlist-section {
+      background: #070809;
+      background: linear-gradient(135deg, rgba(0,212,255,.04), rgba(192,132,252,.03));
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 90px 24px;
+      text-align: center;
+    }
+
+    .waitlist-inner { max-width: 560px; margin: 0 auto; }
+
+    .waitlist-title {
+      font-size: clamp(26px, 4vw, 42px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: #fff;
+      margin-bottom: 14px;
+    }
+
+    .waitlist-sub {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+
+    .waitlist-form {
+      display: flex;
+      gap: 10px;
+      max-width: 460px;
+      margin: 0 auto 14px;
+    }
+
+    .waitlist-input {
+      flex: 1;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color .2s;
+      min-width: 0;
+    }
+
+    .waitlist-input:focus { border-color: rgba(0,212,255,.4); }
+    .waitlist-input::placeholder { color: #2a2a2a; }
+
+    .waitlist-submit {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 13px 24px;
+      border-radius: 8px;
+      background: var(--cyan);
+      color: #000;
+      border: none;
+      cursor: pointer;
+      letter-spacing: .5px;
+      white-space: nowrap;
+      transition: box-shadow .2s, transform .15s;
+    }
+
+    .waitlist-submit:hover {
+      box-shadow: 0 0 30px rgba(0,212,255,.4);
+      transform: translateY(-1px);
+    }
+
+    .waitlist-note {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: #2a2a2a;
+      letter-spacing: .5px;
+    }
+
+    .waitlist-success {
+      display: none;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--green);
+      padding: 14px;
+      border: 1px solid rgba(0,255,204,.2);
+      border-radius: 8px;
+      background: rgba(0,255,204,.04);
+      max-width: 460px;
+      margin: 0 auto;
+    }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .testi-card {
+      background: #0d1117;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      position: relative;
+    }
+
+    .testi-card::before {
+      content: '"';
+      position: absolute;
+      top: 16px; right: 20px;
+      font-size: 52px;
+      color: rgba(0,212,255,.08);
+      font-family: Georgia, serif;
+      line-height: 1;
+    }
+
+    .testi-text {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: #888;
+      line-height: 1.8;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .testi-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .testi-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(0,212,255,.2), rgba(192,132,252,.2));
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+
+    .testi-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .testi-role {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: .5px;
+    }
+
+    .testi-stars {
+      font-size: 11px;
+      color: var(--gold);
+      margin-bottom: 14px;
+      letter-spacing: 2px;
+    }
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .nav-links { display: none; }
+      .hero {
+      background: #070809; padding: 100px 20px 60px; }
+      .section {
+      background: #070809; padding: 70px 20px; }
+      .steps::before { display: none; }
+      footer {
+      background: #070809; padding: 30px 20px; flex-direction: column; text-align: center; }
+    }
+
+    /* ── PWA INSTALL BANNER ── */
+    #install-banner {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg2);
+      border: 1px solid rgba(0,212,255,.25);
+      border-radius: 12px;
+      padding: 14px 20px;
+      z-index: 999;
+      box-shadow: 0 8px 40px rgba(0,0,0,.5);
+      gap: 14px;
+      align-items: center;
+      min-width: 300px;
+      max-width: 90vw;
+    }
+
+    #install-banner.show { display: flex; }
+
+    .install-text {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .install-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 7px 16px;
+      background: var(--cyan);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .install-dismiss {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 0 4px;
+    }
+  </style>
+</head>
+<body style="background:#070809;color:#e8eaed;">
+
+  <!-- PWA Install Banner -->
+  <div id="install-banner">
+    <div class="install-text">Add Market Brief to your home screen</div>
+    <button class="install-btn" id="install-btn">Install</button>
+    <button class="install-dismiss" id="install-dismiss">×</button>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">MARKET<span>DEBRIEFS</span></div>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+    <a href="/app" class="nav-cta">Launch App →</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="grid-bg"></div>
+    <div class="hero-glow"></div>
+
+    <p class="hero-eyebrow">Intelligence · Reflection · Education</p>
+
+    <h1 class="hero-title">
+      Know the macro<br/>
+      <span class="accent">before</span> you trade
+    </h1>
+
+    <p class="hero-sub">
+      Institutional-grade market intelligence for independent traders.
+      Instant briefings for every instrument — in seconds, not hours.
+    </p>
+
+    <div class="hero-actions">
+      <a href="/app" class="btn-primary">Get Your Brief →</a>
+      <a href="#features" class="btn-ghost">See How It Works</a>
+    </div>
+
+    <!-- APP MOCKUP -->
+    <div class="mockup-wrap">
+      <div class="mockup-frame">
+        <div class="mockup-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <div class="mockup-url">marketdebriefs.com</div>
+        </div>
+        <div class="mockup-body">
+          <div class="brief-header">
+            <div class="brief-logo">MARKET DEBRIEFS</div>
+            <div class="brief-date">5 MAR</div>
+          </div>
+          <div class="mode-tabs">
+            <div class="mode-tab mode-active">Full Brief — Pre-trade research</div>
+            <div class="mode-tab mode-inactive">Scalper Mode — Last 10 min</div>
+          </div>
+          <div class="signal-card signal-green">
+            <div class="signal-label">ES S&P 500 — MARKET SENTIMENT</div>
+            <div class="signal-value">MIXED</div>
+            <div class="signal-text">Fed maintains restrictive stance while geopolitical tensions create uncertainty. Earnings season provides upside catalysts but macro headwinds persist.</div>
+          </div>
+          <div class="event-row">
+            <div class="event-title">Fed Chair Powell Speech — Senate Banking</div>
+            <div class="event-tag tag-bearish">BEARISH · HIGH</div>
+          </div>
+          <div class="event-row">
+            <div class="event-title">ECB Monetary Policy Decision</div>
+            <div class="event-tag tag-neutral">NEUTRAL · MED</div>
+          </div>
+          <div class="event-row">
+            <div class="event-title">Weekly Initial Jobless Claims</div>
+            <div class="event-tag tag-bullish">BULLISH · MED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TICKER TAPE -->
+  <div class="ticker-wrap">
+    <div class="ticker-track">
+      <div class="ticker-item"><span>ES</span>S&P 500 Futures</div>
+      <div class="ticker-item"><span>NQ</span>Nasdaq 100</div>
+      <div class="ticker-item"><span>GC</span>Gold Futures</div>
+      <div class="ticker-item"><span>CL</span>WTI Crude Oil</div>
+      <div class="ticker-item"><span>6E</span>EUR/USD</div>
+      <div class="ticker-item"><span>6B</span>GBP/USD</div>
+      <div class="ticker-item"><span>BTC</span>Bitcoin</div>
+      <div class="ticker-item"><span>VIX</span>Fear Index</div>
+      <div class="ticker-item"><span>RTY</span>Russell 2000</div>
+      <div class="ticker-item"><span>YM</span>Dow Jones</div>
+      <!-- Duplicate for seamless loop -->
+      <div class="ticker-item"><span>ES</span>S&P 500 Futures</div>
+      <div class="ticker-item"><span>NQ</span>Nasdaq 100</div>
+      <div class="ticker-item"><span>GC</span>Gold Futures</div>
+      <div class="ticker-item"><span>CL</span>WTI Crude Oil</div>
+      <div class="ticker-item"><span>6E</span>EUR/USD</div>
+      <div class="ticker-item"><span>6B</span>GBP/USD</div>
+      <div class="ticker-item"><span>BTC</span>Bitcoin</div>
+      <div class="ticker-item"><span>VIX</span>Fear Index</div>
+      <div class="ticker-item"><span>RTY</span>Russell 2000</div>
+      <div class="ticker-item"><span>YM</span>Dow Jones</div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <p class="section-label">What you get</p>
+    <h2 class="section-title">Stop trading blind.<br/>Start trading informed.</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">01 · INTELLIGENCE</div>
+        <div class="feature-title">Full Market Brief</div>
+        <div class="feature-body">
+          Before any trade, get a complete macro briefing — high-impact events, central bank stance, geopolitical risks, and exactly why they move price. The research that used to take an hour, done in seconds.
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">02 · SCALPER</div>
+        <div class="feature-title">Scalper Risk Check</div>
+        <div class="feature-body">
+          Green, Yellow, or Red — know your risk level for the next 10 minutes. Breaking news, session transitions, thin liquidity warnings. Your last check before you pull the trigger.
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">03 · OPTIONS FLOW</div>
+        <div class="feature-title">Dealer Positioning</div>
+        <div class="feature-body">
+          Key gamma levels, max pain strikes, call and put walls — formatted as intelligence, not raw data. Know where dealers are hedging and where price may pin or accelerate. Coming soon.
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">04 · REFLECTION</div>
+        <div class="feature-title">Daily Journal</div>
+        <div class="feature-body">
+          Six focused prompts to process each trading session. What the market taught you. What emotion showed up. What you'll do differently. The edge is in the review.
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">05 · EDUCATION</div>
+        <div class="feature-title">Learn to Fish</div>
+        <div class="feature-body">
+          Not just what moved — but why. Understand dollar correlations, risk-on/risk-off regimes, how options flow affects spot price. Build the mental model that separates consistent traders.
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">06 · COVERAGE</div>
+        <div class="feature-title">Every Instrument</div>
+        <div class="feature-body">
+          ES, NQ, Gold, Oil, Euro, GBP, Bitcoin, VIX, YM, RTY, ETH, JPY, AUD, DXY. One interface. Full coverage. Pull a brief for anything you trade.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" style="border-top: 1px solid var(--border);">
+    <p class="section-label">How it works</p>
+    <h2 class="section-title">Three steps.<br/>Zero excuses.</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Pick your instrument</div>
+        <div class="step-body">Type any instrument or tap a chip — ES, NQ, Gold, GBP, BTC and more. Market Brief knows all aliases.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Choose your mode</div>
+        <div class="step-body">Full Brief for pre-trade research. Scalper Mode for a live 10-minute risk check. Different depth, same intelligence.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Trade with context</div>
+        <div class="step-body">Know the events, the risks, the sentiment. Trade what you understand, not what you hope for.</div>
+      </div>
+    </div>
+
+    <!-- Instruments -->
+    <div class="instruments">
+      <div class="inst-pill">ES · S&P 500</div>
+      <div class="inst-pill">NQ · Nasdaq</div>
+      <div class="inst-pill">YM · Dow Jones</div>
+      <div class="inst-pill">RTY · Russell 2000</div>
+      <div class="inst-pill">GC · Gold</div>
+      <div class="inst-pill">CL · Crude Oil</div>
+      <div class="inst-pill">6E · EUR/USD</div>
+      <div class="inst-pill">6B · GBP/USD</div>
+      <div class="inst-pill">6J · USD/JPY</div>
+      <div class="inst-pill">BTC · Bitcoin</div>
+      <div class="inst-pill">ETH · Ethereum</div>
+      <div class="inst-pill">VIX · Fear Index</div>
+      <div class="inst-pill">DXY · Dollar Index</div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="border-top: 1px solid var(--border);">
+    <p class="section-label">Pricing</p>
+    <h2 class="section-title">Less than your<br/><span style="color: var(--gold)">last losing trade.</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price"><sup>$</sup>0<sub>/mo</sub></div>
+        <div class="plan-desc">Get started. See the value. No card required.</div>
+        <ul class="plan-features">
+          <li class="active">3 briefs per day</li>
+          <li class="active">All instruments</li>
+          <li class="active">Learn + Reflection</li>
+          <li>Scalper Mode</li>
+          <li>Options Flow</li>
+          <li>Unlimited briefs</li>
+        </ul>
+        <a href="/app" class="plan-btn plan-btn-ghost">Start Free</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><sup>$</sup>12<sub>/mo</sub></div>
+        <div class="plan-desc">Everything. Unlimited. The full edge — every session.</div>
+        <ul class="plan-features">
+          <li class="active">Unlimited briefs</li>
+          <li class="active">All instruments</li>
+          <li class="active">Learn + Reflection</li>
+          <li class="active">Scalper Mode</li>
+          <li class="active">Options Flow (coming soon)</li>
+          <li class="active">Priority updates</li>
+        </ul>
+        <a href="/app" class="plan-btn plan-btn-primary">Get Pro →</a>
+      </div>
+    </div>
+    <p style="text-align:center; margin-top: 28px; font-family: var(--font-mono); font-size: 11px; color: var(--muted);">
+      Cancel anytime. No lock-in. Prices in USD.
+    </p>
+  </section>
+
+
+  <!-- TESTIMONIALS -->
+  <section class="section" id="testimonials" style="border-top: 1px solid var(--border);">
+    <p class="section-label">Early Traders</p>
+    <h2 class="section-title">The edge is in<br/><span style="color:var(--cyan)">the preparation.</span></h2>
+    <div class="testimonials-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">Used to spend 45 minutes every morning checking Bloomberg, Twitter, and economic calendars. Now I run a debrief in 30 seconds and I'm ready. The scalper risk check alone is worth it.</div>
+        <div class="testi-author">
+          <div class="testi-avatar">JK</div>
+          <div>
+            <div class="testi-name">J. Kowalski</div>
+            <div class="testi-role">ES Futures · Chicago</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">I trade London open on Cable and Gold. Getting a full macro brief with central bank positioning and geopolitical risk before I touch the charts has changed how I approach the session entirely.</div>
+        <div class="testi-author">
+          <div class="testi-avatar">MA</div>
+          <div>
+            <div class="testi-name">M. Adeyemi</div>
+            <div class="testi-role">Forex Trader · London</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">The "Teach Me to Fish" section actually taught me things I didn't understand after years of trading. Understanding why the dollar affects Gold and Oil changed the way I read price action.</div>
+        <div class="testi-author">
+          <div class="testi-avatar">RT</div>
+          <div>
+            <div class="testi-name">R. Torres</div>
+            <div class="testi-role">NQ Trader · Miami</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WAITLIST -->
+  <div class="waitlist-section">
+    <div class="waitlist-inner">
+      <p style="font-family:var(--font-mono);font-size:10px;letter-spacing:3px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px;">Stay in the loop</p>
+      <h2 class="waitlist-title">Get early access to<br/>Options Flow + Pro</h2>
+      <p class="waitlist-sub">Be the first to know when dealer positioning data and Pro accounts go live. No spam — just the launch email when it's ready.</p>
+      <div class="waitlist-form" id="waitlist-form">
+        <input type="email" class="waitlist-input" id="waitlist-email" placeholder="your@email.com" />
+        <button class="waitlist-submit" id="waitlist-btn">Notify Me</button>
+      </div>
+      <div class="waitlist-success" id="waitlist-success">
+        ✓ &nbsp;You're on the list. We'll reach out when Options Flow goes live.
+      </div>
+      <p class="waitlist-note">No spam. Unsubscribe anytime.</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">MARKET DEBRIEFS</div>
+    <div class="footer-copy">© 2026 marketdebriefs.com · Not financial advice · For informational purposes only</div>
+  </footer>
+
+  <script>
+    // ── PWA SERVICE WORKER REGISTRATION ──
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.log('SW failed:', err));
+      });
+    }
+
+    // ── PWA INSTALL PROMPT ──
+    let deferredPrompt;
+    const banner   = document.getElementById('install-banner');
+    const installBtn = document.getElementById('install-btn');
+    const dismissBtn = document.getElementById('install-dismiss');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      banner.classList.add('show');
+    });
+
+    installBtn.addEventListener('click', async () => {
+      banner.classList.remove('show');
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('Install outcome:', outcome);
+        deferredPrompt = null;
       }
-    </script>
-  </body>
+    });
+
+    dismissBtn.addEventListener('click', () => {
+      banner.classList.remove('show');
+    });
+
+    // ── SCROLL REVEAL ──
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.feature-card, .step, .pricing-card').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(24px)';
+      el.style.transition = 'opacity .5s ease, transform .5s ease';
+      observer.observe(el);
+    });
+
+    // ── WAITLIST FORM ──
+    document.getElementById('waitlist-btn').addEventListener('click', async () => {
+      const email = document.getElementById('waitlist-email').value.trim();
+      if (!email || !email.includes('@')) {
+        document.getElementById('waitlist-email').style.borderColor = 'rgba(255,71,87,.5)';
+        return;
+      }
+      // Store in localStorage as simple capture (swap for real API when ready)
+      const list = JSON.parse(localStorage.getItem('mb_waitlist') || '[]');
+      if (!list.includes(email)) list.push(email);
+      localStorage.setItem('mb_waitlist', JSON.stringify(list));
+
+      document.getElementById('waitlist-form').style.display = 'none';
+      document.getElementById('waitlist-success').style.display = 'block';
+    });
+
+    document.getElementById('waitlist-email').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('waitlist-btn').click();
+    });
+  </script>
+</body>
 </html>
