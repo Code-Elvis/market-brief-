@@ -47,6 +47,39 @@ function sysPrompt(mode) {
   return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","key_levels_context":"string","teaching_moment":"string"}';
 }
 
+function userPrompt(inst, mode) {
+  const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  if (mode === "scalper") {
+    return "Time: " + now + ". About to trade " + inst.label + ". What are the key macro risks right now? GREEN YELLOW or RED?";
+  }
+  return "Today: " + now + ". Full macro briefing for " + inst.label + ". What are the key events, central bank stance, geopolitical risks, and why they move price?";
+}
+
+async function callClaude(system, userMsg) {
+  const res = await fetch("/api/brief", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      system,
+      messages: [{ role: "user", content: userMsg }]
+    })
+  });
+  if (!res.ok) throw new Error("API error " + res.status);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || "API error");
+  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error("No JSON in response");
+  return JSON.parse(match[0]);
+}
+
+async function getBriefing(inst, mode) {
+  return callClaude(sysPrompt(mode), userPrompt(inst, mode));
+}
+
+
 async function getOptionsFlow(inst) {
   const res = await fetch("/api/options", {
     method: "POST",
