@@ -86,9 +86,12 @@ async function getOptionsFlow(inst) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ instKey: inst.key, instLabel: inst.label }),
   });
-  if (!res.ok) throw new Error("Options API error " + res.status);
   const data = await res.json();
-  if (data.error) throw new Error(data.error);
+  if (!res.ok) throw new Error("Options API error " + res.status + ": " + (data?.error || "unknown"));
+  if (data.error) {
+    const hint = data.debug_hint ? "\n\n" + data.debug_hint : "";
+    throw new Error(data.error + hint);
+  }
   return data;
 }
 
@@ -289,6 +292,20 @@ function OptionsFlowView({ inst, data, loading, error, onFetch, lastUpdated }) {
   }
 
   if (loading) return <Loader />;
+
+  if (data && data.coming_soon) return (
+    <div style={{ textAlign: "center", padding: "60px 20px" }}>
+      <div style={{ fontSize: 32, marginBottom: 18, opacity: 0.15 }}>◎</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: "#e0e0e0", marginBottom: 10 }}>Options Flow</div>
+      <div style={{ fontSize: 13, color: "#444", lineHeight: 1.7, maxWidth: 320, margin: "0 auto", marginBottom: 20 }}>
+        Real-time dealer positioning, key gamma levels, and options flow intelligence. Launching soon with live data.
+      </div>
+      <div style={{ display: "inline-flex", gap: 6, alignItems: "center", padding: "6px 14px", borderRadius: 20, border: "1px solid rgba(0,212,255,.15)", background: "rgba(0,212,255,.04)" }}>
+        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#00d4ff", opacity: 0.5 }} />
+        <span style={{ fontSize: 11, color: "#00d4ff", opacity: 0.5, letterSpacing: 1, fontWeight: 700 }}>COMING SOON</span>
+      </div>
+    </div>
+  );
 
   if (error) return (
     <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>
@@ -503,8 +520,11 @@ export default function App() {
     setOptError(null);
     try {
       const result = await getOptionsFlow(instrument);
+      // coming_soon is a valid non-error state — store it in data, don't treat as error
       setOptData(result);
-      setOptLastUpdated(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }));
+      if (!result.coming_soon) {
+        setOptLastUpdated(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }));
+      }
     } catch (e) {
       setOptError(e.message || "Options data fetch failed.");
     } finally {
