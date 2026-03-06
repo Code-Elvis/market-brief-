@@ -1,32 +1,33 @@
+// useUsage.js — usage tracking tied to email (harder to game than userId)
 import { useState, useEffect } from "react";
 
-const FREE_LIMIT = 5;
+export const FREE_LIMIT = 5;
 
-function getTodayKey(userId) {
-  const today = new Date().toISOString().slice(0, 10);
-  return `usage_${userId}_${today}`;
-}
+export function useUsage(user, isPro) {
+  const email = user?.primaryEmailAddress?.emailAddress || user?.id || "anon";
+  const today = new Date().toISOString().split("T")[0];
+  const key = `usage_${btoa(email)}_${today}`;
 
-export function useUsage(userId, isPro) {
-  const [count, setCount] = useState(0);
+  const getCount = () => {
+    try { return parseInt(localStorage.getItem(key) || "0", 10); }
+    catch { return 0; }
+  };
+
+  const [count, setCount] = useState(getCount);
 
   useEffect(() => {
-    if (!userId) return;
-    const key = getTodayKey(userId);
-    const stored = parseInt(localStorage.getItem(key) || "0", 10);
-    setCount(stored);
-  }, [userId]);
+    setCount(getCount());
+  }, [email, today]);
 
   const increment = () => {
-    if (!userId) return;
-    const key = getTodayKey(userId);
-    const next = count + 1;
-    localStorage.setItem(key, String(next));
+    if (isPro) return;
+    const next = getCount() + 1;
+    try { localStorage.setItem(key, String(next)); } catch {}
     setCount(next);
   };
 
-  const canBrief = isPro || count < FREE_LIMIT;
-  const remaining = isPro ? Infinity : Math.max(0, FREE_LIMIT - count);
+  if (isPro) return { count: 0, increment, canBrief: true, remaining: Infinity, limit: Infinity };
 
-  return { count, increment, canBrief, remaining, limit: FREE_LIMIT };
+  const remaining = Math.max(0, FREE_LIMIT - count);
+  return { count, increment, canBrief: count < FREE_LIMIT, remaining, limit: FREE_LIMIT };
 }
