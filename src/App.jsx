@@ -116,7 +116,11 @@ function UpgradeModal({ reason, onClose, userId, email }) {
 
 // ── AUTH SCREEN ───────────────────────────────────────────────────────────────
 function AuthScreen() {
+  const { isSignedIn, isLoaded } = useUser();
   const [view, setView] = useState("sign-in");
+  useEffect(() => {
+    if (isLoaded && isSignedIn) window.location.replace("/app.html");
+  }, [isLoaded, isSignedIn]);
   return (
     <div style={{ minHeight: "100vh", background: "#0a0c0f", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ marginBottom: 32, textAlign: "center" }}>
