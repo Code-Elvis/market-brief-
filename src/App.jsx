@@ -125,8 +125,8 @@ function AuthScreen() {
       </div>
       <div style={{ width: "100%", maxWidth: 400 }}>
         {view === "sign-in"
-          ? <SignIn appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} afterSignInUrl="/app" />
-          : <SignUp  appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} afterSignUpUrl="/app" />
+          ? <SignIn appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} afterSignInUrl="/app.html" fallbackRedirectUrl="/app.html" />
+          : <SignUp  appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} afterSignUpUrl="/app.html" fallbackRedirectUrl="/app.html" />
         }
       </div>
       <div style={{ marginTop: 20, fontSize: 13, color: "#333" }}>
