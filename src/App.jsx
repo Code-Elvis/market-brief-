@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useUser, useClerk, SignIn, SignUp } from "@clerk/react";
+import { useUser, useClerk, SignIn, SignUp } from "@clerk/clerk-react";
 import { useUsage } from "./useUsage.js";
 
 const INSTRUMENTS = {
