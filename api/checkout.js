@@ -21,8 +21,8 @@ export default async function handler(req, res) {
       ],
       customer_email: email || undefined,
       metadata: { userId },
-      success_url: `https://marketdebriefs.com/app?upgraded=true`,
-      cancel_url: `https://marketdebriefs.com/app`,
+      success_url: `https://marketdebriefs.com/app.html?upgraded=true`,
+      cancel_url: `https://marketdebriefs.com/app.html`,
     });
 
     res.json({ url: session.url });
