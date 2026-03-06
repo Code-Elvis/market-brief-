@@ -541,7 +541,16 @@ function AppInner() {
 // ── ROOT ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const { isLoaded, isSignedIn } = useUser();
+  const path = window.location.pathname;
+  
   if (!isLoaded) return <div style={{ minHeight: "100vh", background: "#0a0c0f", display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ color: "#1a1a1a", fontSize: 13, fontFamily: "monospace" }}>...</div></div>;
+  
+  // If signed in and on auth page, go to app
+  if (isSignedIn && path !== "/app.html") {
+    window.location.replace("/app.html");
+    return null;
+  }
+  
   if (!isSignedIn) return <AuthScreen />;
   return <AppInner />;
 }
