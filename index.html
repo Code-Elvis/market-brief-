@@ -1205,5 +1205,13 @@
     });
   }
 </script>
+<script type="module">
+  import { Clerk } from 'https://esm.sh/@clerk/clerk-js@4';
+  const clerk = new Clerk('YOUR_PK_LIVE_KEY_HERE');
+  await clerk.load();
+  if (clerk.user) {
+    window.location.replace('/app.html');
+  }
+</script>
 </body>
 </html>
