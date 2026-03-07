@@ -1205,13 +1205,17 @@
     });
   }
 </script>
-<script type="module">
-  import { Clerk } from 'https://esm.sh/@clerk/clerk-js@4';
-  const clerk = new Clerk('pk_live_Y2xlcmsubWFya2V0ZGVicmllZnMuY29tJA');
-  await clerk.load();
-  if (clerk.user) {
-    window.location.replace('/app.html');
-  }
+<script src="https://esm.sh/@clerk/clerk-js@4"></script>
+<script>
+  window.addEventListener('load', async () => {
+    try {
+      const clerk = new window.Clerk('pk_live_Y2xlcmsubWFya2V0ZGVicmllZnMuY29tJA');
+      await clerk.load();
+      if (clerk.user) {
+        window.location.replace('/app.html');
+      }
+    } catch(e) {}
+  });
 </script>
 </body>
 </html>
