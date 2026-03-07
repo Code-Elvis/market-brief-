@@ -13,11 +13,9 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ClerkProvider 
       publishableKey={PUBLISHABLE_KEY}
-      afterSignOutUrl="/"
-      afterSignInUrl="/app.html"
-      afterSignUpUrl="/app.html"
-      domain="marketdebriefs.com"
-      isSatellite={false}
+      afterSignOutUrl="https://marketdebriefs.com"
+      afterSignInUrl="https://marketdebriefs.com/app.html"
+      afterSignUpUrl="https://marketdebriefs.com/app.html"
     >
       <App />
     </ClerkProvider>
