@@ -13,8 +13,3 @@
     }
   ]
 }
-```
-
-Commit → redeploy → then in Clerk set the proxy URL to:
-```
-https://marketdebriefs.com/__clerk
