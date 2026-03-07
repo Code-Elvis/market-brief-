@@ -2,57 +2,57 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="color-scheme" content="dark" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Market Debriefs — Trading Intelligence, Refined</title>
-  <meta name="description" content="Institutional-grade market intelligence for independent traders. Real-time briefings, scalper risk checks, and dealer positioning — before every trade." />
-
-  <!-- PWA -->
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0a0c0f" />
+  <title>Market Debriefs — Macro Intelligence for Traders</title>
+  <meta name="description" content="Bloomberg tells you what happened. Market Debriefs tells you what it means. Instant macro interpretation for every instrument — in seconds, not hours." />
+  <meta name="theme-color" content="#080a0f" />
+  <meta name="color-scheme" content="dark" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Market Debriefs" />
   <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="manifest" href="/manifest.json" />
 
   <!-- OG -->
-  <meta property="og:title" content="Market Debriefs — Trading Intelligence" />
-  <meta property="og:description" content="Know the macro before you trade. Instant debriefs for every instrument." />
+  <meta property="og:title" content="Market Debriefs — Macro Intelligence for Traders" />
+  <meta property="og:description" content="Bloomberg tells you what happened. Market Debriefs tells you what it means." />
   <meta property="og:type" content="website" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #070809;
-      --bg2:       #0d1117;
-      --border:    rgba(255,255,255,.06);
-      --text:      #e8eaed;
-      --muted:     #6b7a8d;
-      --cyan:      #00d4ff;
-      --green:     #00ffcc;
-      --gold:      #f5c842;
-      --red:       #ff4757;
-      --purple:    #c084fc;
-      --font-head: 'Syne', sans-serif;
+      --bg: #080a0f;
+      --bg2: #0d1117;
+      --bg3: #111620;
+      --border: rgba(255,255,255,.06);
+      --text: #e8edf5;
+      --muted: #5a6478;
+      --cyan: #00d4ff;
+      --cyan2: #0099cc;
+      --green: #00d4aa;
+      --red: #ff4757;
+      --gold: #ffd700;
+      --font-display: 'Bebas Neue', sans-serif;
       --font-mono: 'DM Mono', monospace;
+      --font-body: 'Inter', sans-serif;
     }
 
-    html { scroll-behavior: smooth; background: #070809; }
-    body { background: #070809 !important; }
+    html { scroll-behavior: smooth; background: #080a0f; }
 
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-head);
+      -webkit-font-smoothing: antialiased;
+      background: #080a0f !important;
+      color: #e8edf5 !important;
+      font-family: var(--font-body);
       line-height: 1.6;
       overflow-x: hidden;
     }
 
-    /* ── NOISE TEXTURE OVERLAY ── */
+    /* ── NOISE OVERLAY ── */
     body::before {
       content: '';
       position: fixed;
@@ -63,600 +63,623 @@
       opacity: 0.4;
     }
 
-    /* ── GRID LINES ── */
-    .grid-bg {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,212,255,.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,212,255,.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      pointer-events: none;
+    /* ── PWA INSTALL BANNER ── */
+    #install-banner {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      z-index: 1000;
+      box-shadow: 0 8px 32px rgba(0,0,0,.6);
+      max-width: 380px;
+      width: calc(100% - 40px);
     }
+    .install-text { font-size: 13px; color: #e8edf5 !important; flex: 1; }
+    .install-btn { background: var(--cyan); color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .install-dismiss { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; }
 
     /* ── NAV ── */
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
       z-index: 100;
+      padding: 0 24px;
+      height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 40px;
-      background: rgba(7,8,9,.97);
-      backdrop-filter: blur(12px);
+      background: rgba(8,10,15,.8);
+      backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
     }
 
     .nav-logo {
-      font-family: var(--font-head);
-      font-weight: 800;
-      font-size: 15px;
+      font-family: var(--font-display);
+      font-size: 22px;
       letter-spacing: 1px;
       color: #fff;
     }
-
-    .nav-logo span {
-      color: var(--cyan);
-    }
+    .nav-logo span { color: var(--cyan); }
 
     .nav-links {
       display: flex;
+      align-items: center;
       gap: 32px;
       list-style: none;
     }
-
     .nav-links a {
-      font-family: var(--font-mono);
-      font-size: 11px;
       color: var(--muted);
       text-decoration: none;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .3px;
       transition: color .2s;
     }
-
-    .nav-links a:hover { color: var(--cyan); }
+    .nav-links a:hover { color: #e8edf5 !important; }
 
     .nav-cta {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 500;
-      padding: 8px 20px;
-      border-radius: 6px;
-      background: rgba(0,212,255,.08);
-      border: 1px solid rgba(0,212,255,.25);
-      color: var(--cyan);
+      background: var(--cyan);
+      color: #000 !important;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-size: 13px !important;
+      font-weight: 700 !important;
       text-decoration: none;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      transition: background .2s, border-color .2s;
+      transition: opacity .2s !important;
+      white-space: nowrap;
     }
+    .nav-cta:hover { opacity: .85; }
 
-    .nav-cta:hover {
-      background: rgba(0,212,255,.15);
-      border-color: rgba(0,212,255,.5);
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
     }
 
     /* ── HERO ── */
     .hero {
-      background: #070809;
-      position: relative;
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
       padding: 120px 24px 80px;
+      position: relative;
       overflow: hidden;
     }
 
     .hero-glow {
       position: absolute;
-      top: 20%;
-      left: 50%;
+      top: -200px; left: 50%;
       transform: translateX(-50%);
-      width: 600px;
-      height: 400px;
-      background: radial-gradient(ellipse, rgba(0,212,255,.08) 0%, transparent 70%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(0,212,255,.08) 0%, transparent 70%);
       pointer-events: none;
     }
 
+    .hero-glow2 {
+      position: absolute;
+      bottom: -100px; right: -100px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(0,212,170,.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      max-width: 900px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
     .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,212,255,.06);
+      border: 1px solid rgba(0,212,255,.15);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      font-family: var(--font-mono);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(52px, 10vw, 110px);
+      line-height: .95;
+      letter-spacing: -1px;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .hero-title .line2 {
+      color: var(--cyan);
+      display: block;
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 5vw, 52px);
+      color: var(--muted);
+      line-height: 1;
+      margin-bottom: 32px;
+      letter-spacing: .5px;
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      color: #7a8899;
+      max-width: 520px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 64px;
+    }
+
+    .btn-primary {
+      background: var(--cyan);
+      color: #000;
+      padding: 16px 36px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all .2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-body);
+    }
+    .btn-primary:hover { background: #33ddff; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,212,255,.25); }
+
+    .btn-ghost {
+      background: transparent;
+      color: #e8edf5 !important;
+      padding: 16px 32px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: all .2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-ghost:hover { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.04); }
+
+    /* ── SOCIAL PROOF ── */
+    .social-proof {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .proof-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+    .proof-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .proof-dot.gold { background: var(--gold); }
+    .proof-dot.cyan { background: var(--cyan); }
+
+    /* ── COMPARISON HOOK ── */
+    .comparison-section {
+      padding: 100px 24px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      text-align: center;
       font-family: var(--font-mono);
       font-size: 11px;
       letter-spacing: 3px;
       color: var(--cyan);
       text-transform: uppercase;
-      margin-bottom: 24px;
-      opacity: 0;
-      animation: fadeUp .6s .2s forwards;
+      margin-bottom: 16px;
     }
 
-    .hero-title {
-      font-family: var(--font-head);
-      font-weight: 800;
-      font-size: clamp(36px, 7vw, 80px);
-      line-height: 1.05;
-      letter-spacing: -2px;
-      color: #ffffff;
-      margin-bottom: 28px;
-      max-width: 800px;
-      opacity: 0;
-      animation: fadeUp .6s .35s forwards;
+    .section-title {
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: clamp(36px, 6vw, 64px);
+      color: #fff;
+      margin-bottom: 16px;
+      line-height: 1;
     }
 
-    .hero-title .accent { color: var(--cyan); }
-    .hero-title .accent-gold { color: var(--gold); }
-
-    .hero-sub {
-      font-family: var(--font-mono);
-      font-size: 15px;
-      color: #6b7a8d;
-      max-width: 520px;
-      line-height: 1.8;
-      margin-bottom: 44px;
-      opacity: 0;
-      animation: fadeUp .6s .5s forwards;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 70px;
-      opacity: 0;
-      animation: fadeUp .6s .65s forwards;
-    }
-
-    .btn-primary {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 14px 32px;
-      border-radius: 8px;
-      background: var(--cyan);
-      color: #000;
-      text-decoration: none;
-      letter-spacing: .5px;
-      transition: transform .15s, box-shadow .15s;
-      box-shadow: 0 0 30px rgba(0,212,255,.3);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 45px rgba(0,212,255,.5);
-    }
-
-    .btn-ghost {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      padding: 14px 32px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
+    .section-sub {
+      text-align: center;
+      font-size: 16px;
       color: var(--muted);
-      text-decoration: none;
-      letter-spacing: .5px;
-      transition: border-color .2s, color .2s;
+      max-width: 500px;
+      margin: 0 auto 64px;
     }
 
-    .btn-ghost:hover {
-      border-color: rgba(255,255,255,.2);
-      color: var(--text);
-    }
-
-    /* ── APP PREVIEW MOCKUP ── */
-    .mockup-wrap {
-      position: relative;
-      width: 100%;
-      max-width: 740px;
-      opacity: 0;
-      animation: fadeUp .8s .8s forwards;
-    }
-
-    .mockup-frame {
-      background: var(--bg2);
-      border: 1px solid rgba(0,212,255,.15);
+    .comparison-table {
+      max-width: 800px;
+      margin: 0 auto;
+      border: 1px solid var(--border);
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 40px 100px rgba(0,0,0,.6), 0 0 60px rgba(0,212,255,.05);
     }
 
-    .mockup-bar {
-      background: #0d1117;
+    .comparison-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      background: var(--bg3);
       border-bottom: 1px solid var(--border);
-      padding: 12px 16px;
+    }
+
+    .comp-head {
+      padding: 20px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .comp-head.highlight {
+      background: rgba(0,212,255,.06);
+      color: var(--cyan);
+      border-left: 1px solid rgba(0,212,255,.15);
+      border-right: 1px solid rgba(0,212,255,.15);
+    }
+
+    .comparison-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison-row:last-child { border-bottom: none; }
+
+    .comp-cell {
+      padding: 18px 24px;
+      font-size: 14px;
+      color: var(--muted);
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-r { background: #ff5f57; }
-    .dot-y { background: #febc2e; }
-    .dot-g { background: #28c840; }
-
-    .mockup-url {
-      flex: 1;
-      background: rgba(255,255,255,.04);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 4px 10px;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--muted);
-      text-align: center;
+    .comp-cell.highlight {
+      background: rgba(0,212,255,.03);
+      color: #e8edf5 !important;
+      border-left: 1px solid rgba(0,212,255,.1);
+      border-right: 1px solid rgba(0,212,255,.1);
     }
 
-    .mockup-body {
-      padding: 20px;
-    }
+    .comp-cell .check { color: var(--green); font-size: 16px; }
+    .comp-cell .cross { color: var(--red); font-size: 16px; }
+    .comp-cell .price-big { font-family: var(--font-display); font-size: 28px; color: var(--cyan); }
+    .comp-cell .price-small { font-family: var(--font-display); font-size: 28px; color: var(--red); }
 
-    /* Animated brief cards inside mockup */
-    .brief-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .brief-logo {
-      font-weight: 800;
-      font-size: 13px;
-      letter-spacing: 1px;
-      color: #fff;
-    }
-
-    .brief-date {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      color: #222;
-      padding: 3px 7px;
-      border: 1px solid #181818;
-      border-radius: 3px;
-    }
-
-    .mode-tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-
-    .mode-tab {
-      flex: 1;
-      padding: 7px;
-      border-radius: 6px;
-      font-size: 10px;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .mode-active {
-      background: rgba(0,212,255,.1);
-      border: 1px solid rgba(0,212,255,.25);
-      color: var(--cyan);
-    }
-
-    .mode-inactive {
-      background: rgba(255,255,255,.02);
-      border: 1px solid rgba(255,255,255,.05);
-      color: #333;
-    }
-
-    .signal-card {
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 10px;
-      animation: pulse-glow 3s ease-in-out infinite;
-    }
-
-    .signal-green {
-      background: rgba(0,255,204,.06);
-      border: 1px solid rgba(0,255,204,.2);
-    }
-
-    .signal-label {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: #555;
-      margin-bottom: 6px;
-    }
-
-    .signal-value {
-      font-size: 26px;
-      font-weight: 800;
-      color: var(--green);
-      margin-bottom: 6px;
-    }
-
-    .signal-text {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: #666;
-      line-height: 1.6;
-    }
-
-    .event-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255,255,255,.02);
-      border: 1px solid rgba(255,255,255,.05);
-      border-radius: 7px;
-      padding: 10px 12px;
-      margin-bottom: 7px;
-    }
-
-    .event-title { font-size: 11px; font-weight: 600; color: #ccc; }
-    .event-tag {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 3px;
-    }
-
-    .tag-bearish { color: var(--red); background: rgba(255,71,87,.1); border: 1px solid rgba(255,71,87,.2); }
-    .tag-neutral { color: var(--gold); background: rgba(245,200,66,.08); border: 1px solid rgba(245,200,66,.15); }
-    .tag-bullish { color: var(--green); background: rgba(0,255,204,.06); border: 1px solid rgba(0,255,204,.15); }
-
-    @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 0 rgba(0,255,204,0); }
-      50% { box-shadow: 0 0 20px rgba(0,255,204,.06); }
-    }
-
-    /* ── TICKER TAPE ── */
-    .ticker-wrap {
-      background: #070809;
-      overflow: hidden;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      background: rgba(0,212,255,.02);
-      padding: 10px 0;
-      margin: 0;
-    }
-
-    .ticker-track {
-      display: flex;
-      gap: 40px;
-      animation: ticker 25s linear infinite;
-      white-space: nowrap;
-    }
-
-    .ticker-item {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 1px;
-      flex-shrink: 0;
-    }
-
-    .ticker-item span { color: var(--cyan); margin-right: 8px; }
-
-    @keyframes ticker {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
-    }
-
-    /* ── FEATURES ── */
-    .section {
-      background: #070809;
-      position: relative;
+    /* ── HOW IT WORKS ── */
+    .how-section {
       padding: 100px 24px;
-      max-width: 1100px;
+      max-width: 1000px;
       margin: 0 auto;
     }
 
-    .section-label {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 3px;
-      color: var(--cyan);
-      text-transform: uppercase;
-      text-align: center;
-      margin-bottom: 16px;
-    }
-
-    .section-title {
-      font-size: clamp(28px, 4vw, 46px);
-      font-weight: 800;
-      text-align: center;
-      letter-spacing: -1px;
-      color: #fff;
-      margin-bottom: 60px;
-      line-height: 1.1;
-    }
-
-    .features-grid {
+    .workflow-compare {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 64px;
     }
 
-    .feature-card {
-      background: #0d1117;
+    @media (max-width: 768px) {
+      .workflow-compare { grid-template-columns: 1fr; }
+      .comparison-header, .comparison-row { grid-template-columns: 1fr 1fr 1fr; }
+      .comp-head, .comp-cell { padding: 14px 12px; font-size: 12px; }
+    }
+
+    .workflow-card {
       background: var(--bg2);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 32px;
-      position: relative;
-      overflow: hidden;
-      transition: border-color .2s, transform .2s;
     }
 
-    .feature-card:hover {
-      border-color: rgba(0,212,255,.2);
-      transform: translateY(-3px);
-    }
+    .workflow-card.bad { border-color: rgba(255,71,87,.15); }
+    .workflow-card.good { border-color: rgba(0,212,255,.2); background: rgba(0,212,255,.03); }
 
-    .feature-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(0,212,255,.3), transparent);
-    }
-
-    .feature-icon {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 2px;
-      color: var(--cyan);
-      margin-bottom: 16px;
-      padding: 5px 10px;
-      background: rgba(0,212,255,.06);
-      border: 1px solid rgba(0,212,255,.15);
-      border-radius: 4px;
+    .workflow-badge {
       display: inline-block;
-    }
-
-    .feature-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 12px;
-      letter-spacing: -.3px;
-    }
-
-    .feature-body {
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
       font-family: var(--font-mono);
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    .workflow-badge.bad { background: rgba(255,71,87,.1); color: var(--red); }
+    .workflow-badge.good { background: rgba(0,212,255,.1); color: var(--cyan); }
+
+    .workflow-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #e8edf5 !important;
+      margin-bottom: 20px;
     }
 
-    /* ── HOW IT WORKS ── */
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 0;
-      position: relative;
-    }
-
-    .steps::before {
-      content: '';
-      position: absolute;
-      top: 28px;
-      left: 15%;
-      right: 15%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), var(--border), transparent);
-    }
-
-    .step {
-      text-align: center;
-      padding: 0 24px;
+    .workflow-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      align-items: flex-start;
     }
 
     .step-num {
-      width: 56px;
-      height: 56px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
-      background: var(--bg2);
+      background: var(--bg3);
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 20px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      flex-shrink: 0;
+      margin-top: 1px;
       font-family: var(--font-mono);
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--cyan);
-      position: relative;
-      z-index: 1;
     }
 
-    .step-title {
+    .step-num.good-num {
+      background: rgba(0,212,255,.1);
+      border-color: rgba(0,212,255,.2);
+      color: var(--cyan);
+    }
+
+    .step-text { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .step-text strong { color: #e8edf5 !important; }
+
+    .time-badge {
+      margin-top: 24px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .time-badge.slow { background: rgba(255,71,87,.08); color: var(--red); border: 1px solid rgba(255,71,87,.15); }
+    .time-badge.fast { background: rgba(0,212,255,.08); color: var(--cyan); border: 1px solid rgba(0,212,255,.15); }
+
+    /* ── FEATURES ── */
+    #features {
+      padding: 100px 24px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: 64px auto 0;
+    }
+
+    .feature-card {
+      background: #080a0f !important;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: border-color .2s, transform .2s;
+    }
+    .feature-card:hover { border-color: rgba(0,212,255,.2); transform: translateY(-2px); }
+
+    .feature-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    .feature-title {
       font-size: 16px;
       font-weight: 700;
-      color: #fff;
+      color: #e8edf5 !important;
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .feature-hook {
+      margin-top: 14px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--cyan);
+      opacity: .8;
+    }
+
+    /* ── EXAMPLE BRIEF ── */
+    .example-section {
+      padding: 100px 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .brief-mockup {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 48px;
+    }
+
+    .brief-header {
+      padding: 16px 20px;
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brief-dots { display: flex; gap: 6px; }
+    .brief-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .brief-url { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+    .brief-body { padding: 24px; }
+
+    .brief-instrument {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .brief-name { font-size: 18px; font-weight: 700; color: #e8edf5 !important; }
+
+    .badge {
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .badge-bearish { background: rgba(255,71,87,.12); color: var(--red); border: 1px solid rgba(255,71,87,.2); }
+    .badge-bullish { background: rgba(0,212,170,.12); color: var(--green); border: 1px solid rgba(0,212,170,.2); }
+    .badge-mixed { background: rgba(255,215,0,.1); color: var(--gold); border: 1px solid rgba(255,215,0,.15); }
+
+    .brief-summary {
+      font-size: 14px;
+      color: #8899aa;
+      line-height: 1.7;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .brief-event {
+      background: rgba(255,71,87,.06);
+      border-left: 3px solid var(--red);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
       margin-bottom: 10px;
     }
 
-    .step-body {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.8;
+    .brief-event.bullish {
+      background: rgba(0,212,170,.06);
+      border-left-color: var(--green);
     }
 
+    .event-title { font-size: 13px; font-weight: 600; color: #e8edf5 !important; margin-bottom: 4px; }
+    .event-desc { font-size: 12px; color: var(--muted); }
+
     /* ── PRICING ── */
+    #pricing {
+      padding: 100px 24px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+    }
+
     .pricing-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 20px;
-      max-width: 720px;
-      margin: 0 auto;
+      max-width: 700px;
+      margin: 64px auto 0;
     }
 
     .pricing-card {
-      background: #0d1117;
-      background: var(--bg2);
+      background: #080a0f !important;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 36px 32px;
       position: relative;
-      overflow: hidden;
     }
 
-    .pricing-card.featured {
+    .pricing-card.pro {
       border-color: rgba(0,212,255,.3);
-      background: linear-gradient(160deg, rgba(0,212,255,.05), var(--bg2));
+      background: rgba(0,212,255,.03);
     }
 
-    .pricing-card.featured::before {
-      content: 'MOST POPULAR';
+    .pro-badge {
       position: absolute;
-      top: 16px; right: 16px;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--cyan);
+      color: #000;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 16px;
+      border-radius: 100px;
       font-family: var(--font-mono);
-      font-size: 8px;
-      letter-spacing: 2px;
-      color: var(--cyan);
-      padding: 4px 8px;
-      border: 1px solid rgba(0,212,255,.3);
-      border-radius: 3px;
+      white-space: nowrap;
     }
 
     .plan-name {
       font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: 12px;
       letter-spacing: 2px;
       color: var(--muted);
       text-transform: uppercase;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
 
     .plan-price {
-      font-size: 48px;
-      font-weight: 800;
+      font-family: var(--font-display);
+      font-size: 64px;
       color: #fff;
-      letter-spacing: -2px;
-      margin-bottom: 4px;
       line-height: 1;
+      margin-bottom: 4px;
     }
 
-    .plan-price sup {
-      font-size: 20px;
-      vertical-align: super;
-      letter-spacing: 0;
+    .plan-price span {
+      font-family: var(--font-body);
+      font-size: 18px;
       color: var(--muted);
-    }
-
-    .plan-price sub {
-      font-size: 14px;
-      font-family: var(--font-mono);
-      color: var(--muted);
-      letter-spacing: 0;
       font-weight: 400;
     }
 
     .plan-desc {
-      font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 13px;
       color: var(--muted);
       margin-bottom: 28px;
       line-height: 1.6;
@@ -668,715 +691,519 @@
     }
 
     .plan-features li {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: #888;
-      padding: 7px 0;
-      border-bottom: 1px solid var(--border);
       display: flex;
-      gap: 10px;
       align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #8899aa;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
     }
+    .plan-features li:last-child { border-bottom: none; }
+    .plan-features .feat-check { color: var(--green); font-size: 15px; flex-shrink: 0; }
+    .plan-features .feat-lock { color: var(--muted); font-size: 13px; flex-shrink: 0; }
 
-    .plan-features li::before { content: '—'; color: var(--border); }
-    .plan-features li.active { color: var(--text); }
-    .plan-features li.active::before { content: '✓'; color: var(--cyan); }
-
-    .plan-btn {
+    .plan-cta {
       display: block;
       text-align: center;
-      padding: 13px;
-      border-radius: 8px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 500;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
       text-decoration: none;
-      letter-spacing: .5px;
       transition: all .2s;
+      font-family: var(--font-body);
     }
 
-    .plan-btn-primary {
-      background: var(--cyan);
-      color: #000;
-      box-shadow: 0 0 24px rgba(0,212,255,.25);
-    }
+    .plan-cta.free { background: var(--bg3); color: #e8edf5 !important; border: 1px solid var(--border); }
+    .plan-cta.free:hover { border-color: rgba(255,255,255,.2); }
+    .plan-cta.paid { background: var(--cyan); color: #000; }
+    .plan-cta.paid:hover { background: #33ddff; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,212,255,.25); }
 
-    .plan-btn-primary:hover { box-shadow: 0 0 40px rgba(0,212,255,.4); transform: translateY(-1px); }
-
-    .plan-btn-ghost {
-      border: 1px solid var(--border);
+    .pricing-note {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 13px;
       color: var(--muted);
-    }
-
-    .plan-btn-ghost:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
-
-    /* ── INSTRUMENTS STRIP ── */
-    .instruments {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      padding: 60px 24px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .inst-pill {
       font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      background: rgba(255,255,255,.01);
-      transition: all .2s;
     }
 
-    .inst-pill:hover {
-      border-color: rgba(0,212,255,.3);
-      color: var(--cyan);
+    /* ── FINAL CTA ── */
+    .final-cta {
+      padding: 120px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .final-cta::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(0,212,255,.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .final-cta .big-text {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 8vw, 88px);
+      color: #fff;
+      line-height: .95;
+      margin-bottom: 24px;
+    }
+
+    .final-cta .big-text .accent { color: var(--cyan); }
+
+    .final-cta p {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 440px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
     }
 
     /* ── FOOTER ── */
     footer {
-      background: #070809;
+      padding: 40px 24px;
       border-top: 1px solid var(--border);
-      padding: 40px 40px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      flex-wrap: gap;
       gap: 16px;
     }
 
     .footer-logo {
-      font-weight: 800;
-      font-size: 13px;
-      letter-spacing: 1px;
+      font-family: var(--font-display);
+      font-size: 18px;
       color: #fff;
+      letter-spacing: 1px;
     }
+    .footer-logo span { color: var(--cyan); }
 
-    .footer-copy {
+    .footer-text {
+      font-size: 12px;
+      color: var(--muted);
       font-family: var(--font-mono);
-      font-size: 11px;
-      color: #2a2a2a;
     }
 
     /* ── ANIMATIONS ── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
+    .fade-up {
+      opacity: 0;
+      animation: fadeUp .7s ease forwards;
+    }
 
-    /* ── WAITLIST ── */
-    .waitlist-section {
-      background: #070809;
-      background: linear-gradient(135deg, rgba(0,212,255,.04), rgba(192,132,252,.03));
+    .fade-up:nth-child(1) { animation-delay: .1s; }
+    .fade-up:nth-child(2) { animation-delay: .2s; }
+    .fade-up:nth-child(3) { animation-delay: .3s; }
+    .fade-up:nth-child(4) { animation-delay: .4s; }
+    .fade-up:nth-child(5) { animation-delay: .5s; }
+
+    /* ── TICKER ── */
+    .ticker-wrap {
+      overflow: hidden;
+      background: var(--bg3);
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
-      padding: 90px 24px;
-      text-align: center;
+      padding: 10px 0;
     }
 
-    .waitlist-inner { max-width: 560px; margin: 0 auto; }
-
-    .waitlist-title {
-      font-size: clamp(26px, 4vw, 42px);
-      font-weight: 800;
-      letter-spacing: -1px;
-      color: #fff;
-      margin-bottom: 14px;
+    .ticker {
+      display: flex;
+      gap: 48px;
+      animation: ticker 30s linear infinite;
+      width: max-content;
     }
 
-    .waitlist-sub {
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    .ticker-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-family: var(--font-mono);
-      font-size: 13px;
+      font-size: 12px;
       color: var(--muted);
-      margin-bottom: 36px;
-      line-height: 1.7;
-    }
-
-    .waitlist-form {
-      display: flex;
-      gap: 10px;
-      max-width: 460px;
-      margin: 0 auto 14px;
-    }
-
-    .waitlist-input {
-      flex: 1;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 8px;
-      color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 13px;
-      padding: 13px 16px;
-      outline: none;
-      transition: border-color .2s;
-      min-width: 0;
-    }
-
-    .waitlist-input:focus { border-color: rgba(0,212,255,.4); }
-    .waitlist-input::placeholder { color: #2a2a2a; }
-
-    .waitlist-submit {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 500;
-      padding: 13px 24px;
-      border-radius: 8px;
-      background: var(--cyan);
-      color: #000;
-      border: none;
-      cursor: pointer;
-      letter-spacing: .5px;
-      white-space: nowrap;
-      transition: box-shadow .2s, transform .15s;
-    }
-
-    .waitlist-submit:hover {
-      box-shadow: 0 0 30px rgba(0,212,255,.4);
-      transform: translateY(-1px);
-    }
-
-    .waitlist-note {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: #2a2a2a;
-      letter-spacing: .5px;
-    }
-
-    .waitlist-success {
-      display: none;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      color: var(--green);
-      padding: 14px;
-      border: 1px solid rgba(0,255,204,.2);
-      border-radius: 8px;
-      background: rgba(0,255,204,.04);
-      max-width: 460px;
-      margin: 0 auto;
-    }
-
-    /* ── TESTIMONIALS ── */
-    .testimonials-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 18px;
-    }
-
-    .testi-card {
-      background: #0d1117;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 28px;
-      position: relative;
-    }
-
-    .testi-card::before {
-      content: '"';
-      position: absolute;
-      top: 16px; right: 20px;
-      font-size: 52px;
-      color: rgba(0,212,255,.08);
-      font-family: Georgia, serif;
-      line-height: 1;
-    }
-
-    .testi-text {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      color: #888;
-      line-height: 1.8;
-      margin-bottom: 20px;
-      font-style: italic;
-    }
-
-    .testi-author {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .testi-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, rgba(0,212,255,.2), rgba(192,132,252,.2));
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--cyan);
-      flex-shrink: 0;
-    }
-
-    .testi-name {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 2px;
-    }
-
-    .testi-role {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: .5px;
-    }
-
-    .testi-stars {
-      font-size: 11px;
-      color: var(--gold);
-      margin-bottom: 14px;
-      letter-spacing: 2px;
-    }
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      nav { padding: 14px 20px; }
-      .nav-links { display: none; }
-      .hero {
-      background: #070809; padding: 100px 20px 60px; }
-      .section {
-      background: #070809; padding: 70px 20px; }
-      .steps::before { display: none; }
-      footer {
-      background: #070809; padding: 30px 20px; flex-direction: column; text-align: center; }
-    }
-
-    /* ── PWA INSTALL BANNER ── */
-    #install-banner {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--bg2);
-      border: 1px solid rgba(0,212,255,.25);
-      border-radius: 12px;
-      padding: 14px 20px;
-      z-index: 999;
-      box-shadow: 0 8px 40px rgba(0,0,0,.5);
-      gap: 14px;
-      align-items: center;
-      min-width: 300px;
-      max-width: 90vw;
-    }
-
-    #install-banner.show { display: flex; }
-
-    .install-text {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--text);
-      flex: 1;
-    }
-
-    .install-btn {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 7px 16px;
-      background: var(--cyan);
-      color: #000;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
       white-space: nowrap;
     }
 
-    .install-dismiss {
-      background: none;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 16px;
-      padding: 0 4px;
-    }
+    .ticker-item .up { color: var(--green); }
+    .ticker-item .down { color: var(--red); }
+  
+    /* ── FORCE DARK BACKGROUNDS ── */
+    html, body { background: #080a0f !important; }
+    body { color: #e8edf5 !important; -webkit-font-smoothing: antialiased; }
+    .hero { background: #080a0f !important; }
+    .comparison-section { background: #0d1117 !important; }
+    .how-section { background: #080a0f !important; }
+    #features { background: #0d1117 !important; }
+    .example-section { background: #080a0f !important; }
+    #pricing { background: #0d1117 !important; }
+    .final-cta { background: #080a0f !important; }
+    footer { background: #080a0f !important; }
+    .ticker-wrap { background: #111620 !important; }
+    nav { background: rgba(8,10,15,.97) !important; }
+    .workflow-card { background: #0d1117 !important; }
+    .workflow-card.good { background: rgba(0,212,255,.04) !important; }
+    .feature-card { background: #080a0f !important; }
+    .pricing-card { background: #080a0f !important; }
+    .pricing-card.pro { background: rgba(0,212,255,.04) !important; }
+    .brief-mockup { background: #0d1117 !important; }
+    .brief-header { background: #111620 !important; }
+    .comparison-table { background: #0d1117 !important; }
+    .comparison-header { background: #111620 !important; }
+
   </style>
 </head>
-<body style="background:#070809;color:#e8eaed;">
+<body>
 
-  <!-- PWA Install Banner -->
-  <div id="install-banner">
-    <div class="install-text">Add Market Brief to your home screen</div>
-    <button class="install-btn" id="install-btn">Install</button>
-    <button class="install-dismiss" id="install-dismiss">×</button>
-  </div>
+<!-- PWA Install Banner -->
+<div id="install-banner">
+  <div class="install-text">Add Market Debriefs to your home screen</div>
+  <button class="install-btn" id="install-btn">Install</button>
+  <button class="install-dismiss" id="install-dismiss">×</button>
+</div>
 
-  <!-- NAV -->
-  <nav>
-    <div class="nav-logo">MARKET<span>DEBRIEFS</span></div>
-    <ul class="nav-links">
-      <li><a href="#features">Features</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="#pricing">Pricing</a></li>
-    </ul>
-    <a href="/app.html" class="nav-cta">Launch App →</a>
-  </nav>
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">MARKET<span>DEBRIEFS</span></div>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="/app.html" class="nav-cta">Launch App →</a></li>
+  </ul>
+</nav>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="grid-bg"></div>
-    <div class="hero-glow"></div>
-
-    <p class="hero-eyebrow">Intelligence · Reflection · Education</p>
-
-    <h1 class="hero-title">
-      Know the macro<br/>
-      <span class="accent">before</span> you trade
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow fade-up">⚡ AI Macro Intelligence for Traders</div>
+    <h1 class="hero-title fade-up">
+      Bloomberg tells you<br>
+      <span class="line2">what happened.</span>
     </h1>
-
-    <p class="hero-sub">
-      Institutional-grade market intelligence for independent traders.
-      Instant briefings for every instrument — in seconds, not hours.
+    <p class="hero-subtitle fade-up">We tell you what it means.</p>
+    <p class="hero-sub fade-up">
+      Macro events translated into instant tradeable bias — for every instrument, in seconds. Not 30 minutes.
     </p>
-
-    <div class="hero-actions">
+    <div class="hero-actions fade-up">
       <a href="/app.html" class="btn-primary">Get Your Brief →</a>
-      <a href="#features" class="btn-ghost">See How It Works</a>
+      <a href="#how" class="btn-ghost">See How It Works</a>
+    </div>
+    <div class="social-proof fade-up">
+      <div class="proof-item"><div class="proof-dot"></div> Free to start</div>
+      <div class="proof-item"><div class="proof-dot gold"></div> ES · NQ · Gold · Oil · Forex · Crypto</div>
+      <div class="proof-item"><div class="proof-dot cyan"></div> 10-second briefings</div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <div class="ticker-item">ES S&P 500 <span class="up">▲ BULLISH</span></div>
+    <div class="ticker-item">EUR/USD <span class="down">▼ BEARISH — ECB Dovish</span></div>
+    <div class="ticker-item">Gold XAU <span class="up">▲ BULLISH — Safe Haven Bid</span></div>
+    <div class="ticker-item">NQ NASDAQ <span class="up">▲ BULLISH — Risk On</span></div>
+    <div class="ticker-item">GBP/USD <span class="down">▼ MIXED — BoE Uncertainty</span></div>
+    <div class="ticker-item">WTI Crude <span class="down">▼ BEARISH — Supply Glut</span></div>
+    <div class="ticker-item">Bitcoin <span class="up">▲ BULLISH — Risk Appetite</span></div>
+    <div class="ticker-item">VIX <span class="down">▼ LOW — Complacency Risk</span></div>
+    <!-- repeat for seamless loop -->
+    <div class="ticker-item">ES S&P 500 <span class="up">▲ BULLISH</span></div>
+    <div class="ticker-item">EUR/USD <span class="down">▼ BEARISH — ECB Dovish</span></div>
+    <div class="ticker-item">Gold XAU <span class="up">▲ BULLISH — Safe Haven Bid</span></div>
+    <div class="ticker-item">NQ NASDAQ <span class="up">▲ BULLISH — Risk On</span></div>
+    <div class="ticker-item">GBP/USD <span class="down">▼ MIXED — BoE Uncertainty</span></div>
+    <div class="ticker-item">WTI Crude <span class="down">▼ BEARISH — Supply Glut</span></div>
+    <div class="ticker-item">Bitcoin <span class="up">▲ BULLISH — Risk Appetite</span></div>
+    <div class="ticker-item">VIX <span class="down">▼ LOW — Complacency Risk</span></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="how-section">
+  <div class="section-label">The difference</div>
+  <h2 class="section-title" style="text-align:center">30 minutes vs 10 seconds</h2>
+  <p class="section-sub">The same macro event. Two completely different workflows.</p>
+
+  <div class="workflow-compare">
+    <div class="workflow-card bad">
+      <span class="workflow-badge bad">Without Market Debriefs</span>
+      <div class="workflow-title">You see: NFP +285K vs 220K Expected</div>
+      <div class="workflow-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Read headline, open Bloomberg or Reuters</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">2</div>
+        <div class="step-text">Read Fed policy commentary, find current stance</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">3</div>
+        <div class="step-text">Cross-reference DXY, yields, equity futures</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">4</div>
+        <div class="step-text">Try to determine if this is already priced in</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">5</div>
+        <div class="step-text">Form a bias. Hope you got it right.</div>
+      </div>
+      <div class="time-badge slow">⏱ 10–30 minutes of research</div>
     </div>
 
-    <!-- APP MOCKUP -->
-    <div class="mockup-wrap">
-      <div class="mockup-frame">
-        <div class="mockup-bar">
-          <div class="dot dot-r"></div>
-          <div class="dot dot-y"></div>
-          <div class="dot dot-g"></div>
-          <div class="mockup-url">marketdebriefs.com</div>
-        </div>
-        <div class="mockup-body">
-          <div class="brief-header">
-            <div class="brief-logo">MARKET DEBRIEFS</div>
-            <div class="brief-date">5 MAR</div>
-          </div>
-          <div class="mode-tabs">
-            <div class="mode-tab mode-active">Full Brief — Pre-trade research</div>
-            <div class="mode-tab mode-inactive">Scalper Mode — Last 10 min</div>
-          </div>
-          <div class="signal-card signal-green">
-            <div class="signal-label">ES S&P 500 — MARKET SENTIMENT</div>
-            <div class="signal-value">MIXED</div>
-            <div class="signal-text">Fed maintains restrictive stance while geopolitical tensions create uncertainty. Earnings season provides upside catalysts but macro headwinds persist.</div>
-          </div>
-          <div class="event-row">
-            <div class="event-title">Fed Chair Powell Speech — Senate Banking</div>
-            <div class="event-tag tag-bearish">BEARISH · HIGH</div>
-          </div>
-          <div class="event-row">
-            <div class="event-title">ECB Monetary Policy Decision</div>
-            <div class="event-tag tag-neutral">NEUTRAL · MED</div>
-          </div>
-          <div class="event-row">
-            <div class="event-title">Weekly Initial Jobless Claims</div>
-            <div class="event-tag tag-bullish">BULLISH · MED</div>
-          </div>
-        </div>
+    <div class="workflow-card good">
+      <span class="workflow-badge good">With Market Debriefs</span>
+      <div class="workflow-title">You open the app</div>
+      <div class="workflow-step">
+        <div class="step-num good-num">1</div>
+        <div class="step-text"><strong>Select your instrument</strong> — ES, NQ, EUR/USD, Gold...</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num good-num">2</div>
+        <div class="step-text"><strong>Get Your Brief</strong> — one tap</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num good-num">3</div>
+        <div class="step-text"><strong>Read your answer:</strong> USD BULLISH. Strong labor → Fed hawkish → USD strength. HIGH confidence.</div>
+      </div>
+      <div class="time-badge fast">⚡ 10 seconds. Trade with clarity.</div>
+    </div>
+  </div>
+</section>
+
+<!-- BLOOMBERG COMPARISON -->
+<section class="comparison-section">
+  <div class="section-label">vs The Competition</div>
+  <h2 class="section-title">Why not Bloomberg?</h2>
+  <p class="section-sub">Bloomberg is built for institutions with analysts. You're an independent trader. You need answers, not data.</p>
+
+  <div class="comparison-table">
+    <div class="comparison-header">
+      <div class="comp-head"></div>
+      <div class="comp-head">Bloomberg Terminal</div>
+      <div class="comp-head highlight">Market Debriefs</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comp-cell" style="color:var(--text);font-weight:600;">What you get</div>
+      <div class="comp-cell">Raw news & data feeds</div>
+      <div class="comp-cell highlight"><span class="check">✓</span> Instant macro interpretation</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comp-cell" style="color:var(--text);font-weight:600;">Time to insight</div>
+      <div class="comp-cell">10–30 minutes</div>
+      <div class="comp-cell highlight"><span class="check">✓</span> 10 seconds</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comp-cell" style="color:var(--text);font-weight:600;">Asset-specific bias</div>
+      <div class="comp-cell"><span class="cross">✗</span> You figure it out</div>
+      <div class="comp-cell highlight"><span class="check">✓</span> Bullish / Bearish / Mixed</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comp-cell" style="color:var(--text);font-weight:600;">Pre-trade briefing</div>
+      <div class="comp-cell"><span class="cross">✗</span> Not built for this</div>
+      <div class="comp-cell highlight"><span class="check">✓</span> Built for exactly this</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comp-cell" style="color:var(--text);font-weight:600;">Mobile-first</div>
+      <div class="comp-cell"><span class="cross">✗</span> Desktop only</div>
+      <div class="comp-cell highlight"><span class="check">✓</span> PWA — works everywhere</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comp-cell" style="color:var(--text);font-weight:600;">Annual cost</div>
+      <div class="comp-cell"><span class="price-small">$30,000</span></div>
+      <div class="comp-cell highlight"><span class="price-big">€588</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label" style="text-align:center">What's inside</div>
+  <h2 class="section-title">Everything you need. Nothing you don't.</h2>
+  <p class="section-sub">Built specifically for independent traders who take macro seriously.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(0,212,255,.08);">📊</div>
+      <div class="feature-title">Full Brief</div>
+      <div class="feature-desc">Complete pre-trade macro briefing. Events, geopolitical risks, central bank stance — all translated into a clear directional bias for your instrument.</div>
+      <div class="feature-hook">"Know the macro landscape before the market opens."</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(255,71,87,.08);">⚡</div>
+      <div class="feature-title">Scalper Mode <span style="font-size:11px;color:var(--cyan);font-family:var(--font-mono);">PRO</span></div>
+      <div class="feature-desc">Real-time risk check before you enter a scalp. GREEN / YELLOW / RED macro risk assessment. Know if macro is with you or against you in the next 30 minutes.</div>
+      <div class="feature-hook">"Macro risk in 3 seconds. Green means go."</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(0,212,170,.08);">🎯</div>
+      <div class="feature-title">Options Flow <span style="font-size:11px;color:var(--cyan);font-family:var(--font-mono);">PRO</span></div>
+      <div class="feature-desc">Dealer positioning intelligence. Call walls, put walls, GEX flip zones, pin risk levels. Understand where the smart money is positioned before you trade.</div>
+      <div class="feature-hook">"See where institutions are positioned."</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(255,215,0,.08);">🌍</div>
+      <div class="feature-title">Geopolitical Risk</div>
+      <div class="feature-desc">Ongoing geopolitical events interpreted in terms of market impact. Russia-Ukraine, China-US trade, Middle East tensions — all translated into price implications.</div>
+      <div class="feature-hook">"Understand how global events move markets."</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(192,132,252,.08);">📔</div>
+      <div class="feature-title">Trade Reflection</div>
+      <div class="feature-desc">End-of-day journaling built for traders. Record your bias, your execution, your result. Build the habit of reviewing your macro read against what actually happened.</div>
+      <div class="feature-hook">"The best traders review every day."</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(0,212,255,.08);">🎓</div>
+      <div class="feature-title">Learn to Fish</div>
+      <div class="feature-desc">Built-in macro education. Why does NFP move USD? What does an inverted yield curve mean? What is risk-on vs risk-off? Learn while you trade.</div>
+      <div class="feature-hook">"Understand the why, not just the what."</div>
+    </div>
+  </div>
+</section>
+
+<!-- EXAMPLE BRIEF -->
+<section class="example-section">
+  <div class="section-label" style="text-align:center">See it in action</div>
+  <h2 class="section-title" style="text-align:center">A real brief, in seconds</h2>
+  <p class="section-sub" style="text-align:center">This is what you get when you open the app before trading EUR/USD today.</p>
+
+  <div class="brief-mockup">
+    <div class="brief-header">
+      <div class="brief-dots">
+        <div class="brief-dot" style="background:#ff5f57"></div>
+        <div class="brief-dot" style="background:#ffbd2e"></div>
+        <div class="brief-dot" style="background:#28c840"></div>
+      </div>
+      <div class="brief-url">marketdebriefs.com</div>
+      <div style="width:60px"></div>
+    </div>
+    <div class="brief-body">
+      <div class="brief-instrument">
+        <div class="brief-name">EU EUR/USD</div>
+        <span class="badge badge-bearish">BEARISH</span>
+      </div>
+      <div class="brief-summary">
+        EUR/USD faces diverging central bank policies with ECB maintaining dovish stance while Fed signals potential pause in easing cycle. European growth concerns persist amid ongoing geopolitical tensions.
+      </div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">HIGH-IMPACT EVENTS</div>
+      <div class="brief-event">
+        <div class="event-title">🔴 ECB Monetary Policy Decision — BEARISH · HIGH</div>
+        <div class="event-desc">ECB expected to hold rates at 2.75% but dovish commentary on eurozone growth outlook weighs on EUR</div>
+      </div>
+      <div class="brief-event bullish">
+        <div class="event-title">🟢 US Non-Farm Payrolls +285K — BULLISH USD · HIGH</div>
+        <div class="event-desc">Strong NFP print vs 220K expected reinforces Fed hawkish pivot and USD strength</div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- TICKER TAPE -->
-  <div class="ticker-wrap">
-    <div class="ticker-track">
-      <div class="ticker-item"><span>ES</span>S&P 500 Futures</div>
-      <div class="ticker-item"><span>NQ</span>Nasdaq 100</div>
-      <div class="ticker-item"><span>GC</span>Gold Futures</div>
-      <div class="ticker-item"><span>CL</span>WTI Crude Oil</div>
-      <div class="ticker-item"><span>6E</span>EUR/USD</div>
-      <div class="ticker-item"><span>6B</span>GBP/USD</div>
-      <div class="ticker-item"><span>BTC</span>Bitcoin</div>
-      <div class="ticker-item"><span>VIX</span>Fear Index</div>
-      <div class="ticker-item"><span>RTY</span>Russell 2000</div>
-      <div class="ticker-item"><span>YM</span>Dow Jones</div>
-      <!-- Duplicate for seamless loop -->
-      <div class="ticker-item"><span>ES</span>S&P 500 Futures</div>
-      <div class="ticker-item"><span>NQ</span>Nasdaq 100</div>
-      <div class="ticker-item"><span>GC</span>Gold Futures</div>
-      <div class="ticker-item"><span>CL</span>WTI Crude Oil</div>
-      <div class="ticker-item"><span>6E</span>EUR/USD</div>
-      <div class="ticker-item"><span>6B</span>GBP/USD</div>
-      <div class="ticker-item"><span>BTC</span>Bitcoin</div>
-      <div class="ticker-item"><span>VIX</span>Fear Index</div>
-      <div class="ticker-item"><span>RTY</span>Russell 2000</div>
-      <div class="ticker-item"><span>YM</span>Dow Jones</div>
+<!-- PRICING -->
+<section id="pricing">
+  <div class="section-label" style="text-align:center">Simple pricing</div>
+  <h2 class="section-title">Built for serious traders.</h2>
+  <p class="section-sub">If one trade goes right because of better macro context, this pays for itself 10x over.</p>
+
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">€0 <span>/ month</span></div>
+      <div class="plan-desc">Try it risk-free. No credit card needed.</div>
+      <ul class="plan-features">
+        <li><span class="feat-check">✓</span> 3 briefs per day</li>
+        <li><span class="feat-check">✓</span> Full Brief mode</li>
+        <li><span class="feat-check">✓</span> All instruments</li>
+        <li><span class="feat-check">✓</span> Reflection journal</li>
+        <li><span class="feat-check">✓</span> Learn to Fish</li>
+        <li><span class="feat-lock">🔒</span> Scalper Mode</li>
+        <li><span class="feat-lock">🔒</span> Options Flow</li>
+      </ul>
+      <a href="/app.html" class="plan-cta free">Start Free →</a>
+    </div>
+
+    <div class="pricing-card pro">
+      <div class="pro-badge">Most Popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">€49 <span>/ month</span></div>
+      <div class="plan-desc">For traders who take macro seriously. Cancel anytime.</div>
+      <ul class="plan-features">
+        <li><span class="feat-check">✓</span> Unlimited briefs</li>
+        <li><span class="feat-check">✓</span> Full Brief mode</li>
+        <li><span class="feat-check">✓</span> All instruments</li>
+        <li><span class="feat-check">✓</span> Reflection journal</li>
+        <li><span class="feat-check">✓</span> Learn to Fish</li>
+        <li><span class="feat-check">✓</span> <strong style="color:var(--text)">Scalper Mode</strong></li>
+        <li><span class="feat-check">✓</span> <strong style="color:var(--text)">Options Flow intelligence</strong></li>
+      </ul>
+      <a href="/app.html" class="plan-cta paid">Upgrade to Pro →</a>
     </div>
   </div>
 
-  <!-- FEATURES -->
-  <section class="section" id="features">
-    <p class="section-label">What you get</p>
-    <h2 class="section-title">Stop trading blind.<br/>Start trading informed.</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">01 · INTELLIGENCE</div>
-        <div class="feature-title">Full Market Brief</div>
-        <div class="feature-body">
-          Before any trade, get a complete macro briefing — high-impact events, central bank stance, geopolitical risks, and exactly why they move price. The research that used to take an hour, done in seconds.
-        </div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">02 · SCALPER</div>
-        <div class="feature-title">Scalper Risk Check</div>
-        <div class="feature-body">
-          Green, Yellow, or Red — know your risk level for the next 10 minutes. Breaking news, session transitions, thin liquidity warnings. Your last check before you pull the trigger.
-        </div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">03 · OPTIONS FLOW</div>
-        <div class="feature-title">Dealer Positioning</div>
-        <div class="feature-body">
-          Key gamma levels, max pain strikes, call and put walls — formatted as intelligence, not raw data. Know where dealers are hedging and where price may pin or accelerate. Coming soon.
-        </div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">04 · REFLECTION</div>
-        <div class="feature-title">Daily Journal</div>
-        <div class="feature-body">
-          Six focused prompts to process each trading session. What the market taught you. What emotion showed up. What you'll do differently. The edge is in the review.
-        </div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">05 · EDUCATION</div>
-        <div class="feature-title">Learn to Fish</div>
-        <div class="feature-body">
-          Not just what moved — but why. Understand dollar correlations, risk-on/risk-off regimes, how options flow affects spot price. Build the mental model that separates consistent traders.
-        </div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">06 · COVERAGE</div>
-        <div class="feature-title">Every Instrument</div>
-        <div class="feature-body">
-          ES, NQ, Gold, Oil, Euro, GBP, Bitcoin, VIX, YM, RTY, ETH, JPY, AUD, DXY. One interface. Full coverage. Pull a brief for anything you trade.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- HOW IT WORKS -->
-  <section class="section" id="how" style="border-top: 1px solid var(--border);">
-    <p class="section-label">How it works</p>
-    <h2 class="section-title">Three steps.<br/>Zero excuses.</h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">01</div>
-        <div class="step-title">Pick your instrument</div>
-        <div class="step-body">Type any instrument or tap a chip — ES, NQ, Gold, GBP, BTC and more. Market Brief knows all aliases.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">02</div>
-        <div class="step-title">Choose your mode</div>
-        <div class="step-body">Full Brief for pre-trade research. Scalper Mode for a live 10-minute risk check. Different depth, same intelligence.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">03</div>
-        <div class="step-title">Trade with context</div>
-        <div class="step-body">Know the events, the risks, the sentiment. Trade what you understand, not what you hope for.</div>
-      </div>
-    </div>
-
-    <!-- Instruments -->
-    <div class="instruments">
-      <div class="inst-pill">ES · S&P 500</div>
-      <div class="inst-pill">NQ · Nasdaq</div>
-      <div class="inst-pill">YM · Dow Jones</div>
-      <div class="inst-pill">RTY · Russell 2000</div>
-      <div class="inst-pill">GC · Gold</div>
-      <div class="inst-pill">CL · Crude Oil</div>
-      <div class="inst-pill">6E · EUR/USD</div>
-      <div class="inst-pill">6B · GBP/USD</div>
-      <div class="inst-pill">6J · USD/JPY</div>
-      <div class="inst-pill">BTC · Bitcoin</div>
-      <div class="inst-pill">ETH · Ethereum</div>
-      <div class="inst-pill">VIX · Fear Index</div>
-      <div class="inst-pill">DXY · Dollar Index</div>
-    </div>
-  </section>
-
-  <!-- PRICING -->
-  <section class="section" id="pricing" style="border-top: 1px solid var(--border);">
-    <p class="section-label">Pricing</p>
-    <h2 class="section-title">Less than your<br/><span style="color: var(--gold)">last losing trade.</span></h2>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <div class="plan-name">Free</div>
-        <div class="plan-price"><sup>$</sup>0<sub>/mo</sub></div>
-        <div class="plan-desc">Get started. See the value. No card required.</div>
-        <ul class="plan-features">
-          <li class="active">3 briefs per day</li>
-          <li class="active">All instruments</li>
-          <li class="active">Learn + Reflection</li>
-          <li>Scalper Mode</li>
-          <li>Options Flow</li>
-          <li>Unlimited briefs</li>
-        </ul>
-        <a href="/app" class="plan-btn plan-btn-ghost">Start Free</a>
-      </div>
-      <div class="pricing-card featured">
-        <div class="plan-name">Pro</div>
-        <div class="plan-price"><sup>$</sup>12<sub>/mo</sub></div>
-        <div class="plan-desc">Everything. Unlimited. The full edge — every session.</div>
-        <ul class="plan-features">
-          <li class="active">Unlimited briefs</li>
-          <li class="active">All instruments</li>
-          <li class="active">Learn + Reflection</li>
-          <li class="active">Scalper Mode</li>
-          <li class="active">Options Flow (coming soon)</li>
-          <li class="active">Priority updates</li>
-        </ul>
-        <a href="/app" class="plan-btn plan-btn-primary">Get Pro →</a>
-      </div>
-    </div>
-    <p style="text-align:center; margin-top: 28px; font-family: var(--font-mono); font-size: 11px; color: var(--muted);">
-      Cancel anytime. No lock-in. Prices in USD.
-    </p>
-  </section>
-
-
-  <!-- TESTIMONIALS -->
-  <section class="section" id="testimonials" style="border-top: 1px solid var(--border);">
-    <p class="section-label">Early Traders</p>
-    <h2 class="section-title">The edge is in<br/><span style="color:var(--cyan)">the preparation.</span></h2>
-    <div class="testimonials-grid">
-      <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <div class="testi-text">Used to spend 45 minutes every morning checking Bloomberg, Twitter, and economic calendars. Now I run a debrief in 30 seconds and I'm ready. The scalper risk check alone is worth it.</div>
-        <div class="testi-author">
-          <div class="testi-avatar">JK</div>
-          <div>
-            <div class="testi-name">J. Kowalski</div>
-            <div class="testi-role">ES Futures · Chicago</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <div class="testi-text">I trade London open on Cable and Gold. Getting a full macro brief with central bank positioning and geopolitical risk before I touch the charts has changed how I approach the session entirely.</div>
-        <div class="testi-author">
-          <div class="testi-avatar">MA</div>
-          <div>
-            <div class="testi-name">M. Adeyemi</div>
-            <div class="testi-role">Forex Trader · London</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <div class="testi-text">The "Teach Me to Fish" section actually taught me things I didn't understand after years of trading. Understanding why the dollar affects Gold and Oil changed the way I read price action.</div>
-        <div class="testi-author">
-          <div class="testi-avatar">RT</div>
-          <div>
-            <div class="testi-name">R. Torres</div>
-            <div class="testi-role">NQ Trader · Miami</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- WAITLIST -->
-  <div class="waitlist-section">
-    <div class="waitlist-inner">
-      <p style="font-family:var(--font-mono);font-size:10px;letter-spacing:3px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px;">Stay in the loop</p>
-      <h2 class="waitlist-title">Get early access to<br/>Options Flow + Pro</h2>
-      <p class="waitlist-sub">Be the first to know when dealer positioning data and Pro accounts go live. No spam — just the launch email when it's ready.</p>
-      <div class="waitlist-form" id="waitlist-form">
-        <input type="email" class="waitlist-input" id="waitlist-email" placeholder="your@email.com" />
-        <button class="waitlist-submit" id="waitlist-btn">Notify Me</button>
-      </div>
-      <div class="waitlist-success" id="waitlist-success">
-        ✓ &nbsp;You're on the list. We'll reach out when Options Flow goes live.
-      </div>
-      <p class="waitlist-note">No spam. Unsubscribe anytime.</p>
-    </div>
+  <div class="pricing-note">
+    Bloomberg Terminal costs $30,000/year. Market Debriefs Pro is €588/year.<br>
+    One good trade pays for 10 years of this subscription.
   </div>
+</section>
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-logo">MARKET DEBRIEFS</div>
-    <div class="footer-copy">© 2026 marketdebriefs.com · Not financial advice · For informational purposes only</div>
-  </footer>
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="big-text">
+    Stop guessing.<br>
+    <span class="accent">Start knowing.</span>
+  </div>
+  <p>Join traders who brief themselves on macro before every session. Free to start. Takes 30 seconds.</p>
+  <a href="/app.html" class="btn-primary" style="font-size:17px;padding:18px 44px;">Get Your Brief Now →</a>
+</section>
 
-  <script>
-    // ── PWA SERVICE WORKER REGISTRATION ──
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('SW registered:', reg.scope))
-          .catch(err => console.log('SW failed:', err));
-      });
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MARKET<span>DEBRIEFS</span></div>
+  <div class="footer-text">© 2025 Market Debriefs · Macro intelligence for independent traders</div>
+</footer>
+
+<script>
+  // PWA Install
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-banner').style.display = 'flex';
+  });
+  document.getElementById('install-btn').addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      document.getElementById('install-banner').style.display = 'none';
     }
+  });
+  document.getElementById('install-dismiss').addEventListener('click', () => {
+    document.getElementById('install-banner').style.display = 'none';
+  });
 
-    // ── PWA INSTALL PROMPT ──
-    let deferredPrompt;
-    const banner   = document.getElementById('install-banner');
-    const installBtn = document.getElementById('install-btn');
-    const dismissBtn = document.getElementById('install-dismiss');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      banner.classList.add('show');
+  // Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW:', err));
     });
-
-    installBtn.addEventListener('click', async () => {
-      banner.classList.remove('show');
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log('Install outcome:', outcome);
-        deferredPrompt = null;
-      }
-    });
-
-    dismissBtn.addEventListener('click', () => {
-      banner.classList.remove('show');
-    });
-
-    // ── SCROLL REVEAL ──
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
-        }
-      });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.feature-card, .step, .pricing-card').forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(24px)';
-      el.style.transition = 'opacity .5s ease, transform .5s ease';
-      observer.observe(el);
-    });
-
-    // ── WAITLIST FORM ──
-    document.getElementById('waitlist-btn').addEventListener('click', async () => {
-      const email = document.getElementById('waitlist-email').value.trim();
-      if (!email || !email.includes('@')) {
-        document.getElementById('waitlist-email').style.borderColor = 'rgba(255,71,87,.5)';
-        return;
-      }
-      // Store in localStorage as simple capture (swap for real API when ready)
-      const list = JSON.parse(localStorage.getItem('mb_waitlist') || '[]');
-      if (!list.includes(email)) list.push(email);
-      localStorage.setItem('mb_waitlist', JSON.stringify(list));
-
-      document.getElementById('waitlist-form').style.display = 'none';
-      document.getElementById('waitlist-success').style.display = 'block';
-    });
-
-    document.getElementById('waitlist-email').addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('waitlist-btn').click();
-    });
-  </script>
+  }
+</script>
 </body>
 </html>
