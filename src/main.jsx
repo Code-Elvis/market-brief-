@@ -12,12 +12,12 @@ if (!PUBLISHABLE_KEY) {
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ClerkProvider 
-      publishableKey={PUBLISHABLE_KEY} 
+      publishableKey={PUBLISHABLE_KEY}
       afterSignOutUrl="/"
       afterSignInUrl="/app.html"
       afterSignUpUrl="/app.html"
-      signInFallbackRedirectUrl="/app.html"
-      signUpFallbackRedirectUrl="/app.html"
+      domain="marketdebriefs.com"
+      isSatellite={false}
     >
       <App />
     </ClerkProvider>
