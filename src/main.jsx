@@ -13,10 +13,11 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ClerkProvider 
       publishableKey={PUBLISHABLE_KEY}
-      proxyUrl="https://marketdebriefs.com/__clerk"
-      afterSignOutUrl="/"
+      signInUrl="/app.html"
+      signUpUrl="/app.html"
       afterSignInUrl="/app.html"
       afterSignUpUrl="/app.html"
+      afterSignOutUrl="/"
     >
       <App />
     </ClerkProvider>
