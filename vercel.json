@@ -1,8 +1,7 @@
 {
   "rewrites": [
-    { "source": "/clerk/(.*)", "destination": "https://clerk.marketdebriefs.com/$1" },
-    { "source": "/app", "destination": "/app.html" },
-    { "source": "/app/(.*)", "destination": "/app.html" }
+    { "source": "/__clerk/:path*", "destination": "https://frontend-api.clerk.dev/:path*" },
+    { "source": "/app", "destination": "/app.html" }
   ],
   "outputDirectory": "dist",
   "headers": [
@@ -14,3 +13,8 @@
     }
   ]
 }
+```
+
+Commit → redeploy → then in Clerk set the proxy URL to:
+```
+https://marketdebriefs.com/__clerk
