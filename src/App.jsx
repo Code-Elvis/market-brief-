@@ -116,29 +116,16 @@ function UpgradeModal({ reason, onClose, userId, email }) {
 
 // ── AUTH SCREEN ───────────────────────────────────────────────────────────────
 function AuthScreen() {
-  const { isSignedIn, isLoaded } = useUser();
-  const [view, setView] = useState("sign-in");
+  const { openSignIn, openSignUp } = useClerk();
+  
   useEffect(() => {
-    if (isLoaded && isSignedIn) window.location.replace("/app.html");
-  }, [isLoaded, isSignedIn]);
+    // Redirect to Clerk hosted sign-in with explicit redirect back
+    window.location.href = "https://accounts.marketdebriefs.com/sign-in?redirect_url=" + encodeURIComponent("https://marketdebriefs.com/app.html");
+  }, []);
+
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0c0f", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ marginBottom: 32, textAlign: "center" }}>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px" }}>MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span></div>
-        <div style={{ fontSize: 12, color: "#333", marginTop: 4 }}>Know the macro before you trade</div>
-      </div>
-      <div style={{ width: "100%", maxWidth: 400 }}>
-        {view === "sign-in"
-          ? <SignIn appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} afterSignInUrl="/app.html" fallbackRedirectUrl="/app.html" />
-          : <SignUp  appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} afterSignUpUrl="/app.html" fallbackRedirectUrl="/app.html" />
-        }
-      </div>
-      <div style={{ marginTop: 20, fontSize: 13, color: "#333" }}>
-        {view === "sign-in"
-          ? <>Don't have an account? <button onClick={() => setView("sign-up")} style={{ background: "none", border: "none", color: "#00d4ff", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>Sign up free</button></>
-          : <>Already have an account? <button onClick={() => setView("sign-in")} style={{ background: "none", border: "none", color: "#00d4ff", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>Sign in</button></>
-        }
-      </div>
+    <div style={{ minHeight: "100vh", background: "#0a0c0f", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ color: "#333", fontSize: 13, fontFamily: "monospace" }}>Loading...</div>
     </div>
   );
 }
