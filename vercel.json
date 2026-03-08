@@ -4,19 +4,5 @@
     { "source": "/app", "destination": "/index.html" },
     { "source": "/app.html", "destination": "/index.html" }
   ],
-  "outputDirectory": "dist",
-  "headers": [
-    {
-      "source": "/index.html",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/(.*).html",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
-      ]
-    }
-  ]
+  "outputDirectory": "dist"
 }
