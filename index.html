@@ -18,15 +18,7 @@
     <meta name="description" content="Institutional-grade market intelligence for independent traders. Instant debriefs for every instrument." />
   </head>
   <body style="background:#0a0c0f;margin:0;">
-    <div id="root"></div>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .catch(err => console.log('SW:', err));
-        });
-      }
-    </script>
-     <script type="module" src="/src/main.jsx"></script>
-  </body>
+  <div id="root"></div>
+  <script type="module" crossorigin src="/src/main.jsx"></script>
+</body>
 </html>
