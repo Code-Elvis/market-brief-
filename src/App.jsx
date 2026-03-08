@@ -125,8 +125,8 @@ function AuthScreen() {
       </div>
       <div style={{ width: "100%", maxWidth: 400 }}>
         {view === "sign-in"
-          ? <SignIn appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} afterSignInUrl="https://marketdebriefs.com/app.html" />
-          : <SignUp appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} afterSignUpUrl="https://marketdebriefs.com/app.html" />
+          ? <SignIn appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} afterSignInUrl="/app" />
+          : <SignUp appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} afterSignUpUrl="/app" />
         }
       </div>
       <div style={{ marginTop: 20, fontSize: 13, color: "#333" }}>
@@ -538,7 +538,6 @@ function AppInner() {
 export default function App() {
   const { isLoaded, isSignedIn } = useUser();
 
-  // Wait for Clerk to fully initialize before making any decisions
   if (!isLoaded) {
     return (
       <div style={{ minHeight: "100vh", background: "#0a0c0f", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -547,7 +546,6 @@ export default function App() {
     );
   }
 
-  // Clerk is fully loaded — now we can trust isSignedIn
   if (isSignedIn) return <AppInner />;
   return <AuthScreen />;
 }
