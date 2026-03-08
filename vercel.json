@@ -1,8 +1,18 @@
 {
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/__clerk/:path*", "destination": "/api/clerk-proxy" },
-    { "source": "/app", "destination": "/index.html" },
-    { "source": "/app.html", "destination": "/index.html" }
+    { "source": "/app",            "destination": "/index.html" },
+    { "source": "/app.html",       "destination": "/index.html" }
   ],
-  "outputDirectory": "dist"
+  "headers": [
+    {
+      "source": "/(.*).html",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/index.html",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    }
+  ]
 }
