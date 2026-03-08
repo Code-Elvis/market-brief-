@@ -14,8 +14,8 @@ createRoot(document.getElementById("root")).render(
     <ClerkProvider 
       publishableKey={PUBLISHABLE_KEY}
       proxyUrl="https://marketdebriefs.com/__clerk"
-      afterSignInUrl="https://marketdebriefs.com/app.html"
-      afterSignUpUrl="https://marketdebriefs.com/app.html"
+      afterSignInUrl="https://marketdebriefs.com/app"
+      afterSignUpUrl="https://marketdebriefs.com/app"
       afterSignOutUrl="https://marketdebriefs.com"
     >
       <App />
