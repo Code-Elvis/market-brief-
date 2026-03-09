@@ -1,24 +1,30 @@
+cat > /mnt/user-data/outputs/vite.config.js << 'EOF'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import fs from 'fs'
+import { copyFileSync } from 'fs'
 
 export default defineConfig({
   plugins: [
     react(),
     {
-      name: 'copy-landing',
+      name: 'copy-app-html',
       closeBundle() {
-        fs.copyFileSync(
-          resolve(__dirname, 'landing.html'),
-          resolve(__dirname, 'dist/landing.html')
+        // Copy the built index.html to app.html so both serve the React app
+        copyFileSync(
+          resolve(__dirname, 'dist/index.html'),
+          resolve(__dirname, 'dist/app.html')
         )
       }
     }
   ],
   build: {
     rollupOptions: {
-      input: resolve(__dirname, 'index.html')
+      input: {
+        main: resolve(__dirname, 'index.html'),
+      }
     }
   }
 })
+EOF
+echo "done"
