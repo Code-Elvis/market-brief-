@@ -1,30 +1,28 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import { copyFileSync } from 'fs'
+import fs from 'fs'
 
 export default defineConfig({
   plugins: [
     react(),
     {
       name: 'copy-landing',
-      closeBundle() {
-        try {
-          copyFileSync(
-            resolve(__dirname, 'landing.html'),
-            resolve(__dirname, 'dist/landing.html')
-          )
-        } catch (e) {
-          console.warn('copy-landing: landing.html not found, skipping')
+      writeBundle() {
+        const src = resolve(__dirname, 'landing.html')
+        const dest = resolve(__dirname, 'dist/landing.html')
+        if (fs.existsSync(src)) {
+          fs.copyFileSync(src, dest)
+          console.log('✓ landing.html copied to dist/')
+        } else {
+          console.warn('⚠ landing.html not found at', src)
         }
       }
     }
   ],
   build: {
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-      }
+      input: resolve(__dirname, 'index.html')
     }
   }
 })
