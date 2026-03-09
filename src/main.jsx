@@ -1,4 +1,3 @@
-// v2 - force rebuild
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ClerkProvider } from "@clerk/clerk-react";
@@ -12,13 +11,7 @@ if (!PUBLISHABLE_KEY) {
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ClerkProvider 
-      publishableKey={PUBLISHABLE_KEY}
-      proxyUrl="https://marketdebriefs.com/__clerk"
-      afterSignInUrl="https://marketdebriefs.com/app"
-      afterSignUpUrl="https://marketdebriefs.com/app"
-      afterSignOutUrl="https://marketdebriefs.com"
-    >
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
       <App />
     </ClerkProvider>
   </StrictMode>
