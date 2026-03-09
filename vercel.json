@@ -1,9 +1,7 @@
 {
   "rewrites": [
     { "source": "/__clerk/:path*", "destination": "/api/clerk-proxy" },
-    { "source": "/app", "destination": "/index.html" },
-    { "source": "/app.html", "destination": "/index.html" },
-    { "source": "/", "destination": "/landing.html" }
+    { "source": "/app", "destination": "/app.html" }
   ],
   "outputDirectory": "dist",
   "headers": [
