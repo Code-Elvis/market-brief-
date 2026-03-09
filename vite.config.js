@@ -7,7 +7,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        app: resolve(__dirname, 'app.html')
+        app: resolve(__dirname, '/app')
       }
     }
   }
