@@ -1,15 +1,12 @@
 {
   "rewrites": [
     { "source": "/__clerk/:path*", "destination": "/api/clerk-proxy" },
-    { "source": "/app", "destination": "/app" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
-  "outputDirectory": "dist",
   "headers": [
     {
-      "source": "/(.*).html",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
-      ]
+      "source": "/index.html",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
     }
   ]
 }
