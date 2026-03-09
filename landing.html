@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+PE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -41,12 +41,11 @@
       --font-body: 'Inter', sans-serif;
     }
 
-    html { scroll-behavior: smooth; background: #080a0f; }
+    html { scroll-behavior: smooth; }
 
     body {
-      -webkit-font-smoothing: antialiased;
-      background: #080a0f !important;
-      color: #e8edf5 !important;
+      background: var(--bg);
+      color: var(--text);
       font-family: var(--font-body);
       line-height: 1.6;
       overflow-x: hidden;
@@ -82,7 +81,7 @@
       max-width: 380px;
       width: calc(100% - 40px);
     }
-    .install-text { font-size: 13px; color: #e8edf5 !important; flex: 1; }
+    .install-text { font-size: 13px; color: var(--text); flex: 1; }
     .install-btn { background: var(--cyan); color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
     .install-dismiss { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; }
 
@@ -123,7 +122,7 @@
       letter-spacing: .3px;
       transition: color .2s;
     }
-    .nav-links a:hover { color: #e8edf5 !important; }
+    .nav-links a:hover { color: var(--text); }
 
     .nav-cta {
       background: var(--cyan);
@@ -252,7 +251,7 @@
 
     .btn-ghost {
       background: transparent;
-      color: #e8edf5 !important;
+      color: var(--text);
       padding: 16px 32px;
       border-radius: 10px;
       font-size: 15px;
@@ -371,7 +370,7 @@
 
     .comp-cell.highlight {
       background: rgba(0,212,255,.03);
-      color: #e8edf5 !important;
+      color: var(--text);
       border-left: 1px solid rgba(0,212,255,.1);
       border-right: 1px solid rgba(0,212,255,.1);
     }
@@ -428,7 +427,7 @@
     .workflow-title {
       font-size: 18px;
       font-weight: 700;
-      color: #e8edf5 !important;
+      color: var(--text);
       margin-bottom: 20px;
     }
 
@@ -463,7 +462,7 @@
     }
 
     .step-text { font-size: 14px; color: var(--muted); line-height: 1.5; }
-    .step-text strong { color: #e8edf5 !important; }
+    .step-text strong { color: var(--text); }
 
     .time-badge {
       margin-top: 24px;
@@ -494,7 +493,7 @@
     }
 
     .feature-card {
-      background: #080a0f !important;
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 28px;
@@ -515,7 +514,7 @@
     .feature-title {
       font-size: 16px;
       font-weight: 700;
-      color: #e8edf5 !important;
+      color: var(--text);
       margin-bottom: 8px;
     }
 
@@ -570,7 +569,7 @@
       margin-bottom: 16px;
     }
 
-    .brief-name { font-size: 18px; font-weight: 700; color: #e8edf5 !important; }
+    .brief-name { font-size: 18px; font-weight: 700; color: var(--text); }
 
     .badge {
       padding: 4px 12px;
@@ -606,7 +605,7 @@
       border-left-color: var(--green);
     }
 
-    .event-title { font-size: 13px; font-weight: 600; color: #e8edf5 !important; margin-bottom: 4px; }
+    .event-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
     .event-desc { font-size: 12px; color: var(--muted); }
 
     /* ── PRICING ── */
@@ -625,7 +624,7 @@
     }
 
     .pricing-card {
-      background: #080a0f !important;
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 36px 32px;
@@ -715,7 +714,7 @@
       font-family: var(--font-body);
     }
 
-    .plan-cta.free { background: var(--bg3); color: #e8edf5 !important; border: 1px solid var(--border); }
+    .plan-cta.free { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
     .plan-cta.free:hover { border-color: rgba(255,255,255,.2); }
     .plan-cta.paid { background: var(--cyan); color: #000; }
     .plan-cta.paid:hover { background: #33ddff; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,212,255,.25); }
@@ -839,30 +838,6 @@
 
     .ticker-item .up { color: var(--green); }
     .ticker-item .down { color: var(--red); }
-  
-    /* ── FORCE DARK BACKGROUNDS ── */
-    html, body { background: #080a0f !important; }
-    body { color: #e8edf5 !important; -webkit-font-smoothing: antialiased; }
-    .hero { background: #080a0f !important; }
-    .comparison-section { background: #0d1117 !important; }
-    .how-section { background: #080a0f !important; }
-    #features { background: #0d1117 !important; }
-    .example-section { background: #080a0f !important; }
-    #pricing { background: #0d1117 !important; }
-    .final-cta { background: #080a0f !important; }
-    footer { background: #080a0f !important; }
-    .ticker-wrap { background: #111620 !important; }
-    nav { background: rgba(8,10,15,.97) !important; }
-    .workflow-card { background: #0d1117 !important; }
-    .workflow-card.good { background: rgba(0,212,255,.04) !important; }
-    .feature-card { background: #080a0f !important; }
-    .pricing-card { background: #080a0f !important; }
-    .pricing-card.pro { background: rgba(0,212,255,.04) !important; }
-    .brief-mockup { background: #0d1117 !important; }
-    .brief-header { background: #111620 !important; }
-    .comparison-table { background: #0d1117 !important; }
-    .comparison-header { background: #111620 !important; }
-
   </style>
 </head>
 <body>
@@ -881,7 +856,7 @@
     <li><a href="#how">How It Works</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#pricing">Pricing</a></li>
-    <li><a href="/app.html" class="nav-cta">Launch App →</a></li>
+    <li><a href="/app" class="nav-cta">Launch App →</a></li>
   </ul>
 </nav>
 
@@ -900,7 +875,7 @@
       Macro events translated into instant tradeable bias — for every instrument, in seconds. Not 30 minutes.
     </p>
     <div class="hero-actions fade-up">
-      <a href="/app.html" class="btn-primary">Get Your Brief →</a>
+      <a href="/app" class="btn-primary">Get Your Brief →</a>
       <a href="#how" class="btn-ghost">See How It Works</a>
     </div>
     <div class="social-proof fade-up">
@@ -1040,7 +1015,7 @@
 
   <div class="features-grid">
     <div class="feature-card">
-      <div class="feature-icon" style="background:rgba(0,212,255,.08);">📊</div>
+      <div class="feature-icon" style="background:rgba(0,212,255,.08);">──</div>
       <div class="feature-title">Full Brief</div>
       <div class="feature-desc">Complete pre-trade macro briefing. Events, geopolitical risks, central bank stance — all translated into a clear directional bias for your instrument.</div>
       <div class="feature-hook">"Know the macro landscape before the market opens."</div>
@@ -1052,25 +1027,25 @@
       <div class="feature-hook">"Macro risk in 3 seconds. Green means go."</div>
     </div>
     <div class="feature-card">
-      <div class="feature-icon" style="background:rgba(0,212,170,.08);">🎯</div>
+      <div class="feature-icon" style="background:rgba(0,212,170,.08);">──</div>
       <div class="feature-title">Options Flow <span style="font-size:11px;color:var(--cyan);font-family:var(--font-mono);">PRO</span></div>
       <div class="feature-desc">Dealer positioning intelligence. Call walls, put walls, GEX flip zones, pin risk levels. Understand where the smart money is positioned before you trade.</div>
       <div class="feature-hook">"See where institutions are positioned."</div>
     </div>
     <div class="feature-card">
-      <div class="feature-icon" style="background:rgba(255,215,0,.08);">🌍</div>
+      <div class="feature-icon" style="background:rgba(255,215,0,.08);">──</div>
       <div class="feature-title">Geopolitical Risk</div>
       <div class="feature-desc">Ongoing geopolitical events interpreted in terms of market impact. Russia-Ukraine, China-US trade, Middle East tensions — all translated into price implications.</div>
       <div class="feature-hook">"Understand how global events move markets."</div>
     </div>
     <div class="feature-card">
-      <div class="feature-icon" style="background:rgba(192,132,252,.08);">📔</div>
+      <div class="feature-icon" style="background:rgba(192,132,252,.08);">──</div>
       <div class="feature-title">Trade Reflection</div>
       <div class="feature-desc">End-of-day journaling built for traders. Record your bias, your execution, your result. Build the habit of reviewing your macro read against what actually happened.</div>
       <div class="feature-hook">"The best traders review every day."</div>
     </div>
     <div class="feature-card">
-      <div class="feature-icon" style="background:rgba(0,212,255,.08);">🎓</div>
+      <div class="feature-icon" style="background:rgba(0,212,255,.08);">──</div>
       <div class="feature-title">Learn to Fish</div>
       <div class="feature-desc">Built-in macro education. Why does NFP move USD? What does an inverted yield curve mean? What is risk-on vs risk-off? Learn while you trade.</div>
       <div class="feature-hook">"Understand the why, not just the what."</div>
@@ -1104,11 +1079,11 @@
       </div>
       <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">HIGH-IMPACT EVENTS</div>
       <div class="brief-event">
-        <div class="event-title">🔴 ECB Monetary Policy Decision — BEARISH · HIGH</div>
+        <div class="event-title">── ECB Monetary Policy Decision — BEARISH · HIGH</div>
         <div class="event-desc">ECB expected to hold rates at 2.75% but dovish commentary on eurozone growth outlook weighs on EUR</div>
       </div>
       <div class="brief-event bullish">
-        <div class="event-title">🟢 US Non-Farm Payrolls +285K — BULLISH USD · HIGH</div>
+        <div class="event-title">── US Non-Farm Payrolls +285K — BULLISH USD · HIGH</div>
         <div class="event-desc">Strong NFP print vs 220K expected reinforces Fed hawkish pivot and USD strength</div>
       </div>
     </div>
@@ -1132,10 +1107,10 @@
         <li><span class="feat-check">✓</span> All instruments</li>
         <li><span class="feat-check">✓</span> Reflection journal</li>
         <li><span class="feat-check">✓</span> Learn to Fish</li>
-        <li><span class="feat-lock">🔒</span> Scalper Mode</li>
-        <li><span class="feat-lock">🔒</span> Options Flow</li>
+        <li><span class="feat-lock">──</span> Scalper Mode</li>
+        <li><span class="feat-lock">──</span> Options Flow</li>
       </ul>
-      <a href="/app.html" class="plan-cta free">Start Free →</a>
+      <a href="/app" class="plan-cta free">Start Free →</a>
     </div>
 
     <div class="pricing-card pro">
@@ -1152,7 +1127,7 @@
         <li><span class="feat-check">✓</span> <strong style="color:var(--text)">Scalper Mode</strong></li>
         <li><span class="feat-check">✓</span> <strong style="color:var(--text)">Options Flow intelligence</strong></li>
       </ul>
-      <a href="/app.html" class="plan-cta paid">Upgrade to Pro →</a>
+      <a href="/app" class="plan-cta paid">Upgrade to Pro →</a>
     </div>
   </div>
 
@@ -1169,7 +1144,7 @@
     <span class="accent">Start knowing.</span>
   </div>
   <p>Join traders who brief themselves on macro before every session. Free to start. Takes 30 seconds.</p>
-  <a href="/app.html" class="btn-primary" style="font-size:17px;padding:18px 44px;">Get Your Brief Now →</a>
+  <a href="/app" class="btn-primary" style="font-size:17px;padding:18px 44px;">Get Your Brief Now →</a>
 </section>
 
 <!-- FOOTER -->
@@ -1204,7 +1179,6 @@
       navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW:', err));
     });
   }
- </script> 
 </script>
 </body>
 </html>
