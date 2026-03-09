@@ -8,9 +8,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: resolve(__dirname, 'app.html')
-      },
-      output: {
-        entryFileNames: 'assets/[name]-[hash].js'
       }
     }
   }
