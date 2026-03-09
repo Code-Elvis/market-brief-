@@ -1,4 +1,3 @@
-cat > /mnt/user-data/outputs/clerk-proxy.js << 'EOF'
 export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
@@ -27,5 +26,3 @@ export default async function handler(req) {
     headers: response.headers,
   });
 }
-EOF
-echo "done"
