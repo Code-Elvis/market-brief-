@@ -1,4 +1,3 @@
-cat > /mnt/user-data/outputs/vite.config.js << 'EOF'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
@@ -8,13 +7,16 @@ export default defineConfig({
   plugins: [
     react(),
     {
-      name: 'copy-app-html',
+      name: 'copy-landing',
       closeBundle() {
-        // Copy the built index.html to app.html so both serve the React app
-        copyFileSync(
-          resolve(__dirname, 'dist/index.html'),
-          resolve(__dirname, 'dist/app.html')
-        )
+        try {
+          copyFileSync(
+            resolve(__dirname, 'landing.html'),
+            resolve(__dirname, 'dist/landing.html')
+          )
+        } catch (e) {
+          console.warn('copy-landing: landing.html not found, skipping')
+        }
       }
     }
   ],
@@ -26,5 +28,3 @@ export default defineConfig({
     }
   }
 })
-EOF
-echo "done"
