@@ -1,63 +1,31 @@
-export default async function handler(req, res) {
-const url = new URL(req.url, ‘https://marketdebriefs.com’);
-const path = url.pathname.replace(’/api/clerk-proxy’, ‘’).replace(’/__clerk’, ‘’) || ‘/’;
-const clerkUrl = `https://frontend-api.clerk.dev${path}${url.search}`;
+cat > /mnt/user-data/outputs/clerk-proxy.js << 'EOF'
+export const config = { runtime: 'edge' };
 
-const proxyHeaders = {
-‘host’: ‘frontend-api.clerk.dev’,
-‘content-type’: req.headers[‘content-type’] || ‘application/json’,
-‘accept’: req.headers[‘accept’] || ‘*/*’,
-‘user-agent’: req.headers[‘user-agent’] || ‘’,
-‘origin’: ‘https://marketdebriefs.com’,
-‘Clerk-Proxy-Url’: ‘https://marketdebriefs.com/__clerk’,
-‘Clerk-Secret-Key’: process.env.CLERK_SECRET_KEY || ‘’,
-‘X-Forwarded-For’: req.headers[‘x-forwarded-for’] || ‘’,
-‘X-Forwarded-Proto’: ‘https’,
-};
-
-// Forward cookies from browser to Clerk
-if (req.headers[‘cookie’]) {
-proxyHeaders[‘cookie’] = req.headers[‘cookie’];
-}
-
-try {
-const body = req.method !== ‘GET’ && req.method !== ‘HEAD’
-? JSON.stringify(req.body)
-: undefined;
-
-```
-const response = await fetch(clerkUrl, {
-  method: req.method,
-  headers: proxyHeaders,
-  body,
-  redirect: 'follow',
-});
-
-// Forward ALL response headers including Set-Cookie
-response.headers.forEach((value, key) => {
-  const lower = key.toLowerCase();
-  if (['content-encoding', 'transfer-encoding', 'connection'].includes(lower)) return;
+export default async function handler(req) {
+  const url = new URL(req.url);
   
-  // Rewrite cookie domain to marketdebriefs.com
-  if (lower === 'set-cookie') {
-    const rewritten = value
-      .replace(/domain=[^;]+/gi, 'domain=marketdebriefs.com')
-      .replace(/secure;?/gi, 'Secure;')
-      .replace(/samesite=none/gi, 'SameSite=Lax');
-    res.setHeader(key, rewritten);
-  } else {
-    res.setHeader(key, value);
-  }
-});
+  // Strip /__clerk prefix and forward to Clerk's Frontend API
+  const clerkUrl = new URL(
+    url.pathname.replace('/__clerk', '') + url.search,
+    'https://frontend-api.clerk.dev'
+  );
 
-res.setHeader('Access-Control-Allow-Origin', 'https://marketdebriefs.com');
-res.setHeader('Access-Control-Allow-Credentials', 'true');
+  const headers = new Headers(req.headers);
+  headers.set('Clerk-Proxy-Url', 'https://marketdebriefs.com/__clerk');
+  headers.set('Clerk-Secret-Key', process.env.CLERK_SECRET_KEY);
+  headers.set('X-Forwarded-For', req.headers.get('x-forwarded-for') || '');
 
-const data = await response.text();
-res.status(response.status).send(data);
-```
+  const response = await fetch(clerkUrl.toString(), {
+    method: req.method,
+    headers,
+    body: req.method !== 'GET' && req.method !== 'HEAD' ? req.body : undefined,
+    redirect: 'manual',
+  });
 
-} catch (err) {
-res.status(500).json({ error: err.message });
+  return new Response(response.body, {
+    status: response.status,
+    headers: response.headers,
+  });
 }
-}
+EOF
+echo "done"
