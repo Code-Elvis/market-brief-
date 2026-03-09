@@ -9,31 +9,35 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
-    const { tools, ...bodyWithoutTools } = body;
+    const apiKey = process.env.VITE_ANTHROPIC_API_KEY;
 
-    // ANTHROPIC_API_KEY (no VITE_ prefix) — VITE_ vars are build-time only
-    // and are undefined inside Vercel Edge Functions at runtime.
-    const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "Missing ANTHROPIC_API_KEY env var" }), { status: 500 });
+      return new Response(JSON.stringify({ error: { message: "ANTHROPIC_API_KEY not configured" } }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify(bodyWithoutTools),
+      body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const data = await res.json();
+
     return new Response(JSON.stringify(data), {
-      status: response.status,
+      status: res.status,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: { message: err.message || "Brief API failed" } }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
