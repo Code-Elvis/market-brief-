@@ -1,23 +1,6 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
   "rewrites": [
-    { "source": "/__clerk/:path*", "destination": "/api/clerk-proxy" }
-  ],
-  "routes": [
-    { "src": "/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/(.*)\\.js", "dest": "/$1.js" },
-    { "src": "/(.*)\\.css", "dest": "/$1.css" },
-    { "src": "/(.*)\\.ico", "dest": "/$1.ico" },
-    { "src": "/(.*)\\.json", "dest": "/$1.json" },
-    { "src": "/(.*)\\.png", "dest": "/$1.png" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ],
-  "headers": [
-    {
-      "source": "/index.html",
-      "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
-    }
+    { "source": "/__clerk/:path*", "destination": "/api/clerk-proxy" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
