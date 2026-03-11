@@ -137,7 +137,7 @@ function AuthScreen() {
   );
 }
 
-function LandingPage() {
+function LandingPage({ isSignedIn }) {
   const style = `
     @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@300;400;500&display=swap');
     html { scroll-behavior: smooth; }
@@ -183,6 +183,19 @@ function LandingPage() {
     .hero-anim-3 { animation-delay: .36s; }
     .hero-anim-4 { animation-delay: .5s; }
     @keyframes pulse-dot { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
+    @media (max-width: 640px) {
+      .land-grid-3 { grid-template-columns: 1fr !important; }
+      .land-grid-2 { grid-template-columns: 1fr !important; }
+      .land-compare { grid-template-columns: 1fr !important; }
+      .land-compare .compare-left { border-radius: 12px 12px 0 0 !important; }
+      .land-compare .compare-right { border-radius: 0 0 12px 12px !important; }
+      .land-hero-h1 { font-size: 36px !important; letter-spacing: -1px !important; }
+      .land-pricing-grid { grid-template-columns: 1fr !important; }
+      .land-nav { padding: 14px 18px !important; }
+      .land-section { padding-left: 18px !important; padding-right: 18px !important; }
+      .land-footer { flex-direction: column !important; text-align: center; padding: 20px 18px !important; }
+      .land-cta-btn { font-size: 14px !important; padding: 16px 28px !important; }
+    }
   `;
 
   const tickers = ["ES S&P 500", "NQ NASDAQ", "XAU GOLD", "WTI CRUDE", "EUR/USD", "GBP/USD", "BTC/USD", "VIX", "RTY RUSSELL", "YM DOW", "USD/JPY", "AUD/USD"];
@@ -192,13 +205,18 @@ function LandingPage() {
       <style>{style}</style>
 
       {/* NAV */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "18px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,.04)", background: "rgba(5,7,9,.85)", backdropFilter: "blur(12px)" }}>
+      <nav className="land-nav" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "18px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,.04)", background: "rgba(5,7,9,.85)", backdropFilter: "blur(12px)" }}>
         <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 900, letterSpacing: "-0.3px", color: "#fff" }}>
           MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <a href="/app" style={{ fontSize: 13, color: "#555", textDecoration: "none", padding: "8px 16px" }}>Sign in</a>
-          <a href="/app" className="land-btn-primary" style={{ padding: "9px 20px", fontSize: 13 }}>Start free</a>
+          {isSignedIn
+            ? <a href="/app" className="land-btn-primary" style={{ padding: "9px 20px", fontSize: 13 }}>Open app</a>
+            : <>
+                <a href="/app" style={{ fontSize: 13, color: "#555", textDecoration: "none", padding: "8px 16px" }}>Sign in</a>
+                <a href="/app" className="land-btn-primary" style={{ padding: "9px 20px", fontSize: 13 }}>Start free</a>
+              </>
+          }
         </div>
       </nav>
 
@@ -209,7 +227,7 @@ function LandingPage() {
           <span style={{ fontSize: 11, color: "#00d4ff", fontWeight: 600, letterSpacing: 1.5, fontFamily: "monospace" }}>LIVE MACRO INTELLIGENCE</span>
         </div>
 
-        <h1 className="hero-anim hero-anim-2" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(38px, 7vw, 72px)", fontWeight: 900, color: "#fff", lineHeight: 1.06, letterSpacing: "-2px", marginBottom: 24 }}>
+        <h1 className="hero-anim hero-anim-2 land-hero-h1" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(38px, 7vw, 72px)", fontWeight: 900, color: "#fff", lineHeight: 1.06, letterSpacing: "-2px", marginBottom: 24 }}>
           Bloomberg tells you<br />
           <span style={{ color: "#00d4ff" }}>what happened.</span><br />
           <span style={{ color: "rgba(255,255,255,.35)" }}>We tell you what it means.</span>
@@ -237,7 +255,7 @@ function LandingPage() {
 
       {/* PROBLEM / POSITIONING */}
       <section style={{ maxWidth: 900, margin: "0 auto 100px", padding: "0 24px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+        <div className="land-compare" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
           <div style={{ background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.12)", borderRadius: "12px 0 0 12px", padding: "36px 32px" }}>
             <div style={{ fontSize: 10, color: "#ff4757", fontWeight: 700, letterSpacing: 2, marginBottom: 16, fontFamily: "monospace" }}>THE OLD WAY</div>
             {["Bloomberg terminal — $30,000/year", "30 tabs open before every trade", "News sites with no trading context", "Macro blind spots that cost you", "Hours of research, no clear answer"].map((t, i) => (
@@ -258,10 +276,10 @@ function LandingPage() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section style={{ maxWidth: 900, margin: "0 auto 100px", padding: "0 24px", textAlign: "center" }}>
+      <section className="land-section" style={{ maxWidth: 900, margin: "0 auto 100px", padding: "0 24px", textAlign: "center" }}>
         <div style={{ fontSize: 10, color: "#333", letterSpacing: 3, fontWeight: 700, marginBottom: 16, fontFamily: "monospace" }}>HOW IT WORKS</div>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(26px, 4vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-1px", marginBottom: 60 }}>Brief me in 30 seconds.</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+        <div className="land-grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
           {[
             { n: "01", title: "Pick your instrument", body: "ES, NQ, Gold, Oil, EUR/USD, GBP, BTC, VIX and more. Type it or tap a chip." },
             { n: "02", title: "Get your briefing", body: "Instant macro brief: sentiment, high-impact events, central bank stance, geopolitical risks, and why each event moves price." },
@@ -280,7 +298,7 @@ function LandingPage() {
       <section style={{ maxWidth: 900, margin: "0 auto 100px", padding: "0 24px" }}>
         <div style={{ textAlign: "center", fontSize: 10, color: "#333", letterSpacing: 3, fontWeight: 700, marginBottom: 16, fontFamily: "monospace" }}>WHAT YOU GET</div>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(26px, 4vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-1px", marginBottom: 60, textAlign: "center" }}>Built for traders, not economists.</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
+        <div className="land-grid-2" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
           {[
             { icon: "◎", color: "#00d4ff", title: "Full Brief", body: "Pre-trade macro briefing with events, sentiment, geopolitical risks, and teaching moments. Understand why price moves, not just that it moved." },
             { icon: "⚡", color: "#ffd700", title: "Scalper Mode", body: "Green / Yellow / Red risk check for the next 10 minutes. Breaking wire headlines, upcoming events with due time, and a clear scalper note. Pro feature." },
@@ -301,10 +319,10 @@ function LandingPage() {
       </section>
 
       {/* PRICING */}
-      <section style={{ maxWidth: 680, margin: "0 auto 100px", padding: "0 24px", textAlign: "center" }}>
+      <section className="land-section" style={{ maxWidth: 680, margin: "0 auto 100px", padding: "0 24px", textAlign: "center" }}>
         <div style={{ fontSize: 10, color: "#333", letterSpacing: 3, fontWeight: 700, marginBottom: 16, fontFamily: "monospace" }}>PRICING</div>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(26px, 4vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-1px", marginBottom: 60 }}>Less than a single bad trade.</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, textAlign: "left" }}>
+        <div className="land-pricing-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, textAlign: "left" }}>
           {/* FREE */}
           <div style={{ border: "1px solid rgba(255,255,255,.08)", borderRadius: 14, padding: "30px 26px" }}>
             <div style={{ fontSize: 11, color: "#555", letterSpacing: 1.5, fontWeight: 600, marginBottom: 12, fontFamily: "monospace" }}>FREE</div>
@@ -340,11 +358,11 @@ function LandingPage() {
           Stop trading blind.<br /><span style={{ color: "#00d4ff" }}>Know the macro.</span>
         </h2>
         <p style={{ fontSize: 16, color: "#444", marginBottom: 36, maxWidth: 400, margin: "0 auto 36px" }}>Free to start. 30 seconds to your first brief.</p>
-        <a href="/app" className="land-btn-primary" style={{ fontSize: 16, padding: "18px 44px" }}>Get your first brief free</a>
+        <a href="/app" className="land-btn-primary land-cta-btn" style={{ fontSize: 16, padding: "18px 44px" }}>Get your first brief free</a>
       </section>
 
       {/* FOOTER */}
-      <footer style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "24px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+      <footer className="land-footer" style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "24px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 800, color: "#1a1a1a" }}>MARKET<span style={{ color: "#0a3a44" }}>DEBRIEFS</span></div>
         <div style={{ fontSize: 11, color: "#1a1a1a" }}>Not financial advice. For informational purposes only.</div>
       </footer>
@@ -786,25 +804,21 @@ export default function App() {
   const { isLoaded, isSignedIn } = useUser();
   const path = window.location.pathname;
 
+  // Show spinner while Clerk initialises
   if (!isLoaded) {
     return (
       <div style={{ minHeight: "100vh", background: "#0a0c0f", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#333", fontSize: 13, fontFamily: "monospace" }}>...</div>
+        <div style={{ color: "#222", fontSize: 13, fontFamily: "monospace" }}>...</div>
       </div>
     );
   }
 
-  // /app route: show auth or the app
+  // /app route — auth wall
   if (path.startsWith("/app")) {
     if (isSignedIn) return <AppInner />;
     return <AuthScreen />;
   }
 
-  // / root route: if signed in send straight to /app, else show landing
-  if (isSignedIn) {
-    window.location.replace("/app");
-    return null;
-  }
-
-  return <LandingPage />;
+  // / root — landing page always (signed-in users can still see it, nav sends them to /app)
+  return <LandingPage isSignedIn={isSignedIn} />;
 }
