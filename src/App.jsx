@@ -131,10 +131,7 @@ function AppShell({ navigate }) {
 
   if (!isLoaded) return <Spinner />;
   if (isSignedIn) return <AppInner navigate={navigate} />;
-  
-  // Not signed in - send to landing, not a sign-in form
-  navigate("/");
-  return <Spinner />;
+  return <AuthScreen />;
 }
 
 function Spinner() {
