@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const FREE_LIMIT = 5;
+const FREE_LIMIT = 3;
 
 function getTodayKey(userId) {
   const today = new Date().toISOString().slice(0, 10);
