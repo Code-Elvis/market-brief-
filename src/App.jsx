@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useUser, useClerk, SignIn, SignUp } from "@clerk/clerk-react";
+import { useUser, useClerk, useAuth, SignIn, SignUp } from "@clerk/clerk-react";
 import { useUsage } from "./useUsage.js";
 
 // ── ROUTING ───────────────────────────────────────────────────────────────────
@@ -98,9 +98,12 @@ function LandingPage({ navigate }) {
 
 // ── APP SHELL ─────────────────────────────────────────────────────────────────
 function AppShell({ navigate }) {
-  const { isLoaded, isSignedIn } = useUser();
+  // useAuth gives userId directly from the active session token - more reliable
+  // than isSignedIn after a password redirect where session rehydration can lag
+  const { isLoaded, userId } = useAuth();
+
   if (!isLoaded) return <Spinner />;
-  if (isSignedIn) return <AppInner navigate={navigate} />;
+  if (userId) return <AppInner navigate={navigate} />;
   return <AuthScreen />;
 }
 
