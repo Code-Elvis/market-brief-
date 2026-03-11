@@ -138,30 +138,216 @@ function AuthScreen() {
 }
 
 function LandingPage() {
+  const style = `
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@300;400;500&display=swap');
+    html { scroll-behavior: smooth; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #050709; }
+    .land-btn-primary {
+      display: inline-block; padding: 16px 36px; border-radius: 6px;
+      background: #00d4ff; color: #000; font-size: 15px; font-weight: 700;
+      text-decoration: none; letter-spacing: 0.5px;
+      font-family: 'Syne', sans-serif;
+      transition: opacity .15s, transform .15s;
+    }
+    .land-btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+    .land-btn-ghost {
+      display: inline-block; padding: 16px 36px; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.12); color: #777; font-size: 15px; font-weight: 500;
+      text-decoration: none; letter-spacing: 0.5px; font-family: 'DM Sans', sans-serif;
+      transition: border-color .15s, color .15s;
+    }
+    .land-btn-ghost:hover { border-color: rgba(255,255,255,.3); color: #bbb; }
+    .feature-card {
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 12px; padding: 28px;
+      transition: border-color .2s, background .2s;
+    }
+    .feature-card:hover {
+      border-color: rgba(0,212,255,.2);
+      background: rgba(0,212,255,.04);
+    }
+    .ticker-row {
+      display: flex; gap: 0; overflow: hidden; white-space: nowrap;
+      border-top: 1px solid rgba(255,255,255,.05);
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    @keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+    .ticker-inner { display: flex; gap: 0; animation: ticker 22s linear infinite; }
+    .ticker-item { padding: 10px 28px; font-family: monospace; font-size: 11px; color: #2a2a2a; border-right: 1px solid rgba(255,255,255,.04); }
+    @keyframes fadeup { from { opacity: 0; transform: translateY(18px) } to { opacity: 1; transform: translateY(0) } }
+    .hero-anim { animation: fadeup .7s ease both; }
+    .hero-anim-1 { animation-delay: .1s; }
+    .hero-anim-2 { animation-delay: .22s; }
+    .hero-anim-3 { animation-delay: .36s; }
+    .hero-anim-4 { animation-delay: .5s; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
+  `;
+
+  const tickers = ["ES S&P 500", "NQ NASDAQ", "XAU GOLD", "WTI CRUDE", "EUR/USD", "GBP/USD", "BTC/USD", "VIX", "RTY RUSSELL", "YM DOW", "USD/JPY", "AUD/USD"];
+
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px", textAlign: "center" }}>
-      <div style={{ maxWidth: 600, width: "100%" }}>
-        <div style={{ fontSize: 13, color: "#00d4ff", fontWeight: 700, letterSpacing: 3, marginBottom: 24, fontFamily: "monospace" }}>MARKET INTELLIGENCE</div>
-        <h1 style={{ fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 900, color: "#fff", lineHeight: 1.1, margin: "0 0 20px", letterSpacing: "-1px" }}>
-          Know the macro<br /><span style={{ color: "#00d4ff" }}>before you trade.</span>
-        </h1>
-        <p style={{ fontSize: 17, color: "#555", lineHeight: 1.7, margin: "0 0 40px", maxWidth: 480, marginLeft: "auto", marginRight: "auto" }}>
-          Bloomberg tells you what happened. Market Debriefs tells you what it means.
-        </p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 60 }}>
-          <a href="/app" style={{ padding: "14px 32px", borderRadius: 10, background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", display: "inline-block" }}>
-            Get Started Free
-          </a>
-          <a href="/app" style={{ padding: "14px 32px", borderRadius: 10, border: "1px solid rgba(255,255,255,.1)", color: "#888", fontSize: 15, fontWeight: 600, textDecoration: "none", display: "inline-block" }}>
-            Sign In
-          </a>
+    <div style={{ minHeight: "100vh", background: "#050709", color: "#e0e0e0", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <style>{style}</style>
+
+      {/* NAV */}
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "18px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,.04)", background: "rgba(5,7,9,.85)", backdropFilter: "blur(12px)" }}>
+        <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 900, letterSpacing: "-0.3px", color: "#fff" }}>
+          MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span>
         </div>
-        <div style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" }}>
-          {["ES · NQ · Gold · Oil", "EUR/USD · GBP · BTC", "VIX · Russell · Dow"].map((t, i) => (
-            <div key={i} style={{ fontSize: 12, color: "#2a2a2a", fontFamily: "monospace" }}>{t}</div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <a href="/app" style={{ fontSize: 13, color: "#555", textDecoration: "none", padding: "8px 16px" }}>Sign in</a>
+          <a href="/app" className="land-btn-primary" style={{ padding: "9px 20px", fontSize: 13 }}>Start free</a>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <section style={{ paddingTop: 140, paddingBottom: 80, paddingLeft: 24, paddingRight: 24, textAlign: "center", maxWidth: 780, margin: "0 auto" }}>
+        <div className="hero-anim hero-anim-1" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 20, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.06)", marginBottom: 32 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00d4ff", display: "inline-block", animation: "pulse-dot 1.8s ease infinite" }} />
+          <span style={{ fontSize: 11, color: "#00d4ff", fontWeight: 600, letterSpacing: 1.5, fontFamily: "monospace" }}>LIVE MACRO INTELLIGENCE</span>
+        </div>
+
+        <h1 className="hero-anim hero-anim-2" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(38px, 7vw, 72px)", fontWeight: 900, color: "#fff", lineHeight: 1.06, letterSpacing: "-2px", marginBottom: 24 }}>
+          Bloomberg tells you<br />
+          <span style={{ color: "#00d4ff" }}>what happened.</span><br />
+          <span style={{ color: "rgba(255,255,255,.35)" }}>We tell you what it means.</span>
+        </h1>
+
+        <p className="hero-anim hero-anim-3" style={{ fontSize: 18, color: "#555", lineHeight: 1.75, maxWidth: 520, margin: "0 auto 44px", fontWeight: 300 }}>
+          Instant macro briefings for every major instrument. Know the central bank stance, high-impact events, and geopolitical risks before you place a trade.
+        </p>
+
+        <div className="hero-anim hero-anim-4" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
+          <a href="/app" className="land-btn-primary">Start free — 3 briefs/day</a>
+          <a href="/app" className="land-btn-ghost">Sign in</a>
+        </div>
+        <div className="hero-anim hero-anim-4" style={{ fontSize: 12, color: "#2a2a2a" }}>No credit card required for free tier</div>
+      </section>
+
+      {/* TICKER */}
+      <div className="ticker-row" style={{ marginBottom: 80 }}>
+        <div className="ticker-inner">
+          {[...tickers, ...tickers].map((t, i) => (
+            <div key={i} className="ticker-item">{t}</div>
           ))}
         </div>
       </div>
+
+      {/* PROBLEM / POSITIONING */}
+      <section style={{ maxWidth: 900, margin: "0 auto 100px", padding: "0 24px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+          <div style={{ background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.12)", borderRadius: "12px 0 0 12px", padding: "36px 32px" }}>
+            <div style={{ fontSize: 10, color: "#ff4757", fontWeight: 700, letterSpacing: 2, marginBottom: 16, fontFamily: "monospace" }}>THE OLD WAY</div>
+            {["Bloomberg terminal — $30,000/year", "30 tabs open before every trade", "News sites with no trading context", "Macro blind spots that cost you", "Hours of research, no clear answer"].map((t, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, fontSize: 14, color: "#555" }}>
+                <span style={{ color: "#ff4757", fontSize: 12, flexShrink: 0 }}>✕</span> {t}
+              </div>
+            ))}
+          </div>
+          <div style={{ background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.15)", borderRadius: "0 12px 12px 0", padding: "36px 32px" }}>
+            <div style={{ fontSize: 10, color: "#00d4ff", fontWeight: 700, letterSpacing: 2, marginBottom: 16, fontFamily: "monospace" }}>MARKET DEBRIEFS</div>
+            {["€49/month — full institutional context", "One brief, everything you need to know", "Trading-first macro analysis", "Central bank stance + geopolitical risk", "30 seconds to a complete pre-trade read"].map((t, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, fontSize: 14, color: "#c0d0e0" }}>
+                <span style={{ color: "#00d4ff", fontSize: 12, flexShrink: 0 }}>✓</span> {t}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section style={{ maxWidth: 900, margin: "0 auto 100px", padding: "0 24px", textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: "#333", letterSpacing: 3, fontWeight: 700, marginBottom: 16, fontFamily: "monospace" }}>HOW IT WORKS</div>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(26px, 4vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-1px", marginBottom: 60 }}>Brief me in 30 seconds.</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          {[
+            { n: "01", title: "Pick your instrument", body: "ES, NQ, Gold, Oil, EUR/USD, GBP, BTC, VIX and more. Type it or tap a chip." },
+            { n: "02", title: "Get your briefing", body: "Instant macro brief: sentiment, high-impact events, central bank stance, geopolitical risks, and why each event moves price." },
+            { n: "03", title: "Trade with context", body: "Know what the market is reacting to before you enter. Stop trading blind." },
+          ].map((s, i) => (
+            <div key={i} className="feature-card" style={{ textAlign: "left" }}>
+              <div style={{ fontFamily: "monospace", fontSize: 11, color: "#00d4ff", marginBottom: 16, opacity: .5 }}>{s.n}</div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 17, fontWeight: 700, color: "#f0f0f0", marginBottom: 10 }}>{s.title}</div>
+              <div style={{ fontSize: 13, color: "#555", lineHeight: 1.7 }}>{s.body}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section style={{ maxWidth: 900, margin: "0 auto 100px", padding: "0 24px" }}>
+        <div style={{ textAlign: "center", fontSize: 10, color: "#333", letterSpacing: 3, fontWeight: 700, marginBottom: 16, fontFamily: "monospace" }}>WHAT YOU GET</div>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(26px, 4vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-1px", marginBottom: 60, textAlign: "center" }}>Built for traders, not economists.</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
+          {[
+            { icon: "◎", color: "#00d4ff", title: "Full Brief", body: "Pre-trade macro briefing with events, sentiment, geopolitical risks, and teaching moments. Understand why price moves, not just that it moved." },
+            { icon: "⚡", color: "#ffd700", title: "Scalper Mode", body: "Green / Yellow / Red risk check for the next 10 minutes. Breaking wire headlines, upcoming events with due time, and a clear scalper note. Pro feature." },
+            { icon: "⊕", color: "#c084fc", title: "Options Flow", body: "Dealer positioning, key gamma levels, call/put walls, GEX flip zones, and max pain strike for equity instruments. Know where the magnet is. Pro feature." },
+            { icon: "✦", color: "#00d4aa", title: "14 Instruments", body: "ES, NQ, Gold, Oil, DXY, EUR/USD, GBP, BTC, ETH, JPY, AUD, VIX, RTY, YM. Every major futures and FX instrument covered." },
+            { icon: "◐", color: "#ff8c42", title: "Daily Reflection", body: "Built-in trading journal with 6 guided prompts. Review your decisions, not just your P&L. The habit that separates consistent traders." },
+            { icon: "∿", color: "#f87171", title: "Learn to Fish", body: "Eight macro education modules built into the app. Understand risk-on vs off, the dollar's role, how options flow moves price, and more." },
+          ].map((f, i) => (
+            <div key={i} className="feature-card" style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
+              <div style={{ fontSize: 20, color: f.color, flexShrink: 0, marginTop: 2 }}>{f.icon}</div>
+              <div>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "#f0f0f0", marginBottom: 7 }}>{f.title}</div>
+                <div style={{ fontSize: 13, color: "#555", lineHeight: 1.7 }}>{f.body}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* PRICING */}
+      <section style={{ maxWidth: 680, margin: "0 auto 100px", padding: "0 24px", textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: "#333", letterSpacing: 3, fontWeight: 700, marginBottom: 16, fontFamily: "monospace" }}>PRICING</div>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(26px, 4vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-1px", marginBottom: 60 }}>Less than a single bad trade.</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, textAlign: "left" }}>
+          {/* FREE */}
+          <div style={{ border: "1px solid rgba(255,255,255,.08)", borderRadius: 14, padding: "30px 26px" }}>
+            <div style={{ fontSize: 11, color: "#555", letterSpacing: 1.5, fontWeight: 600, marginBottom: 12, fontFamily: "monospace" }}>FREE</div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 36, fontWeight: 900, color: "#fff", marginBottom: 4 }}>€0</div>
+            <div style={{ fontSize: 12, color: "#333", marginBottom: 24 }}>forever</div>
+            {["3 Full Briefs per day", "All 14 instruments", "Daily Reflection journal", "Learn to Fish modules"].map((f, i) => (
+              <div key={i} style={{ display: "flex", gap: 9, alignItems: "center", marginBottom: 10, fontSize: 13, color: "#555" }}>
+                <span style={{ color: "#2a2a2a", fontSize: 11 }}>✓</span> {f}
+              </div>
+            ))}
+            <a href="/app" style={{ display: "block", textAlign: "center", marginTop: 24, padding: "12px", borderRadius: 8, border: "1px solid rgba(255,255,255,.08)", color: "#555", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: "inherit" }}>Get started free</a>
+          </div>
+          {/* PRO */}
+          <div style={{ border: "1px solid rgba(0,212,255,.3)", borderRadius: 14, padding: "30px 26px", background: "rgba(0,212,255,.03)", position: "relative" }}>
+            <div style={{ position: "absolute", top: -1, right: 20, background: "#00d4ff", color: "#000", fontSize: 9, fontWeight: 800, padding: "4px 10px", borderRadius: "0 0 6px 6px", letterSpacing: 1 }}>MOST POPULAR</div>
+            <div style={{ fontSize: 11, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 600, marginBottom: 12, fontFamily: "monospace" }}>PRO</div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 36, fontWeight: 900, color: "#fff", marginBottom: 4 }}>€49</div>
+            <div style={{ fontSize: 12, color: "#333", marginBottom: 24 }}>per month — cancel anytime</div>
+            {["Unlimited briefs every day", "Scalper Mode — GREEN/YELLOW/RED", "Options Flow + dealer positioning", "All Free features included", "Bloomberg context at 0.2% of the cost"].map((f, i) => (
+              <div key={i} style={{ display: "flex", gap: 9, alignItems: "center", marginBottom: 10, fontSize: 13, color: "#c0d0e0" }}>
+                <span style={{ color: "#00d4ff", fontSize: 11 }}>✓</span> {f}
+              </div>
+            ))}
+            <a href="/app" className="land-btn-primary" style={{ display: "block", textAlign: "center", marginTop: 24, padding: "12px" }}>Start with Pro</a>
+          </div>
+        </div>
+        <div style={{ marginTop: 20, fontSize: 12, color: "#222" }}>Bloomberg terminal costs ~$30,000/year. Market Debriefs Pro is €588/year.</div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section style={{ textAlign: "center", padding: "80px 24px 120px", borderTop: "1px solid rgba(255,255,255,.04)" }}>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "#fff", letterSpacing: "-1.5px", marginBottom: 20, lineHeight: 1.1 }}>
+          Stop trading blind.<br /><span style={{ color: "#00d4ff" }}>Know the macro.</span>
+        </h2>
+        <p style={{ fontSize: 16, color: "#444", marginBottom: 36, maxWidth: 400, margin: "0 auto 36px" }}>Free to start. 30 seconds to your first brief.</p>
+        <a href="/app" className="land-btn-primary" style={{ fontSize: 16, padding: "18px 44px" }}>Get your first brief free</a>
+      </section>
+
+      {/* FOOTER */}
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "24px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+        <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 800, color: "#1a1a1a" }}>MARKET<span style={{ color: "#0a3a44" }}>DEBRIEFS</span></div>
+        <div style={{ fontSize: 11, color: "#1a1a1a" }}>Not financial advice. For informational purposes only.</div>
+      </footer>
     </div>
   );
 }
