@@ -37,15 +37,15 @@ function detect(query) {
 }
 
 function sysPrompt(mode) {
-  const base = "You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.";
+  const base = "You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }. CRITICAL: Do NOT quote specific price levels or index values — you do not have live market data. Focus only on macro drivers, events, central bank stance, and directional bias. Never say things like 'ES is at 5200' or 'Gold is at 2200' — these would be outdated. Instead describe sentiment, risks, and catalysts.";
   if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}';
   return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","key_levels_context":"string","teaching_moment":"string"}';
 }
 
 function userPrompt(inst, mode) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  if (mode === "scalper") return "Time: " + now + ". About to trade " + inst.label + ". What are the key macro risks right now? GREEN YELLOW or RED?";
-  return "Today: " + now + ". Full macro briefing for " + inst.label + ". What are the key events, central bank stance, geopolitical risks, and why they move price?";
+  if (mode === "scalper") return "Current date and time: " + now + ". I am about to trade " + inst.label + ". Give me a macro risk assessment for right now based on recent central bank policy, economic data releases, and geopolitical developments. Rate GREEN YELLOW or RED. Do not quote specific price levels.";
+  return "Current date: " + now + ". Give me a full macro briefing for " + inst.label + " based on current central bank stance, upcoming high-impact events, geopolitical risks, and macro sentiment. Do not quote specific price levels — focus on drivers and direction.";
 }
 
 async function callClaude(system, userMsg) {
@@ -498,8 +498,8 @@ function AppInner() {
                   </button>
                 )}
                 {isPro && <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: "rgba(0,212,255,.08)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontWeight: 700 }}>PRO</span>}
-                <button onClick={() => signOut()} style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4, background: "none", cursor: "pointer" }}>
-                  {new Date().toLocaleDateString("en-GB", { month: "short", day: "numeric" }).toUpperCase()}
+                <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#555", padding: "3px 9px", border: "1px solid rgba(255,255,255,.1)", borderRadius: 4, background: "rgba(255,255,255,.03)", cursor: "pointer" }}>
+                  SIGN OUT
                 </button>
               </div>
             </div>
