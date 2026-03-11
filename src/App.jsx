@@ -48,7 +48,7 @@ function LandingPage({ navigate }) {
         <h1 style={{ fontSize: "clamp(32px, 6vw, 58px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-1.5px", color: "#fff", marginBottom: 20 }}>Know the macro<br /><span style={{ color: "#00d4ff" }}>before you trade.</span></h1>
         <p style={{ fontSize: "clamp(14px, 2vw, 17px)", color: "#555", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 36px" }}>Bloomberg tells you what happened.<br /><span style={{ color: "#888" }}>Market Debriefs tells you what it means.</span></p>
         <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 36px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginBottom: 14 }}>GET YOUR BRIEF FREE →</button>
-        <div style={{ fontSize: 12, color: "#2a2a2a" }}>No credit card · 5 free briefs daily</div>
+        <div style={{ fontSize: 12, color: "#2a2a2a" }}>No credit card · 3 free briefs daily</div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", padding: "0 32px 60px", maxWidth: 600, margin: "0 auto" }}>
         {["ES S&P 500","NQ NASDAQ","Gold XAU","WTI Oil","EUR/USD","GBP/USD","Bitcoin","VIX","USD/JPY","Russell 2000"].map(t => (
@@ -99,9 +99,10 @@ function LandingPage({ navigate }) {
       </div>
 
       {/* ── OLD WAY vs MARKET DEBRIEFS ── */}
+      <style>{`.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.06); } @media (max-width: 520px) { .compare-grid { grid-template-columns: 1fr; } .compare-grid .md-col { border-left: none !important; border-top: 1px solid rgba(0,212,255,.1); } }`}</style>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 32px 80px" }}>
         <div style={{ fontSize: 11, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 24, textAlign: "center" }}>THE ALTERNATIVE</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,.06)" }}>
+        <div className="compare-grid">
           <div style={{ background: "rgba(255,255,255,.02)", padding: "24px 20px" }}>
             <div style={{ fontSize: 11, color: "#333", fontWeight: 700, letterSpacing: 2, marginBottom: 20 }}>OLD WAY</div>
             {[
@@ -117,7 +118,7 @@ function LandingPage({ navigate }) {
               </div>
             ))}
           </div>
-          <div style={{ background: "rgba(0,212,255,.04)", padding: "24px 20px", borderLeft: "1px solid rgba(0,212,255,.1)" }}>
+          <div className="md-col" style={{ background: "rgba(0,212,255,.04)", padding: "24px 20px", borderLeft: "1px solid rgba(0,212,255,.1)" }}>
             <div style={{ fontSize: 11, color: "#00d4ff", fontWeight: 700, letterSpacing: 2, marginBottom: 20 }}>MARKET DEBRIEFS</div>
             {[
               ["Full macro briefing", "€0 — Free"],
@@ -142,7 +143,7 @@ function LandingPage({ navigate }) {
         <div style={{ fontSize: 11, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 24 }}>PRICING</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 32 }}>
           {[
-            { name: "Free", price: "€0", features: ["5 briefs/day", "Full Brief mode", "Trade Journal", "Learn to Fish"] },
+            { name: "Free", price: "€0", features: ["3 briefs/day", "Full Brief mode", "Trade Journal", "Learn to Fish"] },
             { name: "Pro", price: "€49/mo", features: ["Unlimited briefs", "Scalper Mode", "Options Flow", "All instruments"], highlight: true },
           ].map(p => (
             <div key={p.name} style={{ background: p.highlight ? "rgba(0,212,255,.06)" : "rgba(255,255,255,.02)", border: `1px solid ${p.highlight ? "rgba(0,212,255,.25)" : "rgba(255,255,255,.06)"}`, borderRadius: 12, padding: 20, textAlign: "left" }}>
@@ -292,7 +293,7 @@ function UpgradeModal({ reason, onClose, userId, email }) {
         <div style={{ fontSize: 32, marginBottom: 16 }}>📊</div>
         <div style={{ fontSize: 20, fontWeight: 800, color: "#f0f0f0", marginBottom: 10 }}>{reason === "limit" ? "Daily Limit Reached" : "Pro Feature"}</div>
         <div style={{ fontSize: 13, color: "#666", lineHeight: 1.7, marginBottom: 24 }}>
-          {reason === "limit" ? "You've used your 5 free briefs today. Upgrade to Pro for unlimited briefs, Scalper Mode, and Options Flow." : "Scalper Mode and Options Flow are Pro features."}
+          {reason === "limit" ? "You've used your 3 free briefs today. Upgrade to Pro for unlimited briefs, Scalper Mode, and Options Flow." : "Scalper Mode and Options Flow are Pro features."}
         </div>
         <div style={{ background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.12)", borderRadius: 10, padding: 16, marginBottom: 24, textAlign: "left" }}>
           {["Unlimited briefs every day","Scalper Mode — live risk checks","Options Flow intelligence","All instruments covered"].map((f, i) => (
