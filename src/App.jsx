@@ -69,6 +69,75 @@ function LandingPage({ navigate }) {
           </div>
         ))}
       </div>
+      {/* ── HOW IT WORKS ── */}
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 32px 80px", textAlign: "center" }}>
+        <div style={{ fontSize: 11, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 32 }}>HOW IT WORKS</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 0, position: "relative" }}>
+          {[
+            { step: "01", icon: "🎯", title: "Pick Your Instrument", desc: "Select any market — ES, Gold, EUR/USD, BTC, Oil. Whatever you're about to trade." },
+            { step: "02", icon: "📡", title: "Get Your Briefing", desc: "AI reads macro data, central bank stance, geopolitical risk, and live event risk in seconds." },
+            { step: "03", icon: "🧠", title: "Trade With Context", desc: "Know the macro forces behind price. Enter with conviction — or stay out when the odds aren't with you." },
+          ].map((s, i) => (
+            <div key={s.step} style={{ padding: "24px 20px", position: "relative" }}>
+              {i < 2 && <div style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", color: "#1a1a1a", fontSize: 20, display: "none" }}>→</div>}
+              <div style={{ fontSize: 10, color: "#00d4ff", fontWeight: 800, letterSpacing: 3, marginBottom: 12, opacity: 0.5 }}>{s.step}</div>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>{s.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#e0e0e0", marginBottom: 8 }}>{s.title}</div>
+              <div style={{ fontSize: 12, color: "#444", lineHeight: 1.65 }}>{s.desc}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 32, padding: "20px 24px", background: "rgba(0,212,255,.03)", border: "1px solid rgba(0,212,255,.08)", borderRadius: 12, textAlign: "left" }}>
+          <div style={{ fontSize: 11, color: "#00d4ff", fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>WHY MACRO MATTERS</div>
+          <p style={{ fontSize: 13, color: "#555", lineHeight: 1.75, margin: 0 }}>
+            Most retail traders lose not because of bad entries — but because they trade <em style={{ color: "#888" }}>against</em> the macro tide. 
+            A hawkish Fed, a risk-off geopolitical shock, or a surprise CPI print can invalidate any technical setup instantly. 
+            Institutional desks have economists and macro analysts. Market Debriefs gives independent traders that same edge — 
+            in seconds, before every trade.
+          </p>
+        </div>
+      </div>
+
+      {/* ── OLD WAY vs MARKET DEBRIEFS ── */}
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 32px 80px" }}>
+        <div style={{ fontSize: 11, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 24, textAlign: "center" }}>THE ALTERNATIVE</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,.06)" }}>
+          <div style={{ background: "rgba(255,255,255,.02)", padding: "24px 20px" }}>
+            <div style={{ fontSize: 11, color: "#333", fontWeight: 700, letterSpacing: 2, marginBottom: 20 }}>OLD WAY</div>
+            {[
+              ["Bloomberg Terminal", "$30,000 / year"],
+              ["Manually scan news", "30–60 min / day"],
+              ["Multiple paid services", "$200–500 / mo"],
+              ["Still miss macro context", "Before key trades"],
+              ["Institutional access only", "Not for retail"],
+            ].map(([what, cost]) => (
+              <div key={what} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid rgba(255,255,255,.04)", gap: 12 }}>
+                <span style={{ fontSize: 12, color: "#444" }}>{what}</span>
+                <span style={{ fontSize: 11, color: "#333", fontWeight: 600, whiteSpace: "nowrap" }}>{cost}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: "rgba(0,212,255,.04)", padding: "24px 20px", borderLeft: "1px solid rgba(0,212,255,.1)" }}>
+            <div style={{ fontSize: 11, color: "#00d4ff", fontWeight: 700, letterSpacing: 2, marginBottom: 20 }}>MARKET DEBRIEFS</div>
+            {[
+              ["Full macro briefing", "€0 — Free"],
+              ["AI reads it for you", "< 30 seconds"],
+              ["All-in-one platform", "€49 / mo Pro"],
+              ["Macro context built-in", "Every brief"],
+              ["Built for retail traders", "Anyone, anywhere"],
+            ].map(([what, cost]) => (
+              <div key={what} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid rgba(0,212,255,.06)", gap: 12 }}>
+                <span style={{ fontSize: 12, color: "#888" }}>{what}</span>
+                <span style={{ fontSize: 11, color: "#00d4ff", fontWeight: 700, whiteSpace: "nowrap" }}>{cost}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ textAlign: "center", marginTop: 14, fontSize: 11, color: "#2a2a2a" }}>
+          * Bloomberg Terminal pricing based on publicly reported ~$30,000/year subscription cost.
+        </div>
+      </div>
+
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 32px 80px", textAlign: "center" }}>
         <div style={{ fontSize: 11, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 24 }}>PRICING</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 32 }}>
@@ -89,6 +158,23 @@ function LandingPage({ navigate }) {
         </div>
         <button onClick={() => navigate("/app")} className="cta-btn" style={{ width: "100%", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>START FREE — NO CARD NEEDED</button>
       </div>
+
+      {/* ── FINAL CTA ── */}
+      <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 32px 100px", textAlign: "center" }}>
+        <div style={{ padding: "48px 32px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)", borderRadius: 16 }}>
+          <div style={{ fontSize: "clamp(22px, 4vw, 34px)", fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: 16, letterSpacing: "-0.5px" }}>
+            Stop trading blind.<br /><span style={{ color: "#00d4ff" }}>Know the macro.</span>
+          </div>
+          <p style={{ fontSize: 13, color: "#555", lineHeight: 1.75, marginBottom: 28, maxWidth: 420, margin: "0 auto 28px" }}>
+            Every major move in markets is driven by macro forces — central bank policy, geopolitical risk, 
+            inflation data, liquidity cycles. Trading without this context is like sailing without knowing the weather. 
+            The institutions know. Now you can too.
+          </p>
+          <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 40px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>GET YOUR BRIEF FREE →</button>
+          <div style={{ marginTop: 14, fontSize: 11, color: "#2a2a2a" }}>Free forever · No card needed · Takes 30 seconds</div>
+        </div>
+      </div>
+
       <div style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "24px 32px", textAlign: "center", color: "#2a2a2a", fontSize: 11 }}>
         © {new Date().getFullYear()} MarketDebriefs · Not financial advice
       </div>
@@ -149,14 +235,18 @@ function detect(query) {
   return null;
 }
 function sysPrompt(mode) {
-  const base = "You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.";
+  const base = `You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
+CRITICAL RULES — NEVER BREAK THESE:
+1. NEVER mention specific price levels, support/resistance numbers, targets, stops, or historical price ranges. Price levels go stale instantly and mislead traders. Focus purely on macro forces and event risk.
+2. ONLY discuss CURRENT or UPCOMING macro events — central bank decisions, economic data releases, geopolitical developments, and market structure themes that are relevant NOW or scheduled in the near future. Do NOT recap past events as if they are news.
+3. Your job is macro context, not technical analysis. Tell traders WHAT is driving the market and WHY — not where price is or was.`;
   if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}';
-  return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","key_levels_context":"string","teaching_moment":"string"}';
+  return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}';
 }
 function userPrompt(inst, mode) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  if (mode === "scalper") return "Time: " + now + ". About to trade " + inst.label + ". What are the key macro risks right now? GREEN YELLOW or RED?";
-  return "Today: " + now + ". Full macro briefing for " + inst.label + ". What are the key events, central bank stance, geopolitical risks, and why they move price?";
+  if (mode === "scalper") return "Time: " + now + ". About to trade " + inst.label + ". What are the CURRENT macro risks right now and what events are IMMINENT? GREEN YELLOW or RED? No price levels.";
+  return "Today: " + now + ". Full macro briefing for " + inst.label + ". Focus on CURRENT central bank stance, UPCOMING scheduled events, and live geopolitical risks. No price levels — only macro context and why it moves price.";
 }
 async function callClaude(system, userMsg) {
   const res = await fetch("/api/brief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system, messages: [{ role: "user", content: userMsg }] }) });
@@ -301,7 +391,7 @@ function FullView({ inst, data }) {
       {data.geopolitical_risks && <div style={{ background: "rgba(255,140,0,.08)", border: "1px solid rgba(255,140,0,.25)", borderRadius: 8, padding: 14, marginBottom: 15 }}><div style={{ fontSize: 9, color: "#ff8c00", fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>GEOPOLITICAL RISK</div><div style={{ fontSize: 13, color: "#e0c88a", lineHeight: 1.6 }}>{data.geopolitical_risks}</div></div>}
       <div style={{ fontSize: 9, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 11 }}>HIGH-IMPACT EVENTS</div>
       {data.events && data.events.map((e, i) => <EventCard key={i} ev={e} />)}
-      {data.key_levels_context && <div style={{ background: "rgba(0,212,255,.06)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 8, padding: 13, marginBottom: 13 }}><div style={{ fontSize: 9, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>WHAT TO WATCH</div><div style={{ fontSize: 13, color: "#a8d8ea", lineHeight: 1.65 }}>{data.key_levels_context}</div></div>}
+      {data.macro_context && <div style={{ background: "rgba(0,212,255,.06)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 8, padding: 13, marginBottom: 13 }}><div style={{ fontSize: 9, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>WHAT TO WATCH</div><div style={{ fontSize: 13, color: "#a8d8ea", lineHeight: 1.65 }}>{data.macro_context}</div></div>}
       {data.teaching_moment && <div style={{ background: "rgba(192,132,252,.06)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 8, padding: 15 }}><div style={{ fontSize: 9, color: "#c084fc", fontWeight: 700, letterSpacing: 1.5, marginBottom: 7 }}>TEACH ME TO FISH</div><div style={{ fontSize: 13, color: "#d4b8f7", lineHeight: 1.75 }}>{data.teaching_moment}</div></div>}
     </div>
   );
@@ -410,6 +500,12 @@ function AppInner({ navigate }) {
     }
   }, [user]);
 
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); window._deferredInstallPrompt = e; };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
   const { increment, canBrief, remaining } = useUsage(user?.id, isPro);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("intel");
@@ -476,6 +572,20 @@ function AppInner({ navigate }) {
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {!isPro && <button onClick={() => triggerUpgrade("limit")} style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: remaining <= 1 ? "rgba(255,71,87,.1)" : "rgba(255,255,255,.03)", border: "1px solid " + (remaining <= 1 ? "rgba(255,71,87,.3)" : "rgba(255,255,255,.07)"), color: remaining <= 1 ? "#ff4757" : "#333", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>{remaining} left</button>}
                 {isPro && <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: "rgba(0,212,255,.08)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontWeight: 700 }}>PRO</span>}
+                <span style={{ fontSize: 9, fontFamily: "monospace", color: "#2a2a2a", letterSpacing: 1 }}>
+                  {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" }).toUpperCase()}
+                </span>
+                <button
+                  onClick={() => {
+                    if (window.matchMedia("(display-mode: standalone)").matches) return;
+                    if (window._deferredInstallPrompt) {
+                      window._deferredInstallPrompt.prompt();
+                    } else {
+                      alert("To add to home screen:\n\niOS Safari: tap Share → Add to Home Screen\nAndroid Chrome: tap Menu → Add to Home Screen");
+                    }
+                  }}
+                  style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "3px 7px", border: "1px solid rgba(0,212,255,.2)", borderRadius: 4, background: "rgba(0,212,255,.05)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+                >⊕ GET APP</button>
                 <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4, background: "none", cursor: "pointer" }}>SIGN OUT</button>
               </div>
             </div>
