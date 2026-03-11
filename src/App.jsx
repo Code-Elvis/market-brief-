@@ -438,6 +438,24 @@ function AppInner() {
   const [optLoading, setOptLoading] = useState(false);
   const [optError, setOptError] = useState(null);
   const [optLastUpdated, setOptLastUpdated] = useState(null);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) {
+      setShowInstallBanner(true);
+      return;
+    }
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === "accepted") setInstallPrompt(null);
+  };
 
   const triggerUpgrade = (reason) => { setUpgradeReason(reason || "limit"); setShowUpgrade(true); };
 
@@ -491,17 +509,38 @@ function AppInner() {
                 <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff" }}>MARKET BRIEF</div>
                 <div style={{ fontSize: 9, color: "#2a2a2a", letterSpacing: 2, fontFamily: "monospace" }}>INTELLIGENCE — REFLECTION — EDUCATION</div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 {!isPro && (
                   <button onClick={() => triggerUpgrade("limit")} style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: remaining <= 1 ? "rgba(255,71,87,.1)" : "rgba(255,255,255,.03)", border: "1px solid " + (remaining <= 1 ? "rgba(255,71,87,.3)" : "rgba(255,255,255,.07)"), color: remaining <= 1 ? "#ff4757" : "#333", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
                     {remaining} left
                   </button>
                 )}
                 {isPro && <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: "rgba(0,212,255,.08)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontWeight: 700 }}>PRO</span>}
-                <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#555", padding: "3px 9px", border: "1px solid rgba(255,255,255,.1)", borderRadius: 4, background: "rgba(255,255,255,.03)", cursor: "pointer" }}>
+                <div style={{ width: 1, height: 12, background: "rgba(255,255,255,.07)" }} />
+                <span style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "monospace", letterSpacing: 0.5 }}>
+                  {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short" }).toUpperCase()}
+                </span>
+                <button onClick={handleInstall} title="Add to Home Screen" style={{ fontSize: 9, fontFamily: "inherit", color: "#00d4ff", padding: "3px 8px", border: "1px solid rgba(0,212,255,.2)", borderRadius: 4, background: "rgba(0,212,255,.05)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ fontSize: 10 }}>⊕</span> GET APP
+                </button>
+                <div style={{ width: 1, height: 12, background: "rgba(255,255,255,.07)" }} />
+                <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#444", padding: "3px 9px", border: "1px solid rgba(255,255,255,.08)", borderRadius: 4, background: "rgba(255,255,255,.02)", cursor: "pointer" }}>
                   SIGN OUT
                 </button>
               </div>
+              {showInstallBanner && (
+                <div style={{ position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)", background: "#0d1117", border: "1px solid rgba(0,212,255,.25)", borderRadius: 12, padding: "14px 18px", zIndex: 999, maxWidth: 320, width: "calc(100% - 40px)", boxShadow: "0 8px 32px rgba(0,0,0,.6)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f0f0" }}>Add to Home Screen</div>
+                    <button onClick={() => setShowInstallBanner(false)} style={{ background: "none", border: "none", color: "#333", cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1 }}>×</button>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#555", lineHeight: 1.6, marginBottom: 12 }}>
+                    On iOS: tap <span style={{ color: "#00d4ff" }}>Share</span> → <span style={{ color: "#00d4ff" }}>Add to Home Screen</span><br />
+                    On Android: tap <span style={{ color: "#00d4ff" }}>Menu ⋮</span> → <span style={{ color: "#00d4ff" }}>Add to Home Screen</span>
+                  </div>
+                  <button onClick={() => setShowInstallBanner(false)} style={{ width: "100%", padding: "8px", borderRadius: 7, border: "none", background: "rgba(0,212,255,.1)", color: "#00d4ff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Got it</button>
+                </div>
+              )}
             </div>
             <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
               {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Scalper Mode", sub: isPro ? "Last 10 min" : "Pro only 🔒" }].map(m => (
