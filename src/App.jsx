@@ -742,7 +742,7 @@ function AppInner({ navigate }) {
     setTab(id);
     if (id === "options" && inst && inst.optionsTicker && !optData && !optLoading) fetchOptions(inst);
   };
-  const TABS = [{ id: "intel", label: "Intelligence" }, { id: "options", label: "Options Flow" }, { id: "stocks", label: "Stocks" }, { id: "journal", label: "Reflection" }, { id: "learn", label: "Learn" }];
+  const TABS = [{ id: "intel", label: "Intelligence" }, { id: "options", label: "Options\nFlow" }, { id: "stocks", label: "Stocks" }, { id: "journal", label: "Reflection" }, { id: "learn", label: "Learn" }];
 
   return (
     <>
@@ -792,7 +792,10 @@ function AppInner({ navigate }) {
               {CHIPS.map(({ label, key }) => (<button key={key} onClick={() => { setQuery(label); run(label); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", color: "#444" }}>{label}</button>))}
             </div>
             <div style={{ display: "flex", overflowX: "auto" }}>
-              {TABS.map(t => (<button key={t.id} onClick={() => handleTabChange(t.id)} style={{ flex: 1, minWidth: 60, padding: "9px 4px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent"), whiteSpace: "nowrap" }}>{t.label}{(t.id === "options" || t.id === "stocks") && !isPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}{t.id === "options" && isPro && inst && inst.optionsTicker && <span style={{ marginLeft: 4, fontSize: 8, color: "#00d4ff", opacity: 0.5 }}>●</span>}{t.id === "stocks" && isPro && <span style={{ marginLeft: 4, fontSize: 8, color: "#f59e0b", opacity: 0.6 }}>●</span>}</button>))}
+              {TABS.map(t => (<button key={t.id} onClick={() => handleTabChange(t.id)} style={{ flex: 1, minWidth: 60, padding: "9px 4px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent"), whiteSpace: "nowrap" }}>{t.label.includes("\n")
+                  ? <>{t.label.split("\n")[0]}<br/><span style={{fontSize:9}}>{t.label.split("\n")[1]}</span></>
+                  : t.label}
+                {(t.id === "options" || t.id === "stocks") && !isPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}{t.id === "options" && isPro && inst && inst.optionsTicker && <span style={{ marginLeft: 4, fontSize: 8, color: "#00d4ff", opacity: 0.5 }}>●</span>}{t.id === "stocks" && isPro && <span style={{ marginLeft: 4, fontSize: 8, color: "#f59e0b", opacity: 0.6 }}>●</span>}</button>))}
             </div>
           </div>
         </div>
