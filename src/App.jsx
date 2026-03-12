@@ -244,33 +244,57 @@ const CHIPS = [
   { label: "GBP", key: "gbp" }, { label: "BTC", key: "btc" }, { label: "VIX", key: "vix" },
 ];
 // detect() — exact match first, then partial, then fuzzy fallback so ANY instrument works
+// Well-known stocks / MAG7 / popular tickers — used to flag stock queries
+const KNOWN_STOCKS = {
+  // MAG7
+  apple:["apple","aapl"], microsoft:["microsoft","msft"], google:["google","alphabet","googl","goog"],
+  amazon:["amazon","amzn"], meta:["meta","facebook","fb"], nvidia:["nvidia","nvda"], tesla:["tesla","tsla"],
+  // Popular large caps
+  netflix:["netflix","nflx"], visa:["visa","v"], jpmorgan:["jpmorgan","jpm","jp morgan"],
+  berkshire:["berkshire","brk"], unitedhealth:["unitedhealth","unh"], johnson:["johnson","jnj"],
+  walmart:["walmart","wmt"], exxon:["exxon","xom"], chevron:["chevron","cvx"],
+  salesforce:["salesforce","crm"], amd:["amd","advanced micro"], intel:["intel","intc"],
+  spotify:["spotify","spot"], uber:["uber"], airbnb:["airbnb","abnb"], palantir:["palantir","pltr"],
+  // Anything that looks like a pure ticker (2-5 uppercase letters) e.g. TSLA, AMZN, SHOP
+};
+function looksLikeStock(query) {
+  const q = query.trim();
+  // Pure uppercase ticker pattern
+  if (/^[A-Z]{1,5}$/.test(q)) return true;
+  const ql = q.toLowerCase();
+  return Object.values(KNOWN_STOCKS).some(aliases => aliases.includes(ql));
+}
 function detect(query) {
   const q = query.toLowerCase().trim();
   if (!q) return null;
-  // 1. Exact alias match
+  // 1. Exact alias match against known instruments
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
     if (val.aliases.some(a => a === q)) return { key, ...val };
   }
-  // 2. Partial alias match (query contains alias or alias contains query)
+  // 2. Partial alias match
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
     if (val.aliases.some(a => q.includes(a) || a.includes(q))) return { key, ...val };
   }
-  // 3. Fuzzy fallback — pass the raw user query to Claude as the instrument label.
-  //    Claude understands natural language: "Silver", "Soybeans", "Palladium", "TSLA" etc.
-  //    This means every instrument works, even if it's not in our predefined list.
+  // 3. Stock detection — flag it so the UI can gate it behind Pro
+  if (looksLikeStock(query.trim())) {
+    return { key: "stock", label: query.trim(), aliases: [], color: "#f59e0b", flag: "STOCK", optionsTicker: null, isStock: true };
+  }
+  // 4. Generic fuzzy fallback — commodities, indices, anything else
   return { key: "custom", label: query.trim(), aliases: [], color: "#e0e0e0", flag: "?", optionsTicker: null };
 }
-function sysPrompt(mode) {
+function sysPrompt(mode, isStock) {
   const base = `You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
 CRITICAL RULES — NEVER BREAK THESE:
 1. NEVER mention specific price levels, support/resistance numbers, targets, stops, or historical price ranges. Price levels go stale instantly and mislead traders. Focus purely on macro forces and event risk.
 2. ONLY discuss CURRENT or UPCOMING macro events — central bank decisions, economic data releases, geopolitical developments, and market structure themes that are relevant NOW or scheduled in the near future. Do NOT recap past events as if they are news.
 3. Your job is macro context, not technical analysis. Tell traders WHAT is driving the market and WHY — not where price is or was.`;
+  if (isStock) return base + ' EQUITY BRIEF schema: {"instrument":"string","ticker":"string","sector":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","earnings_context":"string","macro_tailwinds":"string","macro_headwinds":"string","sector_rotation":"string","catalyst_events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string"}],"institutional_flow":"string","teaching_moment":"string"}';
   if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}';
   return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}';
 }
 function userPrompt(inst, mode) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  if (inst.isStock) return "Today: " + now + ". Equity debrief for " + inst.label + ". Cover: latest earnings context, current macro tailwinds and headwinds for this stock and its sector, upcoming catalyst events (earnings dates, product launches, regulatory), sector rotation dynamics, and institutional flow signals. No price levels — macro and fundamental context only.";
   if (mode === "scalper") return "Time: " + now + ". About to trade " + inst.label + ". What are the CURRENT macro risks right now and what events are IMMINENT? GREEN YELLOW or RED? No price levels.";
   return "Today: " + now + ". Full macro briefing for " + inst.label + ". Focus on CURRENT central bank stance, UPCOMING scheduled events, and live geopolitical risks. No price levels — only macro context and why it moves price.";
 }
@@ -284,7 +308,7 @@ async function callClaude(system, userMsg) {
   if (!match) throw new Error("No JSON in response");
   return JSON.parse(match[0]);
 }
-async function getBriefing(inst, mode) { return callClaude(sysPrompt(mode), userPrompt(inst, mode)); }
+async function getBriefing(inst, mode) { return callClaude(sysPrompt(mode, inst.isStock), userPrompt(inst, mode)); }
 async function getOptionsFlow(inst) {
   const res = await fetch("/api/options", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ instKey: inst.key, instLabel: inst.label }) });
   const data = await res.json();
@@ -316,12 +340,16 @@ function UpgradeModal({ reason, onClose, userId, email }) {
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ background: "#0d1117", border: "1px solid rgba(0,212,255,.2)", borderRadius: 16, padding: 32, maxWidth: 380, width: "100%", textAlign: "center" }}>
         <div style={{ fontSize: 32, marginBottom: 16 }}>📊</div>
-        <div style={{ fontSize: 20, fontWeight: 800, color: "#f0f0f0", marginBottom: 10 }}>{reason === "limit" ? "Daily Limit Reached" : "Pro Feature"}</div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: "#f0f0f0", marginBottom: 10 }}>{reason === "limit" ? "Daily Limit Reached" : reason === "stocks" ? "Equity Debriefs — Pro" : "Pro Feature"}</div>
         <div style={{ fontSize: 13, color: "#666", lineHeight: 1.7, marginBottom: 24 }}>
-          {reason === "limit" ? "You've used your 3 free briefs today. Upgrade to Pro for unlimited briefs, Scalper Mode, and Options Flow." : "Scalper Mode and Options Flow are Pro features."}
+          {reason === "limit"
+              ? "You've used your 3 free briefs today. Upgrade to Pro for unlimited briefs, Scalper Mode, Options Flow, and Equity Debriefs."
+              : reason === "stocks"
+              ? "Stock debriefs are a Pro feature. Get earnings context, macro tailwinds & headwinds, sector rotation, and institutional flow for any stock — instantly."
+              : "Scalper Mode, Options Flow, and Equity Debriefs are Pro features."}
         </div>
         <div style={{ background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.12)", borderRadius: 10, padding: 16, marginBottom: 24, textAlign: "left" }}>
-          {["Unlimited briefs every day","Scalper Mode — live risk checks","Options Flow intelligence","All instruments covered"].map((f, i) => (
+          {["Unlimited briefs every day","Scalper Mode — live risk checks","Options Flow intelligence","Equity Debriefs — any stock","All instruments covered"].map((f, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: i < 3 ? 10 : 0 }}>
               <span style={{ color: "#00d4ff", fontSize: 14 }}>✓</span>
               <span style={{ fontSize: 13, color: "#c0d0e0" }}>{f}</span>
@@ -402,6 +430,105 @@ function EventCard({ ev }) {
     </div>
   );
 }
+// ── STOCK GATE (free users) ────────────────────────────────────────────────────
+function StockGate({ inst, onUpgrade }) {
+  return (
+    <div style={{ textAlign: "center", padding: "48px 20px" }}>
+      <div style={{ fontSize: 36, marginBottom: 16 }}>📈</div>
+      <div style={{ fontSize: 16, fontWeight: 800, color: "#f59e0b", marginBottom: 8 }}>
+        {inst.label.toUpperCase()} — EQUITY DEBRIEF
+      </div>
+      <div style={{ fontSize: 13, color: "#555", lineHeight: 1.7, maxWidth: 340, margin: "0 auto 24px" }}>
+        Stock debriefs are a <span style={{ color: "#00d4ff", fontWeight: 700 }}>Pro feature</span>.
+        Get earnings context, macro tailwinds &amp; headwinds, sector rotation, catalyst events
+        and institutional flow — for any stock, instantly.
+      </div>
+      <div style={{ background: "rgba(245,158,11,.06)", border: "1px solid rgba(245,158,11,.2)", borderRadius: 12, padding: "18px 20px", maxWidth: 320, margin: "0 auto 24px", textAlign: "left" }}>
+        <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, letterSpacing: 1, marginBottom: 12 }}>EQUITY BRIEF INCLUDES</div>
+        {["Earnings context & outlook","Macro tailwinds for this sector","Macro headwinds to watch","Upcoming catalyst events","Sector rotation signals","Institutional flow direction"].map(f => (
+          <div key={f} style={{ fontSize: 12, color: "#666", marginBottom: 6, display: "flex", gap: 8 }}>
+            <span style={{ color: "#f59e0b" }}>✓</span>{f}
+          </div>
+        ))}
+      </div>
+      <button onClick={onUpgrade} style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "#000", border: "none", padding: "13px 32px", borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+        UPGRADE TO PRO — €49/mo
+      </button>
+      <div style={{ marginTop: 10, fontSize: 11, color: "#2a2a2a" }}>Includes Scalper Mode, Options Flow &amp; all instruments</div>
+    </div>
+  );
+}
+
+// ── EQUITY VIEW (Pro) ─────────────────────────────────────────────────────────
+function EquityView({ inst, data }) {
+  const sc = { bullish: "#00d4aa", bearish: "#ff4757", neutral: "#ffd700", mixed: "#c084fc" };
+  const cc = sc[data.sentiment] || "#888";
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,rgba(245,158,11,.12),transparent)", border: "1px solid rgba(245,158,11,.3)", borderRadius: 12, padding: 20, marginBottom: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 21, fontWeight: 800, color: "#f59e0b" }}>{data.ticker || inst.label.toUpperCase()}</div>
+            <div style={{ fontSize: 11, color: "#555", marginTop: 3, letterSpacing: 1 }}>{data.sector || "EQUITY"}</div>
+          </div>
+          <div style={{ fontSize: 11, fontWeight: 800, padding: "5px 12px", borderRadius: 6, color: cc, border: "1px solid " + cc + "55", background: cc + "11", textTransform: "uppercase" }}>{data.sentiment}</div>
+        </div>
+        <div style={{ fontSize: 14, color: "#c8d6e5", lineHeight: 1.6, fontStyle: "italic" }}>{data.headline_summary}</div>
+      </div>
+
+      {data.earnings_context && (
+        <div style={{ background: "rgba(245,158,11,.07)", border: "1px solid rgba(245,158,11,.2)", borderRadius: 8, padding: 14, marginBottom: 13 }}>
+          <div style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>EARNINGS CONTEXT</div>
+          <div style={{ fontSize: 13, color: "#e0c88a", lineHeight: 1.65 }}>{data.earnings_context}</div>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 13 }}>
+        {data.macro_tailwinds && (
+          <div style={{ background: "rgba(0,212,170,.07)", border: "1px solid rgba(0,212,170,.2)", borderRadius: 8, padding: 13 }}>
+            <div style={{ fontSize: 9, color: "#00d4aa", fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>↑ TAILWINDS</div>
+            <div style={{ fontSize: 12, color: "#a8f0d8", lineHeight: 1.65 }}>{data.macro_tailwinds}</div>
+          </div>
+        )}
+        {data.macro_headwinds && (
+          <div style={{ background: "rgba(255,71,87,.07)", border: "1px solid rgba(255,71,87,.2)", borderRadius: 8, padding: 13 }}>
+            <div style={{ fontSize: 9, color: "#ff4757", fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>↓ HEADWINDS</div>
+            <div style={{ fontSize: 12, color: "#ffb3b8", lineHeight: 1.65 }}>{data.macro_headwinds}</div>
+          </div>
+        )}
+      </div>
+
+      {data.catalyst_events && data.catalyst_events.length > 0 && (
+        <div style={{ marginBottom: 13 }}>
+          <div style={{ fontSize: 9, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>CATALYST EVENTS</div>
+          {data.catalyst_events.map((e, i) => <EventCard key={i} ev={e} />)}
+        </div>
+      )}
+
+      {data.sector_rotation && (
+        <div style={{ background: "rgba(192,132,252,.06)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 8, padding: 13, marginBottom: 13 }}>
+          <div style={{ fontSize: 9, color: "#c084fc", fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>SECTOR ROTATION</div>
+          <div style={{ fontSize: 13, color: "#d4b8f7", lineHeight: 1.65 }}>{data.sector_rotation}</div>
+        </div>
+      )}
+
+      {data.institutional_flow && (
+        <div style={{ background: "rgba(0,212,255,.06)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 8, padding: 13, marginBottom: 13 }}>
+          <div style={{ fontSize: 9, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>INSTITUTIONAL FLOW</div>
+          <div style={{ fontSize: 13, color: "#a8d8ea", lineHeight: 1.65 }}>{data.institutional_flow}</div>
+        </div>
+      )}
+
+      {data.teaching_moment && (
+        <div style={{ background: "rgba(192,132,252,.06)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 8, padding: 15 }}>
+          <div style={{ fontSize: 9, color: "#c084fc", fontWeight: 700, letterSpacing: 1.5, marginBottom: 7 }}>TEACH ME TO FISH</div>
+          <div style={{ fontSize: 13, color: "#d4b8f7", lineHeight: 1.75 }}>{data.teaching_moment}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FullView({ inst, data }) {
   const sc = { bullish: "#00d4aa", bearish: "#ff4757", neutral: "#ffd700", mixed: "#c084fc" };
   const cc = sc[data.sentiment] || "#888";
@@ -564,6 +691,11 @@ function AppInner({ navigate }) {
     const mm = m !== undefined ? m : mode;
     if (mm === "scalper" && !isPro) { triggerUpgrade("scalper"); return; }
     const found = detect(q);
+    // Stock gate — show Pro upsell, don't consume a brief
+    if (found && found.isStock && !isPro) {
+      setInst(found); setData(null); setError(null); setTab("intel");
+      triggerUpgrade("stocks"); return;
+    }
     setInst(found); setLoading(true); setError(null); setData(null); setTab("intel");
     setOptData(null); setOptError(null); setOptLastUpdated(null);
     try {
@@ -635,7 +767,21 @@ function AppInner({ navigate }) {
           </div>
         </div>
         <div className="main-content" style={{ maxWidth: 860, margin: "0 auto", padding: "20px 20px 60px", width: "100%" }}>
-          {tab === "intel" && <div>{loading && <Loader />}{error && <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>}{!loading && !error && !data && (<div style={{ textAlign: "center", padding: "56px 20px" }}><div style={{ fontSize: 44, marginBottom: 14 }}>+</div><div style={{ fontSize: 14, color: "#444", marginBottom: 7 }}>{mode === "scalper" ? "Enter your futures contract for a live risk check" : "Enter an instrument for your full market briefing"}</div><div style={{ fontSize: 11, color: "#2a2a2a" }}>{mode === "scalper" ? "ES · NQ · CL · GC · 6E · RTY · YM" : "Euro · Gold · GBP · Oil · Bitcoin · ES · NQ · VIX"}</div></div>)}{!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}{!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} />}</div>}
+          {tab === "intel" && <div>
+            {loading && <Loader />}
+            {error && <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>}
+            {!loading && !error && !data && !inst && (
+              <div style={{ textAlign: "center", padding: "56px 20px" }}>
+                <div style={{ fontSize: 44, marginBottom: 14 }}>+</div>
+                <div style={{ fontSize: 14, color: "#444", marginBottom: 7 }}>{mode === "scalper" ? "Enter your futures contract for a live risk check" : "Enter any instrument or stock for your briefing"}</div>
+                <div style={{ fontSize: 11, color: "#2a2a2a" }}>{mode === "scalper" ? "ES · NQ · CL · GC · 6E · RTY · YM" : "Euro · Gold · Silver · Oil · BTC · TSLA · MSFT · NQ"}</div>
+              </div>
+            )}
+            {!loading && inst && inst.isStock && !data && !isPro && <StockGate inst={inst} onUpgrade={() => triggerUpgrade("stocks")} />}
+            {!loading && data && inst && inst.isStock && <EquityView inst={inst} data={data} />}
+            {!loading && data && inst && !inst.isStock && mode === "full" && <FullView inst={inst} data={data} />}
+            {!loading && data && inst && !inst.isStock && mode === "scalper" && <ScalperView inst={inst} data={data} />}
+          </div>}
           {tab === "options" && <OptionsFlowView inst={inst} data={optData} loading={optLoading} error={optError} onFetch={() => fetchOptions(inst)} lastUpdated={optLastUpdated} isPro={isPro} onUpgrade={() => triggerUpgrade("options")} />}
           {tab === "journal" && <Journal />}
           {tab === "learn" && <Learn />}
