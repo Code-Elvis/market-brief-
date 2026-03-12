@@ -244,30 +244,10 @@ const CHIPS = [
   { label: "GBP", key: "gbp" }, { label: "BTC", key: "btc" }, { label: "VIX", key: "vix" },
 ];
 // detect() — exact match first, then partial, then fuzzy fallback so ANY instrument works
-// Well-known stocks / MAG7 / popular tickers — used to flag stock queries
-const KNOWN_STOCKS = {
-  // MAG7
-  apple:["apple","aapl"], microsoft:["microsoft","msft"], google:["google","alphabet","googl","goog"],
-  amazon:["amazon","amzn"], meta:["meta","facebook","fb"], nvidia:["nvidia","nvda"], tesla:["tesla","tsla"],
-  // Popular large caps
-  netflix:["netflix","nflx"], visa:["visa","v"], jpmorgan:["jpmorgan","jpm","jp morgan"],
-  berkshire:["berkshire","brk"], unitedhealth:["unitedhealth","unh"], johnson:["johnson","jnj"],
-  walmart:["walmart","wmt"], exxon:["exxon","xom"], chevron:["chevron","cvx"],
-  salesforce:["salesforce","crm"], amd:["amd","advanced micro"], intel:["intel","intc"],
-  spotify:["spotify","spot"], uber:["uber"], airbnb:["airbnb","abnb"], palantir:["palantir","pltr"],
-  // Anything that looks like a pure ticker (2-5 uppercase letters) e.g. TSLA, AMZN, SHOP
-};
-function looksLikeStock(query) {
-  const q = query.trim();
-  // Pure uppercase ticker pattern
-  if (/^[A-Z]{1,5}$/.test(q)) return true;
-  const ql = q.toLowerCase();
-  return Object.values(KNOWN_STOCKS).some(aliases => aliases.includes(ql));
-}
 function detect(query) {
   const q = query.toLowerCase().trim();
   if (!q) return null;
-  // 1. Exact alias match against known instruments
+  // 1. Exact alias match
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
     if (val.aliases.some(a => a === q)) return { key, ...val };
   }
@@ -275,26 +255,21 @@ function detect(query) {
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
     if (val.aliases.some(a => q.includes(a) || a.includes(q))) return { key, ...val };
   }
-  // 3. Stock detection — flag it so the UI can gate it behind Pro
-  if (looksLikeStock(query.trim())) {
-    return { key: "stock", label: query.trim(), aliases: [], color: "#f59e0b", flag: "STOCK", optionsTicker: null, isStock: true };
-  }
-  // 4. Generic fuzzy fallback — commodities, indices, anything else
+  // 3. Generic fuzzy fallback — commodities, futures, anything Claude can brief on
   return { key: "custom", label: query.trim(), aliases: [], color: "#e0e0e0", flag: "?", optionsTicker: null };
 }
-function sysPrompt(mode, isStock) {
+function sysPrompt(mode, isEquity) {
   const base = `You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
 CRITICAL RULES — NEVER BREAK THESE:
 1. NEVER mention specific price levels, support/resistance numbers, targets, stops, or historical price ranges. Price levels go stale instantly and mislead traders. Focus purely on macro forces and event risk.
 2. ONLY discuss CURRENT or UPCOMING macro events — central bank decisions, economic data releases, geopolitical developments, and market structure themes that are relevant NOW or scheduled in the near future. Do NOT recap past events as if they are news.
 3. Your job is macro context, not technical analysis. Tell traders WHAT is driving the market and WHY — not where price is or was.`;
-  if (isStock) return base + ' EQUITY BRIEF schema: {"instrument":"string","ticker":"string","sector":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","earnings_context":"string","macro_tailwinds":"string","macro_headwinds":"string","sector_rotation":"string","catalyst_events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string"}],"institutional_flow":"string","teaching_moment":"string"}';
+  if (isEquity) return base + ' EQUITY BRIEF schema: {"instrument":"string","ticker":"string","sector":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","earnings_context":"string","macro_tailwinds":"string","macro_headwinds":"string","sector_rotation":"string","catalyst_events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string"}],"institutional_flow":"string","teaching_moment":"string"}';
   if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}';
   return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}';
 }
 function userPrompt(inst, mode) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  if (inst.isStock) return "Today: " + now + ". Equity debrief for " + inst.label + ". Cover: latest earnings context, current macro tailwinds and headwinds for this stock and its sector, upcoming catalyst events (earnings dates, product launches, regulatory), sector rotation dynamics, and institutional flow signals. No price levels — macro and fundamental context only.";
   if (mode === "scalper") return "Time: " + now + ". About to trade " + inst.label + ". What are the CURRENT macro risks right now and what events are IMMINENT? GREEN YELLOW or RED? No price levels.";
   return "Today: " + now + ". Full macro briefing for " + inst.label + ". Focus on CURRENT central bank stance, UPCOMING scheduled events, and live geopolitical risks. No price levels — only macro context and why it moves price.";
 }
@@ -308,7 +283,15 @@ async function callClaude(system, userMsg) {
   if (!match) throw new Error("No JSON in response");
   return JSON.parse(match[0]);
 }
-async function getBriefing(inst, mode) { return callClaude(sysPrompt(mode, inst.isStock), userPrompt(inst, mode)); }
+async function getBriefing(inst, mode) { return callClaude(sysPrompt(mode), userPrompt(inst, mode)); }
+async function getEquityBrief(label) {
+  const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const sys = `You are a professional equity analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
+RULES: Never mention specific price levels. Focus on macro, fundamental, and sector context only — current and upcoming only.
+` + 'EQUITY BRIEF schema: {"instrument":"string","ticker":"string","sector":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","earnings_context":"string","macro_tailwinds":"string","macro_headwinds":"string","sector_rotation":"string","catalyst_events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string"}],"institutional_flow":"string","teaching_moment":"string"}';
+  const msg = "Today: " + now + ". Equity debrief for " + label + ". Cover: latest earnings context, current macro tailwinds and headwinds for this stock and its sector, upcoming catalyst events, sector rotation dynamics, and institutional flow signals. No price levels.";
+  return callClaude(sys, msg);
+}
 async function getOptionsFlow(inst) {
   const res = await fetch("/api/options", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ instKey: inst.key, instLabel: inst.label }) });
   const data = await res.json();
@@ -430,18 +413,17 @@ function EventCard({ ev }) {
     </div>
   );
 }
-// ── STOCK GATE (free users) ────────────────────────────────────────────────────
-function StockGate({ inst, onUpgrade }) {
+// ── STOCK GATE (free users — shown in Stocks tab) ─────────────────────────────
+function StockGate({ onUpgrade }) {
   return (
     <div style={{ textAlign: "center", padding: "48px 20px" }}>
       <div style={{ fontSize: 36, marginBottom: 16 }}>📈</div>
-      <div style={{ fontSize: 16, fontWeight: 800, color: "#f59e0b", marginBottom: 8 }}>
-        {inst.label.toUpperCase()} — EQUITY DEBRIEF
-      </div>
+      <div style={{ fontSize: 16, fontWeight: 800, color: "#f59e0b", marginBottom: 8 }}>Equity Debriefs</div>
       <div style={{ fontSize: 13, color: "#555", lineHeight: 1.7, maxWidth: 340, margin: "0 auto 24px" }}>
-        Stock debriefs are a <span style={{ color: "#00d4ff", fontWeight: 700 }}>Pro feature</span>.
-        Get earnings context, macro tailwinds &amp; headwinds, sector rotation, catalyst events
-        and institutional flow — for any stock, instantly.
+        Search any stock or ticker and get a full macro debrief —
+        earnings context, tailwinds, headwinds, sector rotation and institutional flow.
+        <br /><br />
+        This is a <span style={{ color: "#00d4ff", fontWeight: 700 }}>Pro feature</span>.
       </div>
       <div style={{ background: "rgba(245,158,11,.06)", border: "1px solid rgba(245,158,11,.2)", borderRadius: 12, padding: "18px 20px", maxWidth: 320, margin: "0 auto 24px", textAlign: "left" }}>
         <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, letterSpacing: 1, marginBottom: 12 }}>EQUITY BRIEF INCLUDES</div>
@@ -455,6 +437,55 @@ function StockGate({ inst, onUpgrade }) {
         UPGRADE TO PRO — €49/mo
       </button>
       <div style={{ marginTop: 10, fontSize: 11, color: "#2a2a2a" }}>Includes Scalper Mode, Options Flow &amp; all instruments</div>
+    </div>
+  );
+}
+
+// ── STOCKS TAB (Pro) ───────────────────────────────────────────────────────────
+function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError }) {
+  const runStock = async () => {
+    const q = query.trim();
+    if (!q) return;
+    setLoading(true); setError(null); setData(null);
+    try {
+      const result = await getEquityBrief(q);
+      setData(result);
+    } catch (e) { setError(e.message || "Fetch failed. Please try again."); }
+    finally { setLoading(false); }
+  };
+  const SUGGESTIONS = ["Apple","Microsoft","Nvidia","Tesla","Amazon","Meta","Google","Netflix","AMD","Palantir","Spotify","Uber"];
+  return (
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700, letterSpacing: 2, marginBottom: 10 }}>EQUITY DEBRIEF — PRO</div>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && runStock()}
+            placeholder="Tesla, MSFT, Apple, NVDA, any ticker..."
+            style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(245,158,11,.2)", borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
+          />
+          <button onClick={runStock} disabled={loading} style={{ padding: "10px 16px", borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", background: loading ? "rgba(255,255,255,.02)" : "rgba(245,158,11,.12)", color: loading ? "#2a2a2a" : "#f59e0b", border: "1px solid rgba(245,158,11,.25)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+            {loading ? "..." : "BRIEF ME"}
+          </button>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {SUGGESTIONS.map(s => (
+            <button key={s} onClick={() => { setQuery(s); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(245,158,11,.04)", border: "1px solid rgba(245,158,11,.12)", color: "#666" }}>{s}</button>
+          ))}
+        </div>
+      </div>
+      {loading && <Loader />}
+      {error && <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>}
+      {!loading && !data && !error && (
+        <div style={{ textAlign: "center", padding: "40px 20px" }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
+          <div style={{ fontSize: 13, color: "#444" }}>Search any stock or ticker above for a full macro & fundamental debrief</div>
+          <div style={{ fontSize: 11, color: "#2a2a2a", marginTop: 6 }}>MAG7 · Large caps · Any public company</div>
+        </div>
+      )}
+      {!loading && data && <EquityView inst={{ label: data.instrument || query, color: "#f59e0b", flag: "STOCK" }} data={data} />}
     </div>
   );
 }
@@ -673,6 +704,10 @@ function AppInner({ navigate }) {
   const [optLoading, setOptLoading] = useState(false);
   const [optError, setOptError] = useState(null);
   const [optLastUpdated, setOptLastUpdated] = useState(null);
+  const [stockQuery, setStockQuery] = useState("");
+  const [stockData, setStockData] = useState(null);
+  const [stockLoading, setStockLoading] = useState(false);
+  const [stockError, setStockError] = useState(null);
 
   const triggerUpgrade = (reason = "limit") => { setUpgradeReason(reason); setShowUpgrade(true); };
   const fetchOptions = useCallback(async (instrument) => {
@@ -691,11 +726,6 @@ function AppInner({ navigate }) {
     const mm = m !== undefined ? m : mode;
     if (mm === "scalper" && !isPro) { triggerUpgrade("scalper"); return; }
     const found = detect(q);
-    // Stock gate — show Pro upsell, don't consume a brief
-    if (found && found.isStock && !isPro) {
-      setInst(found); setData(null); setError(null); setTab("intel");
-      triggerUpgrade("stocks"); return;
-    }
     setInst(found); setLoading(true); setError(null); setData(null); setTab("intel");
     setOptData(null); setOptError(null); setOptLastUpdated(null);
     try {
@@ -712,7 +742,7 @@ function AppInner({ navigate }) {
     setTab(id);
     if (id === "options" && inst && inst.optionsTicker && !optData && !optLoading) fetchOptions(inst);
   };
-  const TABS = [{ id: "intel", label: "Intelligence" }, { id: "options", label: "Options Flow" }, { id: "journal", label: "Reflection" }, { id: "learn", label: "Learn" }];
+  const TABS = [{ id: "intel", label: "Intelligence" }, { id: "options", label: "Options Flow" }, { id: "stocks", label: "Stocks" }, { id: "journal", label: "Reflection" }, { id: "learn", label: "Learn" }];
 
   return (
     <>
@@ -762,7 +792,7 @@ function AppInner({ navigate }) {
               {CHIPS.map(({ label, key }) => (<button key={key} onClick={() => { setQuery(label); run(label); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", color: "#444" }}>{label}</button>))}
             </div>
             <div style={{ display: "flex", overflowX: "auto" }}>
-              {TABS.map(t => (<button key={t.id} onClick={() => handleTabChange(t.id)} style={{ flex: 1, minWidth: 70, padding: "9px 6px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent"), whiteSpace: "nowrap" }}>{t.label}{t.id === "options" && !isPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}{t.id === "options" && isPro && inst && inst.optionsTicker && <span style={{ marginLeft: 4, fontSize: 8, color: "#00d4ff", opacity: 0.5 }}>●</span>}</button>))}
+              {TABS.map(t => (<button key={t.id} onClick={() => handleTabChange(t.id)} style={{ flex: 1, minWidth: 60, padding: "9px 4px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent"), whiteSpace: "nowrap" }}>{t.label}{(t.id === "options" || t.id === "stocks") && !isPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}{t.id === "options" && isPro && inst && inst.optionsTicker && <span style={{ marginLeft: 4, fontSize: 8, color: "#00d4ff", opacity: 0.5 }}>●</span>}{t.id === "stocks" && isPro && <span style={{ marginLeft: 4, fontSize: 8, color: "#f59e0b", opacity: 0.6 }}>●</span>}</button>))}
             </div>
           </div>
         </div>
@@ -777,12 +807,20 @@ function AppInner({ navigate }) {
                 <div style={{ fontSize: 11, color: "#2a2a2a" }}>{mode === "scalper" ? "ES · NQ · CL · GC · 6E · RTY · YM" : "Euro · Gold · Silver · Oil · BTC · TSLA · MSFT · NQ"}</div>
               </div>
             )}
-            {!loading && inst && inst.isStock && !data && !isPro && <StockGate inst={inst} onUpgrade={() => triggerUpgrade("stocks")} />}
-            {!loading && data && inst && inst.isStock && <EquityView inst={inst} data={data} />}
-            {!loading && data && inst && !inst.isStock && mode === "full" && <FullView inst={inst} data={data} />}
-            {!loading && data && inst && !inst.isStock && mode === "scalper" && <ScalperView inst={inst} data={data} />}
+            {!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}
+            {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} />}
           </div>}
           {tab === "options" && <OptionsFlowView inst={inst} data={optData} loading={optLoading} error={optError} onFetch={() => fetchOptions(inst)} lastUpdated={optLastUpdated} isPro={isPro} onUpgrade={() => triggerUpgrade("options")} />}
+          {tab === "stocks" && (
+            isPro
+              ? <StocksTab
+                  query={stockQuery} setQuery={setStockQuery}
+                  data={stockData} setData={setStockData}
+                  loading={stockLoading} setLoading={setStockLoading}
+                  error={stockError} setError={setStockError}
+                />
+              : <StockGate onUpgrade={() => triggerUpgrade("stocks")} />
+          )}
           {tab === "journal" && <Journal />}
           {tab === "learn" && <Learn />}
         </div>
