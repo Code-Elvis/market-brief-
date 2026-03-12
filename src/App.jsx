@@ -205,35 +205,60 @@ function Spinner() {
 
 // ── INSTRUMENTS ───────────────────────────────────────────────────────────────
 const INSTRUMENTS = {
-  euro: { label: "EUR/USD", aliases: ["euro","eurusd","eur","6e"], color: "#00d4ff", flag: "EU", optionsTicker: null },
-  gbp:  { label: "GBP/USD", aliases: ["gbp","pound","cable","gbpusd","6b"], color: "#7fff7f", flag: "GB", optionsTicker: null },
-  gold: { label: "XAU/USD Gold", aliases: ["gold","xauusd","xau","gc","gc1"], color: "#ffd700", flag: "XAU", optionsTicker: "GLD" },
-  oil:  { label: "WTI Crude", aliases: ["oil","crude","wti","usoil","cl","cl1"], color: "#ff8c42", flag: "OIL", optionsTicker: "USO" },
-  dxy:  { label: "US Dollar DXY", aliases: ["dxy","dollar","usd","dx"], color: "#c084fc", flag: "USD", optionsTicker: "UUP" },
-  es:   { label: "ES S&P 500", aliases: ["es","es1","sp500","spx","spy","s&p"], color: "#00ffcc", flag: "ES", optionsTicker: "SPY" },
-  nq:   { label: "NQ NASDAQ 100", aliases: ["nq","nq1","nasdaq","nas100","ndx","qqq"], color: "#f472b6", flag: "NQ", optionsTicker: "QQQ" },
-  rty:  { label: "RTY Russell 2000", aliases: ["rty","russell","iwm"], color: "#fb923c", flag: "RTY", optionsTicker: "IWM" },
-  ym:   { label: "YM Dow Jones", aliases: ["ym","ym1","dow","djia","dia"], color: "#a78bfa", flag: "YM", optionsTicker: "DIA" },
-  btc:  { label: "Bitcoin", aliases: ["btc","bitcoin","crypto","btcusd"], color: "#f7931a", flag: "BTC", optionsTicker: null },
-  eth:  { label: "Ethereum", aliases: ["eth","ethereum","ethusd"], color: "#627eea", flag: "ETH", optionsTicker: null },
-  jpy:  { label: "USD/JPY", aliases: ["jpy","yen","usdjpy","6j"], color: "#ff6b6b", flag: "JPY", optionsTicker: null },
-  aud:  { label: "AUD/USD", aliases: ["aud","aussie","audusd","6a"], color: "#34d399", flag: "AUD", optionsTicker: null },
-  vix:  { label: "VIX Fear Index", aliases: ["vix","volatility","fear"], color: "#f87171", flag: "VIX", optionsTicker: "VIXY" },
+  // Equity indices
+  es:     { label: "ES S&P 500",        aliases: ["es","es1","sp500","spx","spy","s&p","s&p 500","s&p500","standard and poor"], color: "#00ffcc", flag: "ES",  optionsTicker: "SPY" },
+  nq:     { label: "NQ NASDAQ 100",     aliases: ["nq","nq1","nasdaq","nas100","ndx","qqq","nasdaq 100","nasdaq100"], color: "#f472b6", flag: "NQ",  optionsTicker: "QQQ" },
+  rty:    { label: "RTY Russell 2000",  aliases: ["rty","russell","russell 2000","russell2000","iwm","small cap"], color: "#fb923c", flag: "RTY", optionsTicker: "IWM" },
+  ym:     { label: "YM Dow Jones",      aliases: ["ym","ym1","dow","djia","dia","dow jones","dowjones"], color: "#a78bfa", flag: "YM",  optionsTicker: "DIA" },
+  dax:    { label: "DAX 40",            aliases: ["dax","dax40","germany","german index","fdax"], color: "#4ade80", flag: "DAX", optionsTicker: null },
+  nikkei: { label: "Nikkei 225",        aliases: ["nikkei","nk","n225","nikkei225","japan","japanese index","nk225"], color: "#f97316", flag: "NIK", optionsTicker: null },
+  ftse:   { label: "FTSE 100",          aliases: ["ftse","ftse100","ftse 100","uk index","z"], color: "#60a5fa", flag: "UK",  optionsTicker: null },
+  cac:    { label: "CAC 40",            aliases: ["cac","cac40","cac 40","france","french index"], color: "#e879f9", flag: "CAC", optionsTicker: null },
+  // Metals
+  gold:   { label: "Gold XAU/USD",      aliases: ["gold","xauusd","xau","gc","gc1","xag/usd","gold futures"], color: "#ffd700", flag: "XAU", optionsTicker: "GLD" },
+  silver: { label: "Silver XAG/USD",    aliases: ["silver","xagusd","xag","si","si1","silver futures"], color: "#c0c0c0", flag: "XAG", optionsTicker: "SLV" },
+  copper: { label: "Copper HG",         aliases: ["copper","hg","hg1","copper futures","cu"], color: "#b87333", flag: "HG",  optionsTicker: "CPER" },
+  // Energy
+  oil:    { label: "WTI Crude Oil",     aliases: ["oil","crude","wti","usoil","cl","cl1","crude oil","wti oil","light crude"], color: "#ff8c42", flag: "OIL", optionsTicker: "USO" },
+  brent:  { label: "Brent Crude",       aliases: ["brent","brent crude","brn","brent oil","cb1"], color: "#ffa500", flag: "BRT", optionsTicker: null },
+  natgas: { label: "Natural Gas",       aliases: ["natgas","natural gas","ng","ng1","gas","henry hub"], color: "#67e8f9", flag: "GAS", optionsTicker: "UNG" },
+  // FX
+  euro:   { label: "EUR/USD",           aliases: ["euro","eurusd","eur","6e","eur/usd","euros"], color: "#00d4ff", flag: "EUR", optionsTicker: null },
+  gbp:    { label: "GBP/USD",           aliases: ["gbp","pound","cable","gbpusd","6b","gbp/usd","sterling","british pound"], color: "#7fff7f", flag: "GBP", optionsTicker: null },
+  jpy:    { label: "USD/JPY",           aliases: ["jpy","yen","usdjpy","6j","usd/jpy","japanese yen"], color: "#ff6b6b", flag: "JPY", optionsTicker: null },
+  aud:    { label: "AUD/USD",           aliases: ["aud","aussie","audusd","6a","aud/usd","australian dollar"], color: "#34d399", flag: "AUD", optionsTicker: null },
+  cad:    { label: "USD/CAD",           aliases: ["cad","usdcad","6c","usd/cad","loonie","canadian dollar"], color: "#facc15", flag: "CAD", optionsTicker: null },
+  chf:    { label: "USD/CHF",           aliases: ["chf","usdchf","6s","usd/chf","swiss franc","swissie"], color: "#e2e8f0", flag: "CHF", optionsTicker: null },
+  dxy:    { label: "US Dollar DXY",     aliases: ["dxy","dollar","usd","dx","dollar index","us dollar"], color: "#c084fc", flag: "DXY", optionsTicker: "UUP" },
+  // Crypto
+  btc:    { label: "Bitcoin",           aliases: ["btc","bitcoin","crypto","btcusd","xbt"], color: "#f7931a", flag: "BTC", optionsTicker: null },
+  eth:    { label: "Ethereum",          aliases: ["eth","ethereum","ethusd","ether"], color: "#627eea", flag: "ETH", optionsTicker: null },
+  // Rates & bonds
+  tnote:  { label: "10Y Treasury Note", aliases: ["tnote","10y","10yr","treasuries","treasury","bonds","zt","zn","bond market","10 year","us bonds","yields"], color: "#a5f3fc", flag: "10Y", optionsTicker: "TLT" },
+  // Volatility
+  vix:    { label: "VIX Fear Index",    aliases: ["vix","volatility","fear","fear index","vol"], color: "#f87171", flag: "VIX", optionsTicker: "VIXY" },
 };
 const CHIPS = [
   { label: "ES", key: "es" }, { label: "NQ", key: "nq" }, { label: "Gold", key: "gold" },
-  { label: "Oil", key: "oil" }, { label: "Euro", key: "euro" }, { label: "GBP", key: "gbp" },
-  { label: "BTC", key: "btc" }, { label: "VIX", key: "vix" },
+  { label: "Silver", key: "silver" }, { label: "Oil", key: "oil" }, { label: "Euro", key: "euro" },
+  { label: "GBP", key: "gbp" }, { label: "BTC", key: "btc" }, { label: "VIX", key: "vix" },
 ];
+// detect() — exact match first, then partial, then fuzzy fallback so ANY instrument works
 function detect(query) {
   const q = query.toLowerCase().trim();
+  if (!q) return null;
+  // 1. Exact alias match
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
     if (val.aliases.some(a => a === q)) return { key, ...val };
   }
+  // 2. Partial alias match (query contains alias or alias contains query)
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
     if (val.aliases.some(a => q.includes(a) || a.includes(q))) return { key, ...val };
   }
-  return null;
+  // 3. Fuzzy fallback — pass the raw user query to Claude as the instrument label.
+  //    Claude understands natural language: "Silver", "Soybeans", "Palladium", "TSLA" etc.
+  //    This means every instrument works, even if it's not in our predefined list.
+  return { key: "custom", label: query.trim(), aliases: [], color: "#e0e0e0", flag: "?", optionsTicker: null };
 }
 function sysPrompt(mode) {
   const base = `You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
@@ -539,7 +564,6 @@ function AppInner({ navigate }) {
     const mm = m !== undefined ? m : mode;
     if (mm === "scalper" && !isPro) { triggerUpgrade("scalper"); return; }
     const found = detect(q);
-    if (!found) { setError("Not recognised. Try: ES, NQ, Euro, Gold, GBP, Oil, BTC"); return; }
     setInst(found); setLoading(true); setError(null); setData(null); setTab("intel");
     setOptData(null); setOptError(null); setOptLastUpdated(null);
     try {
