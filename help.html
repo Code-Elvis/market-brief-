@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Help Centre · MarketDebriefs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #0d1117;
+    --surface2: #111620;
+    --border: rgba(255,255,255,.06);
+    --border-accent: rgba(0,212,255,.2);
+    --cyan: #00d4ff;
+    --cyan-dim: rgba(0,212,255,.08);
+    --cyan-mid: rgba(0,212,255,.15);
+    --text: #e0e0e0;
+    --text-mid: #888;
+    --text-dim: #444;
+    --text-faint: #2a2a2a;
+    --green: #00d4aa;
+    --amber: #f59e0b;
+    --red: #ff4757;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 32px;
+    background: rgba(10,12,15,.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { font-size: 15px; font-weight: 800; letter-spacing: -.5px; color: #fff; text-decoration: none; }
+  .nav-logo span { color: var(--cyan); }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a { font-size: 11px; font-weight: 600; color: var(--text-dim); text-decoration: none; letter-spacing: 1px; font-family: var(--mono); transition: color .15s; }
+  .nav-links a:hover { color: var(--cyan); }
+  .nav-cta {
+    background: var(--cyan-mid); border: 1px solid var(--border-accent);
+    color: var(--cyan); padding: 7px 16px; border-radius: 6px;
+    font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: none;
+    font-family: var(--mono); letter-spacing: .5px; transition: all .15s;
+  }
+  .nav-cta:hover { background: rgba(0,212,255,.22); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: 72px 32px 48px;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 14px; border-radius: 20px;
+    border: 1px solid var(--border-accent);
+    background: var(--cyan-dim);
+    margin-bottom: 24px;
+  }
+  .hero-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); animation: pulse 2s infinite; }
+  .hero-badge span { font-size: 10px; color: var(--cyan); font-weight: 600; letter-spacing: 1.5px; font-family: var(--mono); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .hero h1 { font-size: clamp(28px,5vw,46px); font-weight: 800; line-height: 1.1; letter-spacing: -1px; color: #fff; margin-bottom: 14px; }
+  .hero h1 span { color: var(--cyan); }
+  .hero p { font-size: 14px; color: var(--text-mid); line-height: 1.75; max-width: 480px; margin: 0 auto 32px; }
+
+  /* ── SEARCH ── */
+  .search-wrap { position: relative; max-width: 500px; margin: 0 auto 56px; }
+  .search-wrap input {
+    width: 100%; padding: 13px 46px 13px 16px;
+    background: var(--surface); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px; color: var(--text); font-size: 14px;
+    font-family: var(--sans); outline: none; transition: border .2s;
+  }
+  .search-wrap input:focus { border-color: var(--border-accent); }
+  .search-wrap input::placeholder { color: var(--text-dim); }
+  .search-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 16px; pointer-events: none; }
+  .no-results { display: none; text-align: center; padding: 32px; color: var(--text-dim); font-size: 13px; }
+
+  /* ── LAYOUT ── */
+  .layout {
+    position: relative; z-index: 1;
+    max-width: 1060px; margin: 0 auto;
+    padding: 0 32px 80px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar { position: sticky; top: 80px; }
+  .sidebar-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: var(--text-faint); font-family: var(--mono); margin-bottom: 12px; }
+  .sidebar nav { display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: 7px;
+    font-size: 12px; font-weight: 600; color: var(--text-dim);
+    cursor: pointer; transition: all .15s; border: 1px solid transparent;
+    text-decoration: none;
+  }
+  .sidebar-link:hover { color: var(--text); background: var(--surface); border-color: var(--border); }
+  .sidebar-link.active { color: var(--cyan); background: var(--cyan-dim); border-color: var(--border-accent); }
+  .sidebar-link .icon { font-size: 13px; width: 18px; text-align: center; }
+
+  .sidebar-divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+  .status-card {
+    margin-top: 20px; padding: 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .status-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 3s infinite; }
+  .status-label { font-size: 11px; font-weight: 700; color: var(--green); font-family: var(--mono); }
+  .status-sub { font-size: 10px; color: var(--text-dim); font-family: var(--mono); line-height: 1.5; }
+
+  /* ── MAIN CONTENT ── */
+  .main { min-width: 0; }
+
+  .faq-section { margin-bottom: 48px; scroll-margin-top: 90px; }
+
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+  }
+  .section-title { font-size: 16px; font-weight: 700; color: #fff; }
+  .section-count { font-size: 10px; font-family: var(--mono); color: var(--text-dim); margin-left: auto; }
+
+  /* ── FAQ ITEM ── */
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .faq-item:hover { border-color: rgba(255,255,255,.1); }
+  .faq-item.open { border-color: var(--border-accent); }
+
+  .faq-q {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 18px; cursor: pointer; gap: 12px;
+  }
+  .faq-q-text { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.45; flex: 1; }
+  .faq-item.open .faq-q-text { color: var(--cyan); }
+  .faq-chevron {
+    width: 20px; height: 20px; border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--text-dim); flex-shrink: 0;
+    background: rgba(255,255,255,.03); transition: all .25s;
+  }
+  .faq-item.open .faq-chevron { transform: rotate(180deg); background: var(--cyan-dim); color: var(--cyan); }
+
+  .faq-a {
+    display: none;
+    padding: 0 18px 16px;
+    font-size: 13px; color: var(--text-mid); line-height: 1.8;
+    border-top: 1px solid var(--border);
+  }
+  .faq-a.visible { display: block; animation: fadeIn .2s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+
+  .faq-a p { margin-bottom: 10px; }
+  .faq-a p:last-child { margin-bottom: 0; }
+  .faq-a strong { color: var(--text); font-weight: 600; }
+  .faq-a .tag {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; font-family: var(--mono);
+    margin: 0 2px;
+  }
+  .tag-free { background: rgba(0,212,170,.1); color: var(--green); border: 1px solid rgba(0,212,170,.2); }
+  .tag-pro { background: var(--cyan-dim); color: var(--cyan); border: 1px solid var(--border-accent); }
+  .tag-step { background: rgba(255,255,255,.04); color: var(--text-mid); border: 1px solid var(--border); }
+
+  /* ── CONTACT CARD ── */
+  .contact-card {
+    margin-top: 48px; padding: 32px;
+    background: linear-gradient(135deg, rgba(0,212,255,.06), transparent);
+    border: 1px solid var(--border-accent);
+    border-radius: 14px; text-align: center;
+  }
+  .contact-card h3 { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .contact-card p { font-size: 13px; color: var(--text-mid); line-height: 1.7; margin-bottom: 22px; max-width: 400px; margin-left: auto; margin-right: auto; }
+  .contact-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--cyan), #0099cc);
+    color: #000; border: none; padding: 12px 28px;
+    border-radius: 8px; font-size: 13px; font-weight: 800;
+    cursor: pointer; font-family: var(--sans); text-decoration: none;
+    transition: opacity .15s;
+  }
+  .contact-btn:hover { opacity: .85; }
+  .contact-note { font-size: 11px; color: var(--text-faint); margin-top: 10px; font-family: var(--mono); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 720px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; display: none; }
+    nav { padding: 14px 18px; }
+    .hero { padding: 48px 18px 32px; }
+    .layout { padding: 0 18px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">MARKET<span>DEBRIEFS</span></a>
+  <div class="nav-links">
+    <a href="/app">APP</a>
+    <a href="#contact">CONTACT</a>
+    <a href="/app" class="nav-cta">LAUNCH APP</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">
+    <div class="hero-badge-dot"></div>
+    <span>HELP CENTRE</span>
+  </div>
+  <h1>How can we <span>help you?</span></h1>
+  <p>Everything you need to know about MarketDebriefs — from getting started to Pro features and billing.</p>
+
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Search questions…" autocomplete="off" />
+    <span class="search-icon">⌕</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-label">SECTIONS</div>
+    <nav>
+      <a class="sidebar-link active" href="#getting-started" onclick="setActive(this)">
+        <span class="icon">🚀</span> Getting Started
+      </a>
+      <a class="sidebar-link" href="#plans" onclick="setActive(this)">
+        <span class="icon">💎</span> Plans & Pricing
+      </a>
+      <a class="sidebar-link" href="#features" onclick="setActive(this)">
+        <span class="icon">⚡</span> Features
+      </a>
+      <a class="sidebar-link" href="#briefs" onclick="setActive(this)">
+        <span class="icon">📋</span> Your Briefs
+      </a>
+      <a class="sidebar-link" href="#billing" onclick="setActive(this)">
+        <span class="icon">💳</span> Billing
+      </a>
+      <a class="sidebar-link" href="#account" onclick="setActive(this)">
+        <span class="icon">👤</span> Account
+      </a>
+      <a class="sidebar-link" href="#technical" onclick="setActive(this)">
+        <span class="icon">🔧</span> Technical
+      </a>
+    </nav>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="status-card">
+      <div class="status-row">
+        <div class="status-dot"></div>
+        <div class="status-label">ALL SYSTEMS GO</div>
+      </div>
+      <div class="status-sub">Platform · API · Payments<br/>All operational</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="faqMain">
+
+    <!-- GETTING STARTED -->
+    <section class="faq-section" id="getting-started">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(0,212,255,.1)">🚀</div>
+        <div class="section-title">Getting Started</div>
+        <div class="section-count">5 ARTICLES</div>
+      </div>
+
+      <div class="faq-item" data-keywords="start use begin sign up register account">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">How do I get started with MarketDebriefs?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Getting started takes under 60 seconds. <span class="tag tag-step">Step 1</span> Go to <strong>marketdebriefs.com</strong> and click <strong>Launch App</strong>. <span class="tag tag-step">Step 2</span> Create a free account using your email. <span class="tag tag-step">Step 3</span> Type any instrument into the search bar — ES, Gold, EUR/USD, BTC, Oil — and hit <strong>BRIEF ME</strong>.</p>
+          <p>Your first brief will be ready in under 30 seconds. No credit card needed to start.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="what is marketdebriefs does how work explain">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">What exactly does MarketDebriefs do?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>MarketDebriefs is a <strong>macro intelligence tool for active traders</strong>. Before you enter a trade, you type in the instrument you're about to trade and receive an instant AI-powered briefing covering:</p>
+          <p>— The current central bank stance and what it means for your instrument<br/>— Live geopolitical risks affecting the market<br/>— Upcoming high-impact events (CPI, NFP, Fed decisions) and why they move price<br/>— The broader macro context driving current price action</p>
+          <p>Think of it as having an institutional macro analyst on call — available in seconds, before every trade.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="instruments markets supported trade which available">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">Which instruments and markets are supported?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>MarketDebriefs covers <strong>25+ instruments</strong> across all major asset classes:</p>
+          <p><strong>Equity Indices:</strong> ES S&amp;P 500, NQ NASDAQ, RTY Russell 2000, YM Dow Jones, DAX 40, Nikkei 225, FTSE 100, CAC 40</p>
+          <p><strong>Metals:</strong> Gold XAU/USD, Silver XAG/USD, Copper HG</p>
+          <p><strong>Energy:</strong> WTI Crude Oil, Brent Crude, Natural Gas</p>
+          <p><strong>FX:</strong> EUR/USD, GBP/USD, USD/JPY, AUD/USD, USD/CAD, USD/CHF, DXY</p>
+          <p><strong>Crypto:</strong> Bitcoin, Ethereum</p>
+          <p><strong>Rates:</strong> 10Y Treasury Note · <strong>Volatility:</strong> VIX</p>
+          <p>You can also type in any custom instrument or stock ticker and the AI will do its best to provide context.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="free how many briefs limit day daily">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">How many free briefs do I get?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>On the <span class="tag tag-free">FREE</span> plan you get <strong>3 Full Briefs per day</strong>. The limit resets every 24 hours.</p>
+          <p>If you need more briefs, or want access to Scalper Mode and Equity Debriefs, you can upgrade to <span class="tag tag-pro">PRO</span> for €49/month with no daily limit.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="app pwa install mobile phone home screen">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">Can I install MarketDebriefs on my phone?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Yes — MarketDebriefs is a <strong>Progressive Web App (PWA)</strong>, which means you can install it directly to your home screen without going through an app store.</p>
+          <p><strong>iPhone (Safari):</strong> Tap the Share button → scroll down → tap <em>Add to Home Screen</em>.</p>
+          <p><strong>Android (Chrome):</strong> Tap the three-dot menu → tap <em>Add to Home Screen</em>. Or tap the <strong>⊕ GET APP</strong> button inside the app header.</p>
+          <p>Once installed it works like a native app — full screen, fast, and available from your home screen with one tap.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLANS & PRICING -->
+    <section class="faq-section" id="plans">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(245,158,11,.1)">💎</div>
+        <div class="section-title">Plans & Pricing</div>
+        <div class="section-count">4 ARTICLES</div>
+      </div>
+
+      <div class="faq-item" data-keywords="pro free difference plan pricing what included">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">What's the difference between Free and Pro?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p><span class="tag tag-free">FREE</span> — 3 Full Briefs per day, Trade Journal, Learn to Fish. No credit card required.</p>
+          <p><span class="tag tag-pro">PRO — €49/month</span> — Unlimited briefs, Scalper Mode, Equity (Stocks) Debriefs, all instruments covered.</p>
+          <p>Pro is designed for traders who trade daily and need unlimited access plus the speed of Scalper Mode before fast-moving entries.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="cancel subscription how anytime">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">Can I cancel my Pro subscription anytime?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Yes. There are no contracts and no cancellation fees. You can cancel at any time from your account settings.</p>
+          <p>When you cancel, your Pro access continues until the end of the current billing period. You won't be charged again after that.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="refund money back guarantee">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">Is there a refund policy?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>If you're not satisfied within the first <strong>7 days</strong> of your Pro subscription, contact us and we'll issue a full refund — no questions asked.</p>
+          <p>After 7 days, refunds are considered on a case-by-case basis. Reach out to <strong>support@marketdebriefs.com</strong> and we'll do right by you.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="discount student coupon code promo affiliate">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">Do you offer discount or promo codes?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Promo codes are occasionally offered through our affiliate partners and creator collaborations. If you have a code, you can enter it at the Pro checkout screen.</p>
+          <p>We don't currently offer student discounts, but if you're a trading educator or content creator interested in a partnership, <a href="#contact" style="color:var(--cyan)">get in touch</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="faq-section" id="features">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(0,212,170,.1)">⚡</div>
+        <div class="section-title">Features</div>
+        <div class="section-count">5 ARTICLES</div>
+      </div>
+
+      <div class="faq-item" data-keywords="scalper mode what is how works green yellow red">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">What is Scalper Mode and how does it work?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Scalper Mode is a <span class="tag tag-pro">PRO</span> feature designed for short-term and intraday traders who need a fast macro risk check before entering a trade.</p>
+          <p>Instead of a full brief, you get a <strong>GREEN / YELLOW / RED</strong> risk signal in seconds:</p>
+          <p><strong>🟢 GREEN</strong> — Macro conditions are clear. No imminent high-impact events.<br/>
+          <strong>🟡 YELLOW</strong> — Proceed with caution. Something is close on the calendar or in the news.<br/>
+          <strong>🔴 RED</strong> — Hold off. A major event or significant risk is imminent.</p>
+          <p>It also shows breaking news headlines and upcoming events due in the next hour or session. Think of it as a 10-second macro gut check before you pull the trigger.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="stocks equity debrief shares company ticker">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">How do Equity (Stocks) Debriefs work?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Equity Debriefs are a <span class="tag tag-pro">PRO</span> feature. Go to the <strong>Stocks</strong> tab, type any stock name or ticker (Apple, NVDA, TSLA, MSFT, etc.) and get an instant debrief covering:</p>
+          <p>— <strong>Earnings context</strong> — recent results and outlook<br/>
+          — <strong>Macro tailwinds</strong> — factors working in this stock's favour right now<br/>
+          — <strong>Macro headwinds</strong> — risks to watch<br/>
+          — <strong>Upcoming catalyst events</strong> — earnings dates, Fed decisions affecting the sector<br/>
+          — <strong>Sector rotation</strong> — is money flowing into or out of this sector?<br/>
+          — <strong>Institutional flow signals</strong> — what the smart money is doing</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="journal reflection trade diary what is">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">What is the Trade Journal / Reflection tab?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>The <strong>Reflection</strong> tab is a daily trading journal built into the app. At the end of each trading day, it presents you with 6 reflection prompts designed to help you build self-awareness around your trading decisions.</p>
+          <p>Questions like: <em>"What did the market try to teach you today?"</em> and <em>"What emotion showed up most in your trading?"</em></p>
+          <p>Consistent journaling is one of the highest-leverage habits a trader can build. It's free for all users.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="learn fish education concepts macro what">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">What is the "Learn to Fish" section?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p><strong>Learn to Fish</strong> is a free educational library of macro concepts that explain the forces behind market moves. Topics include:</p>
+          <p>— Why high-impact news moves markets<br/>
+          — The role of the US Dollar in everything<br/>
+          — Risk-on vs Risk-off flows<br/>
+          — How interest rates affect currencies<br/>
+          — Reading news like a trader<br/>
+          — Options flow and dealer gamma</p>
+          <p>The goal is not just to give you briefings — but to help you understand <em>why</em> markets move the way they do.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="real time live data current how fresh update">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">How current and accurate is the data in briefs?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Each brief is generated fresh on demand using an AI model with broad macro and market knowledge. The briefings focus on <strong>current macro themes, central bank stances, and upcoming scheduled events</strong> — not historical recaps or stale data.</p>
+          <p>For best results, run a fresh brief before each trading session rather than relying on a brief from hours ago. Markets move fast.</p>
+          <p><strong>Important:</strong> MarketDebriefs is an intelligence and research tool. It does not constitute financial advice and should be used as part of your broader trading process, not as a standalone signal.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- YOUR BRIEFS -->
+    <section class="faq-section" id="briefs">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(192,132,252,.1)">📋</div>
+        <div class="section-title">Your Briefs</div>
+        <div class="section-count">3 ARTICLES</div>
+      </div>
+
+      <div class="faq-item" data-keywords="brief not loading error failed try again">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">My brief failed or returned an error — what should I do?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Brief errors are usually temporary. Try these steps in order:</p>
+          <p><span class="tag tag-step">1</span> Wait 10–15 seconds and try again — occasional timeouts resolve themselves.<br/>
+          <span class="tag tag-step">2</span> Check your internet connection.<br/>
+          <span class="tag tag-step">3</span> Try a different instrument to rule out a specific query issue.<br/>
+          <span class="tag tag-step">4</span> Refresh the page and try again.</p>
+          <p>If the issue persists, contact us at <strong>support@marketdebriefs.com</strong> and include the instrument you searched and the error message shown.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="brief count used wrong limit reset daily">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">My brief count seems wrong — it shows I've used more than I have.</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>The brief counter increments when a brief is successfully returned, not when you press the button. If a brief returned an error, it should not count against your daily limit.</p>
+          <p>If you believe your count is incorrect, contact support with your account email and we'll look into it and restore any lost credits.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="save brief history past previous">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">Can I save or review past briefs?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Brief history is not currently stored between sessions — each brief is generated fresh on demand. This keeps the intelligence current rather than showing you stale data from hours ago.</p>
+          <p>If you want to refer back to a brief during a session, simply keep the tab open. Brief saving and history is a feature we're considering for a future update.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BILLING -->
+    <section class="faq-section" id="billing">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(0,212,255,.1)">💳</div>
+        <div class="section-title">Billing</div>
+        <div class="section-count">4 ARTICLES</div>
+      </div>
+
+      <div class="faq-item" data-keywords="payment methods card accept currency euro">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">What payment methods do you accept?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>We accept all major credit and debit cards (Visa, Mastercard, Amex) via <strong>Stripe</strong> — one of the world's most trusted payment processors. Your card details are never stored on our servers.</p>
+          <p>Pricing is in <strong>EUR (€)</strong>. Stripe handles currency conversion automatically if your card is in a different currency.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="charged when billing cycle renew monthly">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">When am I charged and how does the billing cycle work?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>You are charged <strong>€49</strong> on the day you upgrade to Pro, and then on the same date each month thereafter. For example, if you upgrade on the 15th, you'll be billed on the 15th of every month.</p>
+          <p>You'll receive a receipt by email after each payment. If a payment fails, we'll notify you by email and give you time to update your payment details before access is paused.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="invoice receipt vat tax business">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">Can I get a VAT invoice for my subscription?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Yes. A receipt is automatically emailed to you after each payment. If you need a formal VAT invoice for business purposes, contact <strong>support@marketdebriefs.com</strong> with your billing details and we'll send one over.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="cancel how stop subscription downgrade">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">How do I cancel my subscription?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>You can cancel anytime. To cancel your Pro subscription, email <strong>support@marketdebriefs.com</strong> with the subject line <em>"Cancel subscription"</em> and your account email. We'll process it same day.</p>
+          <p>Your Pro access continues until the end of the current billing period. You won't be charged again after cancellation.</p>
+          <p>A self-service cancellation option within the app is coming soon.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACCOUNT -->
+    <section class="faq-section" id="account">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(255,71,87,.1)">👤</div>
+        <div class="section-title">Account</div>
+        <div class="section-count">3 ARTICLES</div>
+      </div>
+
+      <div class="faq-item" data-keywords="change email password reset update account details">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">How do I change my email or password?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Account details are managed through our authentication provider. On the sign-in screen, click <strong>"Forgot password"</strong> to reset your password via email.</p>
+          <p>To change your email address, contact <strong>support@marketdebriefs.com</strong> from your current registered email and we'll update it for you.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="delete account data privacy remove">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">How do I delete my account?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>To delete your account and all associated data, email <strong>support@marketdebriefs.com</strong> with the subject <em>"Delete my account"</em> from your registered email address.</p>
+          <p>We'll process the deletion within 5 business days and confirm by email. If you have an active Pro subscription, we'll cancel it as part of the process.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="pro not showing after upgrade payment access">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">I upgraded to Pro but my account still shows as Free — what do I do?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>This occasionally happens if the redirect after payment doesn't complete fully. Try these steps:</p>
+          <p><span class="tag tag-step">1</span> Sign out and sign back in — this refreshes your account status.<br/>
+          <span class="tag tag-step">2</span> Hard refresh the page (Ctrl+Shift+R on desktop).<br/>
+          <span class="tag tag-step">3</span> Check that the payment was processed — you should have received a receipt email from Stripe.</p>
+          <p>If the issue persists after signing back in, contact <strong>support@marketdebriefs.com</strong> with your account email and payment confirmation and we'll activate Pro access manually within the hour.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECHNICAL -->
+    <section class="faq-section" id="technical">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(255,215,0,.08)">🔧</div>
+        <div class="section-title">Technical</div>
+        <div class="section-count">3 ARTICLES</div>
+      </div>
+
+      <div class="faq-item" data-keywords="browser support compatible safari chrome firefox works">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">Which browsers and devices does MarketDebriefs support?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>MarketDebriefs works on all modern browsers — <strong>Chrome, Safari, Firefox, and Edge</strong> — on both desktop and mobile.</p>
+          <p>For the best mobile experience, install it as a PWA (see <em>"Can I install MarketDebriefs on my phone?"</em> above). The PWA experience is optimised for iOS Safari and Android Chrome.</p>
+          <p>Internet Explorer is not supported.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="offline work no internet connection">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">Does MarketDebriefs work offline?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>The app shell loads offline, but <strong>generating briefs requires an internet connection</strong> since they are generated live by the AI on each request.</p>
+          <p>The Trade Journal and Learn to Fish sections work fully offline once the app has been loaded at least once.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-keywords="slow loading performance fast speed">
+        <div class="faq-q" onclick="toggle(this)">
+          <div class="faq-q-text">The app feels slow — how can I improve performance?</div>
+          <div class="faq-chevron">▾</div>
+        </div>
+        <div class="faq-a">
+          <p>Brief generation typically takes 5–15 seconds depending on query complexity. If things feel slower than usual:</p>
+          <p><span class="tag tag-step">1</span> Check your internet connection speed.<br/>
+          <span class="tag tag-step">2</span> Try installing the app as a PWA — the native-like experience is noticeably faster than a browser tab.<br/>
+          <span class="tag tag-step">3</span> Clear your browser cache and reload.</p>
+          <p>If you're consistently experiencing slowness, let us know at <strong>support@marketdebriefs.com</strong> with your device and browser details.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <div class="contact-card" id="contact">
+      <h3>Still need help?</h3>
+      <p>Can't find what you're looking for? We're a small team and we actually read every message. Expect a reply within 24 hours.</p>
+      <a href="mailto:support@marketdebriefs.com" class="contact-btn">✉ EMAIL SUPPORT</a>
+      <div class="contact-note">support@marketdebriefs.com · Response within 24 hours</div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // ── TOGGLE FAQ ──
+  function toggle(btn) {
+    const item = btn.parentElement;
+    const answer = item.querySelector('.faq-a');
+    const isOpen = item.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.faq-item.open').forEach(el => {
+      el.classList.remove('open');
+      el.querySelector('.faq-a').classList.remove('visible');
+    });
+    if (!isOpen) {
+      item.classList.add('open');
+      answer.classList.add('visible');
+    }
+  }
+
+  // ── SIDEBAR ACTIVE ──
+  function setActive(el) {
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── SEARCH ──
+  document.getElementById('searchInput').addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    let anyVisible = false;
+    document.querySelectorAll('.faq-item').forEach(item => {
+      const qText = item.querySelector('.faq-q-text').textContent.toLowerCase();
+      const aText = item.querySelector('.faq-a').textContent.toLowerCase();
+      const keywords = (item.dataset.keywords || '').toLowerCase();
+      const match = !q || qText.includes(q) || aText.includes(q) || keywords.includes(q);
+      item.style.display = match ? '' : 'none';
+      if (match) anyVisible = true;
+    });
+    // Show/hide sections based on visible items
+    document.querySelectorAll('.faq-section').forEach(section => {
+      const visible = [...section.querySelectorAll('.faq-item')].some(i => i.style.display !== 'none');
+      section.style.display = visible ? '' : 'none';
+    });
+    document.querySelector('.no-results').style.display = anyVisible ? 'none' : 'block';
+  });
+
+  // ── SCROLL SPY for sidebar ──
+  const sections = document.querySelectorAll('.faq-section');
+  const links = document.querySelectorAll('.sidebar-link');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        links.forEach(l => {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
