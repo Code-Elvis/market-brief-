@@ -228,8 +228,12 @@ function LandingPage({ navigate }) {
       </div>
 
       <div style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "24px 32px", textAlign: "center", color: "#2a2a2a", fontSize: 11 }}>
-        © {new Date().getFullYear()} MarketDebriefs · Not financial advice
-      </div>
+  © {new Date().getFullYear()} MarketDebriefs · Not financial advice
+  <span style={{ margin: "0 10px" }}>·</span>
+  <a href="/help" style={{ color: "#333", textDecoration: "none", fontFamily: "inherit", fontSize: 11 }}>Help Centre</a>
+  <span style={{ margin: "0 10px" }}>·</span>
+  <a href="mailto:support@marketdebriefs.com" style={{ color: "#333", textDecoration: "none", fontFamily: "inherit", fontSize: 11 }}>Support</a>
+</div>
     </div>
   );
 }
