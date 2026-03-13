@@ -762,6 +762,7 @@ function AppInner({ navigate }) {
                   }}
                   style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "3px 7px", border: "1px solid rgba(0,212,255,.2)", borderRadius: 4, background: "rgba(0,212,255,.05)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
                 >⊕ GET APP</button>
+                <a href="/help" target="_blank" rel="noopener noreferrer" style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4, textDecoration: "none" }}>HELP</a>
                 <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4, background: "none", cursor: "pointer" }}>SIGN OUT</button>
               </div>
             </div>
