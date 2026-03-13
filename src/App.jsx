@@ -63,32 +63,132 @@ function UpdateBanner() {
 }
 
 // ── ROUTING ───────────────────────────────────────────────────────────────────
+// ── HELP PAGE ─────────────────────────────────────────────────────────────────
+function HelpPage({ navigate }) {
+  const [search, setSearch] = useState("");
+  const [openItem, setOpenItem] = useState(null);
+  const sections = [
+    { id: "getting-started", icon: "🚀", title: "Getting Started", color: "rgba(0,212,255,.1)", items: [
+      { q: "How do I get started with MarketDebriefs?", a: "Getting started takes under 60 seconds. Type any instrument into the search bar — ES, Gold, EUR/USD, BTC, Oil — and hit BRIEF ME. Your first brief is ready in under 30 seconds. No credit card needed." },
+      { q: "What exactly does MarketDebriefs do?", a: "MarketDebriefs is a macro intelligence tool for active traders. Before you enter a trade, type in your instrument and receive an instant AI-powered briefing covering the current central bank stance, live geopolitical risks, upcoming high-impact events (CPI, NFP, Fed decisions), and why they move price. Think of it as having an institutional macro analyst on call — in seconds, before every trade." },
+      { q: "Which instruments are supported?", a: "25+ instruments across all major asset classes. Equity Indices: ES S&P 500, NQ NASDAQ, RTY Russell 2000, YM Dow Jones, DAX, Nikkei, FTSE, CAC. Metals: Gold, Silver, Copper. Energy: WTI Crude, Brent, Natural Gas. FX: EUR/USD, GBP/USD, USD/JPY, AUD/USD, USD/CAD, USD/CHF, DXY. Crypto: Bitcoin, Ethereum. Rates: 10Y Treasury. Volatility: VIX. You can also type any custom instrument or stock ticker." },
+      { q: "How many free briefs do I get?", a: "On the Free plan you get 3 Full Briefs per day. The limit resets every 24 hours. Upgrade to Pro (€49/month) for unlimited briefs plus Scalper Mode and Equity Debriefs." },
+      { q: "Can I install MarketDebriefs on my phone?", a: "Yes — MarketDebriefs is a Progressive Web App (PWA). iPhone Safari: tap Share → Add to Home Screen. Android Chrome: tap the three-dot menu → Add to Home Screen, or tap the ⊕ GET APP button in the app header. Works like a native app once installed." },
+    ]},
+    { id: "plans", icon: "💎", title: "Plans & Pricing", color: "rgba(245,158,11,.1)", items: [
+      { q: "What is the difference between Free and Pro?", a: "Free — 3 Full Briefs per day, Trade Journal, Learn to Fish. No credit card required. Pro (€49/month) — Unlimited briefs, Scalper Mode, Equity Debriefs, all instruments covered." },
+      { q: "Can I cancel my Pro subscription anytime?", a: "Yes. No contracts, no cancellation fees. Cancel anytime. Your Pro access continues until the end of the current billing period and you won't be charged again after that." },
+      { q: "Is there a refund policy?", a: "If you're not satisfied within the first 7 days of your Pro subscription, contact us for a full refund — no questions asked. After 7 days refunds are considered case-by-case. Email support@marketdebriefs.com." },
+      { q: "Do you offer promo or discount codes?", a: "Promo codes are occasionally offered through our affiliate partners and creator collaborations. If you have a code, enter it at the Pro checkout screen." },
+    ]},
+    { id: "features", icon: "⚡", title: "Features", color: "rgba(0,212,170,.1)", items: [
+      { q: "What is Scalper Mode?", a: "Scalper Mode is a Pro feature for intraday traders who need a fast macro risk check before entering. You get a GREEN / YELLOW / RED signal in seconds. GREEN — macro conditions are clear. YELLOW — proceed with caution, something is close on the calendar. RED — hold off, a major event is imminent. It also shows breaking headlines and upcoming events." },
+      { q: "How do Equity (Stocks) Debriefs work?", a: "Go to the Stocks tab, type any stock name or ticker (Apple, NVDA, TSLA, MSFT, etc.) and get an instant debrief covering earnings context, macro tailwinds and headwinds, upcoming catalyst events, sector rotation signals, and institutional flow direction. Pro feature." },
+      { q: "What is the Reflection tab?", a: "A daily trading journal built into the app. At the end of each trading day it presents 6 reflection prompts to build self-awareness around your trading decisions. Free for all users." },
+      { q: "What is Learn to Fish?", a: "A free educational library of macro concepts — why high-impact news moves markets, the role of the US Dollar, risk-on vs risk-off, how interest rates affect currencies, and more. The goal is to help you understand why markets move." },
+      { q: "How current is the data in my briefs?", a: "Each brief is generated fresh on demand focusing on current macro themes, central bank stances, and upcoming scheduled events. For best results run a fresh brief before each trading session. MarketDebriefs is an intelligence tool and does not constitute financial advice." },
+    ]},
+    { id: "billing", icon: "💳", title: "Billing", color: "rgba(0,212,255,.08)", items: [
+      { q: "What payment methods do you accept?", a: "All major credit and debit cards (Visa, Mastercard, Amex) via Stripe. Your card details are never stored on our servers. Pricing is in EUR and Stripe handles currency conversion automatically." },
+      { q: "When am I charged?", a: "You are charged €49 on the day you upgrade to Pro, then on the same date each month. You will receive a receipt by email after each payment." },
+      { q: "Can I get a VAT invoice?", a: "Yes. A receipt is automatically emailed after each payment. For a formal VAT invoice email support@marketdebriefs.com with your billing details." },
+      { q: "How do I cancel my subscription?", a: "Email support@marketdebriefs.com with the subject 'Cancel subscription' and your account email. We'll process it same day. Your Pro access continues until the end of the current billing period." },
+    ]},
+    { id: "account", icon: "👤", title: "Account", color: "rgba(255,71,87,.08)", items: [
+      { q: "How do I change my email or password?", a: "On the sign-in screen, click 'Forgot password' to reset your password by email. To change your email address, contact support@marketdebriefs.com from your current registered email." },
+      { q: "I upgraded to Pro but my account still shows Free — what do I do?", a: "Try signing out and back in to refresh your account status. If the issue persists, contact support@marketdebriefs.com with your account email and Stripe payment confirmation and we will activate Pro access manually within the hour." },
+      { q: "How do I delete my account?", a: "Email support@marketdebriefs.com with the subject 'Delete my account' from your registered email. We will process the deletion within 5 business days. Any active Pro subscription will be cancelled as part of the process." },
+    ]},
+    { id: "technical", icon: "🔧", title: "Technical", color: "rgba(255,215,0,.06)", items: [
+      { q: "Which browsers and devices are supported?", a: "All modern browsers — Chrome, Safari, Firefox, and Edge — on desktop and mobile. For the best mobile experience install it as a PWA. Internet Explorer is not supported." },
+      { q: "Does MarketDebriefs work offline?", a: "The app shell loads offline but generating briefs requires an internet connection since they are generated live on each request. The Reflection journal and Learn to Fish sections work fully offline once the app has loaded at least once." },
+      { q: "The app feels slow — how can I improve performance?", a: "Brief generation typically takes 5 to 15 seconds. If slower: check your internet connection, try installing as a PWA, or clear your browser cache and reload. If consistently slow contact support@marketdebriefs.com with your device and browser details." },
+    ]},
+  ];
+  const filtered = sections.map(s => ({ ...s, items: s.items.filter(item => !search || item.q.toLowerCase().includes(search.toLowerCase()) || item.a.toLowerCase().includes(search.toLowerCase())) })).filter(s => s.items.length > 0);
+  const toggle = (id) => setOpenItem(openItem === id ? null : id);
+  return (
+    <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
+      <style>{`@keyframes helpFade{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}} @keyframes helpPulse{0%,100%{opacity:1}50%{opacity:.3}} .help-ans{animation:helpFade .18s ease} .help-item:hover{border-color:rgba(255,255,255,.1)!important} .help-open{border-color:rgba(0,212,255,.25)!important}`}</style>
+      <nav style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 24px", borderBottom:"1px solid rgba(255,255,255,.06)", position:"sticky", top:0, background:"rgba(10,12,15,.96)", backdropFilter:"blur(10px)", zIndex:100 }}>
+        <div onClick={() => navigate("/")} style={{ fontSize:15, fontWeight:800, letterSpacing:"-0.5px", cursor:"pointer", color:"#fff" }}>MARKET<span style={{ color:"#00d4ff" }}>DEBRIEFS</span></div>
+        <div style={{ display:"flex", gap:10 }}>
+          <button onClick={() => navigate("/")} style={{ fontSize:11, fontFamily:"monospace", color:"#444", padding:"4px 10px", border:"1px solid #1a1a1a", borderRadius:5, background:"none", cursor:"pointer" }}>← HOME</button>
+          <button onClick={() => navigate("/app")} style={{ fontSize:11, fontFamily:"monospace", color:"#00d4ff", padding:"4px 10px", border:"1px solid rgba(0,212,255,.2)", borderRadius:5, background:"rgba(0,212,255,.06)", cursor:"pointer" }}>LAUNCH APP</button>
+        </div>
+      </nav>
+      <div style={{ maxWidth:680, margin:"0 auto", padding:"52px 24px 36px", textAlign:"center" }}>
+        <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 14px", borderRadius:20, border:"1px solid rgba(0,212,255,.2)", background:"rgba(0,212,255,.05)", marginBottom:18 }}>
+          <div style={{ width:5, height:5, borderRadius:"50%", background:"#00d4ff", animation:"helpPulse 2s infinite" }} />
+          <span style={{ fontSize:10, color:"#00d4ff", fontWeight:700, letterSpacing:1.5 }}>HELP CENTRE</span>
+        </div>
+        <h1 style={{ fontSize:"clamp(24px,5vw,40px)", fontWeight:900, color:"#fff", letterSpacing:"-1px", lineHeight:1.1, marginBottom:10 }}>How can we <span style={{ color:"#00d4ff" }}>help you?</span></h1>
+        <p style={{ fontSize:13, color:"#555", lineHeight:1.7, marginBottom:24 }}>Everything you need to know about MarketDebriefs.</p>
+        <div style={{ position:"relative", maxWidth:460, margin:"0 auto" }}>
+          <input value={search} onChange={e => { setSearch(e.target.value); setOpenItem(null); }} placeholder="Search questions…" style={{ width:"100%", padding:"11px 42px 11px 15px", background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.1)", borderRadius:9, color:"#e0e0e0", fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
+          <span style={{ position:"absolute", right:13, top:"50%", transform:"translateY(-50%)", color:"#333", fontSize:15, pointerEvents:"none" }}>⌕</span>
+        </div>
+      </div>
+      <div style={{ maxWidth:680, margin:"0 auto", padding:"0 24px 80px" }}>
+        {filtered.length === 0 && <div style={{ textAlign:"center", padding:"48px 0", color:"#444", fontSize:13 }}>No results for "{search}" — <button onClick={() => setSearch("")} style={{ background:"none", border:"none", color:"#00d4ff", cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>clear search</button></div>}
+        {filtered.map(section => (
+          <div key={section.id} style={{ marginBottom:40 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, paddingBottom:11, borderBottom:"1px solid rgba(255,255,255,.05)" }}>
+              <div style={{ width:32, height:32, borderRadius:8, background:section.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>{section.icon}</div>
+              <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{section.title}</div>
+              <div style={{ marginLeft:"auto", fontSize:10, fontFamily:"monospace", color:"#2a2a2a" }}>{section.items.length} articles</div>
+            </div>
+            {section.items.map((item, i) => {
+              const id = section.id + "-" + i;
+              const isOpen = openItem === id;
+              return (
+                <div key={id} className={"help-item" + (isOpen ? " help-open" : "")} onClick={() => toggle(id)} style={{ background:"rgba(255,255,255,.02)", border:"1px solid rgba(255,255,255,.06)", borderRadius:10, marginBottom:6, overflow:"hidden", transition:"border-color .2s", cursor:"pointer" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"13px 15px", gap:10 }}>
+                    <div style={{ fontSize:13, fontWeight:600, color:isOpen ? "#00d4ff" : "#e0e0e0", flex:1, lineHeight:1.4 }}>{item.q}</div>
+                    <div style={{ width:20, height:20, borderRadius:4, background:isOpen ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.03)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:isOpen ? "#00d4ff" : "#333", flexShrink:0, transform:isOpen ? "rotate(180deg)" : "none", transition:"all .2s" }}>▾</div>
+                  </div>
+                  {isOpen && <div className="help-ans" style={{ padding:"0 15px 14px", fontSize:13, color:"#777", lineHeight:1.8, borderTop:"1px solid rgba(255,255,255,.05)" }}><div style={{ paddingTop:11 }}>{item.a}</div></div>}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        <div style={{ marginTop:16, padding:"26px 22px", background:"linear-gradient(135deg,rgba(0,212,255,.06),transparent)", border:"1px solid rgba(0,212,255,.15)", borderRadius:14, textAlign:"center" }}>
+          <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:7 }}>Still need help?</div>
+          <div style={{ fontSize:13, color:"#555", lineHeight:1.7, marginBottom:18, maxWidth:360, margin:"0 auto 18px" }}>Can't find what you're looking for? We read every message and reply within 24 hours.</div>
+          <a href="mailto:support@marketdebriefs.com" style={{ display:"inline-block", background:"linear-gradient(135deg,#00d4ff,#0099cc)", color:"#000", padding:"11px 26px", borderRadius:8, fontSize:13, fontWeight:800, fontFamily:"inherit", textDecoration:"none" }}>✉ EMAIL SUPPORT</a>
+          <div style={{ marginTop:10, fontSize:11, color:"#2a2a2a", fontFamily:"monospace" }}>support@marketdebriefs.com · 24-hour response</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ROUTING ───────────────────────────────────────────────────────────────────
 export default function App() {
   const [path, setPath] = useState(window.location.pathname);
-
   useEffect(() => {
     const onPop = () => setPath(window.location.pathname);
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
-
   const navigate = (to) => {
     window.history.pushState({}, "", to);
     setPath(to);
+    window.scrollTo(0, 0);
   };
-
   if (path === "/app") return <><UpdateBanner /><AppShell navigate={navigate} /></>;
+  if (path === "/help") return <HelpPage navigate={navigate} />;
   return <><UpdateBanner /><LandingPage navigate={navigate} /></>;
 }
 
-// ── LANDING PAGE ──────────────────────────────────────────────────────────────
 function LandingPage({ navigate }) {
   return (
     <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif", margin: 0 }}>
       <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } body { background: #0a0c0f; } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } } @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } } .fade-up { animation: fadeUp 0.7s ease forwards; } .cta-btn:hover { opacity: 0.85; transform: translateY(-1px); } .cta-btn { transition: all 0.15s; } .chip:hover { border-color: rgba(0,212,255,.4) !important; color: #00d4ff !important; } .chip { transition: all 0.15s; cursor: default; }`}</style>
       <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 32px", borderBottom: "1px solid rgba(255,255,255,.05)", position: "sticky", top: 0, background: "rgba(10,12,15,.95)", backdropFilter: "blur(10px)", zIndex: 100 }}>
         <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.5px" }}>MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span></div>
-        <a href="/help" style={{ fontSize: 11, fontWeight: 600, color: "#333", textDecoration: "none", fontFamily: "inherit", marginRight: 8 }}>HELP</a> <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={() => navigate("/help")} style={{ fontSize: 11, fontWeight: 600, color: "#333", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>HELP</button><button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button></div>
       </nav>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "80px 32px 60px", textAlign: "center" }} className="fade-up">
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.05)", marginBottom: 28 }}>
@@ -228,12 +328,8 @@ function LandingPage({ navigate }) {
       </div>
 
       <div style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "24px 32px", textAlign: "center", color: "#2a2a2a", fontSize: 11 }}>
-  © {new Date().getFullYear()} MarketDebriefs · Not financial advice
-  <span style={{ margin: "0 10px" }}>·</span>
-  <a href="/help" style={{ color: "#333", textDecoration: "none", fontFamily: "inherit", fontSize: 11 }}>Help Centre</a>
-  <span style={{ margin: "0 10px" }}>·</span>
-  <a href="mailto:support@marketdebriefs.com" style={{ color: "#333", textDecoration: "none", fontFamily: "inherit", fontSize: 11 }}>Support</a>
-</div>
+        © {new Date().getFullYear()} MarketDebriefs · Not financial advice
+      </div>
     </div>
   );
 }
@@ -766,7 +862,7 @@ function AppInner({ navigate }) {
                   }}
                   style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "3px 7px", border: "1px solid rgba(0,212,255,.2)", borderRadius: 4, background: "rgba(0,212,255,.05)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
                 >⊕ GET APP</button>
-                <a href="/help" target="_blank" rel="noopener noreferrer" style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4, textDecoration: "none" }}>HELP</a>
+                <button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4, background: "none", cursor: "pointer" }}>HELP</button>
                 <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #181818", borderRadius: 4, background: "none", cursor: "pointer" }}>SIGN OUT</button>
               </div>
             </div>
