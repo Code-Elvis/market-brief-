@@ -386,6 +386,27 @@ const CHIPS = [
   { label: "GBP", key: "gbp" }, { label: "BTC", key: "btc" }, { label: "VIX", key: "vix" },
 ];
 
+// Known stock/equity keywords — anything matching these routes to the Stocks tab
+const STOCK_HINTS = [
+  "apple","aapl","nvidia","nvda","tesla","tsla","microsoft","msft","amazon","amzn",
+  "meta","google","googl","goog","netflix","nflx","amd","palantir","pltr","spotify",
+  "spot","uber","baba","alibaba","samsung","berkshire","brk","jpmorgan","jpm",
+  "visa","v","mastercard","ma","paypal","pypl","disney","dis","boeing","ba",
+  "ford","f","gm","general motors","coca cola","ko","pepsi","pep","walmart","wmt",
+  "target","tgt","nike","nke","salesforce","crm","oracle","orcl","intel","intc",
+  "qualcomm","qcom","broadcom","avgo","arm","snow","snowflake","shopify","shop",
+  "coinbase","coin","robinhood","hood","sofi","affirm","afrm","rivian","rivn",
+  "lucid","lcid","nio","xpeng","xpev","stock","shares","equity","ticker"
+];
+
+function isLikelyStock(q) {
+  // Matches known stock names/tickers OR looks like a short ticker (2-5 uppercase-ish chars)
+  if (STOCK_HINTS.some(h => q === h || q.includes(h))) return true;
+  // Pure alphabetic query 2-5 chars that isn't a known instrument alias — likely a ticker
+  if (/^[a-z]{2,5}$/.test(q)) return true;
+  return false;
+}
+
 function detect(query) {
   const q = query.toLowerCase().trim();
   if (!q) return null;
@@ -395,7 +416,9 @@ function detect(query) {
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
     if (val.aliases.some(a => q.includes(a) || a.includes(q))) return { key, ...val };
   }
-  return { key: "custom", label: query.trim(), aliases: [], color: "#e0e0e0", flag: "?", optionsTicker: null };
+  // Flag as equity so the run() function can redirect instead of running a broken brief
+  if (isLikelyStock(q)) return { key: "equity", label: query.trim(), aliases: [], color: "#f59e0b", flag: "STOCK", optionsTicker: null };
+  return null;
 }
 
 function sysPrompt(mode) {
@@ -433,6 +456,15 @@ async function getEquityBrief(label) {
 RULES: Never mention specific price levels. Focus on macro, fundamental, and sector context only — current and upcoming only.
 ` + 'EQUITY BRIEF schema: {"instrument":"string","ticker":"string","sector":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","earnings_context":"string","macro_tailwinds":"string","macro_headwinds":"string","sector_rotation":"string","catalyst_events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string"}],"institutional_flow":"string","teaching_moment":"string"}';
   const msg = "Today: " + now + ". Equity debrief for " + label + ". Cover: latest earnings context, current macro tailwinds and headwinds for this stock and its sector, upcoming catalyst events, sector rotation dynamics, and institutional flow signals. No price levels.";
+  return callClaude(sys, msg);
+}
+
+async function getEquityScalper(label) {
+  const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const sys = `You are a professional equity trader's risk assistant. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
+RULES: Never mention specific price levels. Focus only on CURRENT and IMMINENT risks for this specific stock.
+EQUITY SCALPER schema: {"ticker":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","earnings_proximity":"SAFE|NEAR|IMMINENT","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}`;
+  const msg = "Time: " + now + ". I am about to trade " + label + ". Give me a GREEN / YELLOW / RED equity scalper check. Flag: earnings proximity, any breaking company-specific news, analyst events, sector pressure, or macro events that directly affect this stock right now. No price levels.";
   return callClaude(sys, msg);
 }
 
@@ -577,50 +609,94 @@ function StockGate({ onUpgrade }) {
 }
 
 // ── STOCKS TAB (Pro) ──────────────────────────────────────────────────────────
-function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError }) {
+function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError }) {
+  const isScalper = mode === "scalper";
+
   const runStock = async () => {
     const q = query.trim();
     if (!q) return;
-    setLoading(true); setError(null); setData(null);
-    try {
-      const result = await getEquityBrief(q);
-      setData(result);
-    } catch (e) { setError(e.message || "Fetch failed. Please try again."); }
-    finally { setLoading(false); }
+    if (isScalper) {
+      setScalperLoading(true); setScalperError(null); setScalperData(null);
+      try {
+        const result = await getEquityScalper(q);
+        setScalperData(result);
+      } catch (e) { setScalperError(e.message || "Fetch failed. Please try again."); }
+      finally { setScalperLoading(false); }
+    } else {
+      setLoading(true); setError(null); setData(null);
+      try {
+        const result = await getEquityBrief(q);
+        setData(result);
+      } catch (e) { setError(e.message || "Fetch failed. Please try again."); }
+      finally { setLoading(false); }
+    }
   };
+
   const SUGGESTIONS = ["Apple","Microsoft","Nvidia","Tesla","Amazon","Meta","Google","Netflix","AMD","Palantir","Spotify","Uber"];
+  const activeLoading = isScalper ? scalperLoading : loading;
+  const activeError   = isScalper ? scalperError   : error;
+
   return (
     <div>
+      {/* Mode indicator */}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 14, padding: "8px 12px", background: isScalper ? "rgba(245,158,11,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (isScalper ? "rgba(245,158,11,.2)" : "rgba(255,255,255,.06)"), borderRadius: 8 }}>
+        <div style={{ width: 6, height: 6, borderRadius: "50%", background: isScalper ? "#f59e0b" : "#00d4ff", flexShrink: 0 }} />
+        <div style={{ fontSize: 10, fontWeight: 700, color: isScalper ? "#f59e0b" : "#00d4ff", letterSpacing: 1.5 }}>
+          {isScalper ? "EQUITY SCALPER — PRO" : "EQUITY DEBRIEF — PRO"}
+        </div>
+        <div style={{ fontSize: 10, color: "#333", marginLeft: "auto" }}>
+          {isScalper ? "GREEN / YELLOW / RED for stocks" : "Full macro & fundamental analysis"}
+        </div>
+      </div>
+
       <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700, letterSpacing: 2, marginBottom: 10 }}>EQUITY DEBRIEF — PRO</div>
         <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === "Enter" && runStock()}
-            placeholder="Tesla, MSFT, Apple, NVDA, any ticker…"
-            style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(245,158,11,.2)", borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
+            placeholder={isScalper ? "NVDA, TSLA, AAPL — about to trade?" : "Tesla, MSFT, Apple, NVDA, any ticker…"}
+            style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid " + (isScalper ? "rgba(245,158,11,.25)" : "rgba(245,158,11,.2)"), borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
           />
-          <button onClick={runStock} disabled={loading} style={{ padding: "10px 16px", borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", background: loading ? "rgba(255,255,255,.02)" : "rgba(245,158,11,.12)", color: loading ? "#2a2a2a" : "#f59e0b", border: "1px solid rgba(245,158,11,.25)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
-            {loading ? "…" : "BRIEF ME"}
+          <button onClick={runStock} disabled={activeLoading} style={{ padding: "10px 16px", borderRadius: 8, cursor: activeLoading ? "not-allowed" : "pointer", background: activeLoading ? "rgba(255,255,255,.02)" : "rgba(245,158,11,.12)", color: activeLoading ? "#2a2a2a" : "#f59e0b", border: "1px solid rgba(245,158,11,.25)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+            {activeLoading ? "…" : isScalper ? "CHECK NOW" : "BRIEF ME"}
           </button>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {SUGGESTIONS.map(s => (
-            <button key={s} onClick={() => { setQuery(s); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(245,158,11,.04)", border: "1px solid rgba(245,158,11,.12)", color: "#666" }}>{s}</button>
+            <button key={s} onClick={() => setQuery(s)} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(245,158,11,.04)", border: "1px solid rgba(245,158,11,.12)", color: "#666" }}>{s}</button>
           ))}
         </div>
       </div>
-      {loading && <Loader />}
-      {error && <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>}
-      {!loading && !data && !error && (
-        <div style={{ textAlign: "center", padding: "40px 20px" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
-          <div style={{ fontSize: 13, color: "#444" }}>Search any stock or ticker above for a full macro & fundamental debrief</div>
-          <div style={{ fontSize: 11, color: "#2a2a2a", marginTop: 6 }}>MAG7 · Large caps · Any public company</div>
-        </div>
+
+      {/* Results */}
+      {activeLoading && <Loader />}
+      {activeError && <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{activeError}</div>}
+
+      {isScalper ? (
+        !scalperLoading && !scalperData && !scalperError && (
+          <div style={{ textAlign: "center", padding: "40px 20px" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>⚡</div>
+            <div style={{ fontSize: 13, color: "#444", marginBottom: 6 }}>Enter a stock ticker for an instant risk check</div>
+            <div style={{ fontSize: 11, color: "#2a2a2a" }}>Earnings proximity · Breaking news · Imminent catalysts</div>
+          </div>
+        )
+      ) : (
+        !loading && !data && !error && (
+          <div style={{ textAlign: "center", padding: "40px 20px" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
+            <div style={{ fontSize: 13, color: "#444" }}>Search any stock or ticker above for a full macro & fundamental debrief</div>
+            <div style={{ fontSize: 11, color: "#2a2a2a", marginTop: 6 }}>MAG7 · Large caps · Any public company</div>
+          </div>
+        )
       )}
-      {!loading && data && <EquityView inst={{ label: data.instrument || query, color: "#f59e0b", flag: "STOCK" }} data={data} />}
+
+      {isScalper && !scalperLoading && scalperData && (
+        <EquityScalperView ticker={query} data={scalperData} loading={scalperLoading} error={scalperError} />
+      )}
+      {!isScalper && !loading && data && (
+        <EquityView inst={{ label: data.instrument || query, color: "#f59e0b", flag: "STOCK" }} data={data} />
+      )}
     </div>
   );
 }
@@ -683,6 +759,77 @@ function EquityView({ inst, data }) {
         <div style={{ background: "rgba(192,132,252,.06)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 8, padding: 15 }}>
           <div style={{ fontSize: 9, color: "#c084fc", fontWeight: 700, letterSpacing: 1.5, marginBottom: 7 }}>TEACH ME TO FISH</div>
           <div style={{ fontSize: 13, color: "#d4b8f7", lineHeight: 1.75 }}>{data.teaching_moment}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EquityScalperView({ ticker, data, loading, error }) {
+  if (loading) return <Loader />;
+  if (error) return <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>;
+  if (!data) return null;
+
+  const RC = { GREEN: "#00d4aa", YELLOW: "#ffd700", RED: "#ff4757" };
+  const rc = RC[data.risk_level] || "#888";
+  const rl = data.risk_level === "GREEN" ? "ALL CLEAR" : data.risk_level === "YELLOW" ? "CAUTION" : "HOLD OFF";
+  const EC = { SAFE: { color: "#00d4aa", label: "EARNINGS SAFE", bg: "rgba(0,212,170,.08)" }, NEAR: { color: "#ffd700", label: "EARNINGS NEAR", bg: "rgba(255,215,0,.06)" }, IMMINENT: { color: "#ff4757", label: "EARNINGS IMMINENT", bg: "rgba(255,71,87,.08)" } };
+  const ep = EC[data.earnings_proximity] || EC.SAFE;
+
+  return (
+    <div>
+      {/* Risk signal */}
+      <div style={{ background: rc + "12", border: "2px solid " + rc + "44", borderRadius: 12, padding: "22px 20px", marginBottom: 14, textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: "#555", letterSpacing: 2, fontWeight: 700, marginBottom: 7 }}>
+          {(data.ticker || ticker).toUpperCase()} — TRADE NOW?
+        </div>
+        <div style={{ fontSize: 30, fontWeight: 800, color: rc, marginBottom: 9 }}>{rl}</div>
+        <div style={{ fontSize: 13, color: "#aaa", lineHeight: 1.5 }}>{data.risk_reason}</div>
+      </div>
+
+      {/* Earnings proximity badge */}
+      <div style={{ background: ep.bg, border: "1px solid " + ep.color + "44", borderRadius: 8, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 8, height: 8, borderRadius: "50%", background: ep.color, flexShrink: 0 }} />
+        <div style={{ fontSize: 11, fontWeight: 700, color: ep.color, letterSpacing: 1 }}>{ep.label}</div>
+      </div>
+
+      {/* Scalper note */}
+      <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, padding: 13, marginBottom: 14 }}>
+        <div style={{ fontSize: 9, color: "#666", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>EQUITY SCALPER NOTE</div>
+        <div style={{ fontSize: 14, color: "#e0e0e0", lineHeight: 1.6, fontWeight: 500 }}>{data.scalper_note}</div>
+      </div>
+
+      {/* Breaking news */}
+      {data.breaking && data.breaking.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>BREAKING — {(data.ticker || ticker).toUpperCase()}</div>
+          {data.breaking.map((b, i) => (
+            <div key={i} style={{ background: DB[b.direction] || "rgba(255,255,255,.02)", borderLeft: "3px solid " + (DC[b.direction] || "#555"), borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, flex: 1 }}>{b.headline}</div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: DC[b.direction] || "#888" }}>{b.direction}</div>
+                  <div style={{ fontSize: 10, color: "#444", marginTop: 2 }}>{b.age}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Imminent events */}
+      {data.imminent && data.imminent.length > 0 && (
+        <div>
+          <div style={{ fontSize: 9, color: "#f59e0b", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>COMING UP — {(data.ticker || ticker).toUpperCase()}</div>
+          {data.imminent.map((ev, i) => (
+            <div key={i} style={{ background: "rgba(245,158,11,.05)", border: "1px solid rgba(245,158,11,.15)", borderRadius: 8, padding: "11px 13px", marginBottom: 7, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600 }}>{ev.event}</div>
+              <div style={{ textAlign: "right", marginLeft: 12 }}>
+                <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700 }}>in {ev.due_in}</div>
+                <div style={{ fontSize: 11, color: "#777", marginTop: 2 }}>{ev.expected_impact}</div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -804,6 +951,9 @@ function AppInner({ navigate }) {
   const [stockData, setStockData] = useState(null);
   const [stockLoading, setStockLoading] = useState(false);
   const [stockError, setStockError] = useState(null);
+  const [scalperStockData, setScalperStockData] = useState(null);
+  const [scalperStockLoading, setScalperStockLoading] = useState(false);
+  const [scalperStockError, setScalperStockError] = useState(null);
 
   const triggerUpgrade = (reason = "limit") => { setUpgradeReason(reason); setShowUpgrade(true); };
 
@@ -812,6 +962,23 @@ function AppInner({ navigate }) {
     const mm = m !== undefined ? m : mode;
     if (mm === "scalper" && !isPro) { triggerUpgrade("scalper"); return; }
     const found = detect(q);
+
+    // ── STOCK INTERCEPT ──────────────────────────────────────────────────────
+    // If the query looks like a stock/equity, don't run a macro brief.
+    // Route Pro users to the Stocks tab, show upgrade modal for free users.
+    if (found && found.key === "equity") {
+      if (isPro) {
+        // Pre-fill the stock search and switch to Stocks tab
+        setStockQuery(q);
+        setTab("stocks");
+      } else {
+        triggerUpgrade("stocks");
+      }
+      return;
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
+    if (!found) { setError("Instrument not recognised. Try: ES, NQ, Euro, Gold, GBP, Oil, BTC"); return; }
     setInst(found); setLoading(true); setError(null); setData(null); setTab("intel");
     try {
       const result = await getBriefing(found, mm);
@@ -907,14 +1074,19 @@ function AppInner({ navigate }) {
             {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} />}
           </div>}
           {tab === "stocks" && (
-            isPro
-              ? <StocksTab
-                  query={stockQuery} setQuery={setStockQuery}
-                  data={stockData} setData={setStockData}
-                  loading={stockLoading} setLoading={setStockLoading}
-                  error={stockError} setError={setStockError}
-                />
-              : <StockGate onUpgrade={() => triggerUpgrade("stocks")} />
+            // Both Full Brief and Scalper Mode are now supported in the Stocks tab
+            false ? null : isPro
+                ? <StocksTab
+                    query={stockQuery} setQuery={setStockQuery}
+                    data={stockData} setData={setStockData}
+                    loading={stockLoading} setLoading={setStockLoading}
+                    error={stockError} setError={setStockError}
+                    mode={mode}
+                    scalperData={scalperStockData} setScalperData={setScalperStockData}
+                    scalperLoading={scalperStockLoading} setScalperLoading={setScalperStockLoading}
+                    scalperError={scalperStockError} setScalperError={setScalperStockError}
+                  />
+                : <StockGate onUpgrade={() => triggerUpgrade("stocks")} />
           )}
           {tab === "journal" && <Journal />}
           {tab === "learn" && <Learn />}
