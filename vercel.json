@@ -5,5 +5,11 @@
     { "source": "/help",     "destination": "/help.html" },
     { "source": "/",         "destination": "/landing.html" },
     { "source": "/(.*)",     "destination": "/index.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/auto-brief",
+      "schedule": "30 12 * * 1-5"
+    }
   ]
 }
