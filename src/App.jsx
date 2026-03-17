@@ -836,6 +836,134 @@ function EquityScalperView({ ticker, data, loading, error }) {
   );
 }
 
+// ── SHARE CARD ───────────────────────────────────────────────────────────────
+function ShareCard({ inst, data, mode, onClose }) {
+  const date = new Date().toLocaleDateString("en-GB", {
+    day: "2-digit", month: "short", year: "numeric"
+  }).toUpperCase();
+
+  // Determine bias and colours from brief data
+  const isScalper = mode === "scalper";
+  const rawBias = isScalper ? data.risk_level : data.sentiment;
+  const bias = rawBias ? rawBias.toUpperCase() : "NEUTRAL";
+
+  const biasConfig = {
+    BULLISH:  { emoji: "🟢", color: "#00d4aa", bg: "rgba(0,212,170,.1)",  border: "rgba(0,212,170,.3)" },
+    BEARISH:  { emoji: "🔴", color: "#ff4757", bg: "rgba(255,71,87,.1)",  border: "rgba(255,71,87,.3)"  },
+    NEUTRAL:  { emoji: "🟡", color: "#ffd700", bg: "rgba(255,215,0,.08)", border: "rgba(255,215,0,.25)" },
+    MIXED:    { emoji: "🟡", color: "#c084fc", bg: "rgba(192,132,252,.1)","border": "rgba(192,132,252,.3)" },
+    GREEN:    { emoji: "🟢", color: "#00d4aa", bg: "rgba(0,212,170,.1)",  border: "rgba(0,212,170,.3)" },
+    YELLOW:   { emoji: "🟡", color: "#ffd700", bg: "rgba(255,215,0,.08)", border: "rgba(255,215,0,.25)" },
+    RED:      { emoji: "🔴", color: "#ff4757", bg: "rgba(255,71,87,.1)",  border: "rgba(255,71,87,.3)"  },
+  };
+  const bc = biasConfig[bias] || biasConfig.NEUTRAL;
+
+  // Pick the 3 key lines depending on mode
+  const line1 = isScalper ? data.risk_reason     : data.geopolitical_risks || data.headline_summary;
+  const line2 = isScalper ? data.scalper_note     : data.macro_context || "";
+  const line3 = isScalper
+    ? (data.imminent?.[0] ? data.imminent[0].event + " — in " + data.imminent[0].due_in : "")
+    : (data.events?.[0] ? data.events[0].title + " · " + data.events[0].time : "");
+
+  const truncate = (str, max) => str && str.length > max ? str.slice(0, max - 1) + "…" : (str || "");
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.88)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, width: "100%", maxWidth: 400 }}>
+
+        {/* THE CARD — screenshot this */}
+        <div id="share-card-el" style={{
+          background: "#0a0c0f", borderRadius: 20, padding: 28,
+          width: "100%", aspectRatio: "1 / 1",
+          display: "flex", flexDirection: "column", justifyContent: "space-between",
+          position: "relative", overflow: "hidden",
+          boxShadow: "0 12px 60px rgba(0,0,0,.6)",
+        }}>
+          {/* Grid bg */}
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none",
+            backgroundImage: "linear-gradient(rgba(0,212,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.035) 1px,transparent 1px)",
+            backgroundSize: "36px 36px" }} />
+          {/* Glow */}
+          <div style={{ position: "absolute", top: -80, left: -80, width: 260, height: 260, pointerEvents: "none",
+            background: "radial-gradient(circle,rgba(0,212,255,.1),transparent 70%)" }} />
+
+          {/* Content */}
+          <div style={{ position: "relative", zIndex: 1 }}>
+            {/* Logo */}
+            <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: -0.5, marginBottom: 20 }}>
+              MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span>
+            </div>
+            {/* Instrument + date */}
+            <div style={{ fontSize: 30, fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1, marginBottom: 4 }}>
+              {inst.label}
+            </div>
+            <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: 16 }}>
+              {date}
+            </div>
+            {/* Bias badge */}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20,
+              background: bc.bg, border: "1px solid " + bc.border, marginBottom: 22 }}>
+              <span style={{ fontSize: 12 }}>{bc.emoji}</span>
+              <span style={{ fontSize: 11, fontWeight: 800, color: bc.color, letterSpacing: 1.5 }}>{bias}</span>
+            </div>
+            {/* Lines */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {line1 && (
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>🏦</span>
+                  <span style={{ fontSize: 12, color: "#666", lineHeight: 1.45 }}>{truncate(line1, 80)}</span>
+                </div>
+              )}
+              {line2 && (
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+                  <span style={{ fontSize: 12, color: "#666", lineHeight: 1.45 }}>{truncate(line2, 80)}</span>
+                </div>
+              )}
+              {line3 && (
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>📅</span>
+                  <span style={{ fontSize: 12, color: "#666", lineHeight: 1.45 }}>{truncate(line3, 80)}</span>
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{bc.emoji}</span>
+                <span style={{ fontSize: 12, color: "#666", lineHeight: 1.45 }}>
+                  <strong style={{ color: "#e0e0e0", fontWeight: 700 }}>{bias}</strong>
+                  {" — "}
+                  {isScalper
+                    ? truncate(data.risk_reason, 60)
+                    : truncate(data.headline_summary, 60)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 14 }} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 11, color: "#00d4ff", fontFamily: "monospace", opacity: 0.6 }}>marketdebriefs.com</span>
+              <span style={{ fontSize: 9, color: "#1a1a1a", fontFamily: "monospace", letterSpacing: 1.5 }}>MACRO INTELLIGENCE</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Instructions */}
+        <div style={{ fontSize: 12, color: "#555", textAlign: "center", lineHeight: 1.6 }}>
+          Screenshot the card above → post to X
+        </div>
+
+        {/* Close */}
+        <button onClick={onClose} style={{ padding: "10px 28px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.04)", color: "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+          Done
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FullView({ inst, data }) {
   const sc = { bullish: "#00d4aa", bearish: "#ff4757", neutral: "#ffd700", mixed: "#c084fc" };
   const cc = sc[data.sentiment] || "#888";
@@ -952,6 +1080,7 @@ function AppInner({ navigate }) {
   const [stockLoading, setStockLoading] = useState(false);
   const [stockError, setStockError] = useState(null);
   const [scalperStockData, setScalperStockData] = useState(null);
+  const [showShareCard, setShowShareCard] = useState(false);
   const [scalperStockLoading, setScalperStockLoading] = useState(false);
   const [scalperStockError, setScalperStockError] = useState(null);
 
@@ -1072,6 +1201,16 @@ function AppInner({ navigate }) {
             )}
             {!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}
             {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} />}
+            {!loading && data && inst && (
+              <div style={{ marginTop: 20, textAlign: "center" }}>
+                <button onClick={() => setShowShareCard(true)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 8, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.06)", color: "#00d4ff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                  ↗ DAILY OUTLOOK CARD
+                </button>
+              </div>
+            )}
+            {showShareCard && data && inst && (
+              <ShareCard inst={inst} data={data} mode={mode} onClose={() => setShowShareCard(false)} />
+            )}
           </div>}
           {tab === "stocks" && (
             // Both Full Brief and Scalper Mode are now supported in the Stocks tab
