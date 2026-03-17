@@ -128,7 +128,7 @@ async function sendEmail(tweets, date) {
       "Authorization": `Bearer ${process.env.LOOPS_API_KEY}`,
     },
     body: JSON.stringify({
-      transactionalId: "daily_macro_posts",
+      transactionalId: "cmmuwfd5900by0i1xz33mnca7",
       email: DELIVERY_EMAIL,
       dataVariables: {
         date,
