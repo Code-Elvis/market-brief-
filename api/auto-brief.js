@@ -118,32 +118,29 @@ function buildEmailText(tweets) {
   return lines.join("\n");
 }
 
-// ── SEND EMAIL VIA LOOPS EVENT ───────────────────────────────────────────────
+// ── SEND EMAIL VIA LOOPS TRANSACTIONAL ───────────────────────────────────────
 async function sendEmail(tweets, date) {
-  // Send each tweet as a separate short property to stay under Loops size limits
   const t = tweets;
-  const props = {
-    date,
-    post1_label: t[0] ? t[0].label : "",
-    post1_text:  t[0] ? t[0].tweet : "Failed",
-    post2_label: t[1] ? t[1].label : "",
-    post2_text:  t[1] ? t[1].tweet : "Failed",
-    post3_label: t[2] ? t[2].label : "",
-    post3_text:  t[2] ? t[2].tweet : "Failed",
-    post4_label: t[3] ? t[3].label : "",
-    post4_text:  t[3] ? t[3].tweet : "Failed",
-  };
-
-  const res = await fetch("https://app.loops.so/api/v1/events/send", {
+  const res = await fetch("https://app.loops.so/api/v1/transactional", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${process.env.LOOPS_API_KEY}`,
     },
     body: JSON.stringify({
+      transactionalId: "daily_macro_posts",
       email: DELIVERY_EMAIL,
-      eventName: "daily_macro_posts",
-      eventProperties: props,
+      dataVariables: {
+        date,
+        post1_label: t[0] ? t[0].label : "",
+        post1_text:  t[0] ? t[0].tweet : "Failed",
+        post2_label: t[1] ? t[1].label : "",
+        post2_text:  t[1] ? t[1].tweet : "Failed",
+        post3_label: t[2] ? t[2].label : "",
+        post3_text:  t[2] ? t[2].tweet : "Failed",
+        post4_label: t[3] ? t[3].label : "",
+        post4_text:  t[3] ? t[3].tweet : "Failed",
+      },
     }),
   });
 
