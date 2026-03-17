@@ -609,7 +609,7 @@ function StockGate({ onUpgrade }) {
 }
 
 // ── STOCKS TAB (Pro) ──────────────────────────────────────────────────────────
-function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError }) {
+function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError, onShareCard }) {
   const isScalper = mode === "scalper";
 
   const runStock = async () => {
@@ -696,6 +696,15 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
       )}
       {!isScalper && !loading && data && (
         <EquityView inst={{ label: data.instrument || query, color: "#f59e0b", flag: "STOCK" }} data={data} />
+      )}
+      {/* Share card button — shows after equity brief or equity scalper */}
+      {((!isScalper && !loading && data) || (isScalper && !scalperLoading && scalperData)) && (
+        <div style={{ marginTop: 20, textAlign: "center" }}>
+          <button onClick={() => onShareCard(isScalper ? scalperData : data, isScalper ? "scalper-equity" : "equity", query)}
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 8, border: "1px solid rgba(245,158,11,.25)", background: "rgba(245,158,11,.08)", color: "#f59e0b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+            ↗ DAILY OUTLOOK CARD
+          </button>
+        </div>
       )}
     </div>
   );
@@ -837,42 +846,126 @@ function EquityScalperView({ ticker, data, loading, error }) {
 }
 
 // ── SHARE CARD ───────────────────────────────────────────────────────────────
-function ShareCard({ inst, data, mode, onClose }) {
+function ShareCard({ inst, data, mode, cardType, onClose }) {
+  const [sharing, setSharing] = useState(false);
+  const [shared, setShared] = useState(false);
+
   const date = new Date().toLocaleDateString("en-GB", {
     day: "2-digit", month: "short", year: "numeric"
   }).toUpperCase();
 
-  // Determine bias and colours from brief data
-  const isScalper = mode === "scalper";
+  // cardType: "macro" | "scalper" | "equity"
+  const isScalper = cardType === "scalper";
+  const isEquity  = cardType === "equity";
+
+  // Determine bias
   const rawBias = isScalper ? data.risk_level : data.sentiment;
   const bias = rawBias ? rawBias.toUpperCase() : "NEUTRAL";
 
   const biasConfig = {
-    BULLISH:  { emoji: "🟢", color: "#00d4aa", bg: "rgba(0,212,170,.1)",  border: "rgba(0,212,170,.3)" },
-    BEARISH:  { emoji: "🔴", color: "#ff4757", bg: "rgba(255,71,87,.1)",  border: "rgba(255,71,87,.3)"  },
-    NEUTRAL:  { emoji: "🟡", color: "#ffd700", bg: "rgba(255,215,0,.08)", border: "rgba(255,215,0,.25)" },
-    MIXED:    { emoji: "🟡", color: "#c084fc", bg: "rgba(192,132,252,.1)","border": "rgba(192,132,252,.3)" },
-    GREEN:    { emoji: "🟢", color: "#00d4aa", bg: "rgba(0,212,170,.1)",  border: "rgba(0,212,170,.3)" },
-    YELLOW:   { emoji: "🟡", color: "#ffd700", bg: "rgba(255,215,0,.08)", border: "rgba(255,215,0,.25)" },
-    RED:      { emoji: "🔴", color: "#ff4757", bg: "rgba(255,71,87,.1)",  border: "rgba(255,71,87,.3)"  },
+    BULLISH: { emoji: "🟢", color: "#00d4aa", bg: "rgba(0,212,170,.1)",  border: "rgba(0,212,170,.3)"  },
+    BEARISH: { emoji: "🔴", color: "#ff4757", bg: "rgba(255,71,87,.1)",  border: "rgba(255,71,87,.3)"  },
+    NEUTRAL: { emoji: "🟡", color: "#ffd700", bg: "rgba(255,215,0,.08)", border: "rgba(255,215,0,.25)" },
+    MIXED:   { emoji: "🟡", color: "#c084fc", bg: "rgba(192,132,252,.1)",border: "rgba(192,132,252,.3)"},
+    GREEN:   { emoji: "🟢", color: "#00d4aa", bg: "rgba(0,212,170,.1)",  border: "rgba(0,212,170,.3)"  },
+    YELLOW:  { emoji: "🟡", color: "#ffd700", bg: "rgba(255,215,0,.08)", border: "rgba(255,215,0,.25)" },
+    RED:     { emoji: "🔴", color: "#ff4757", bg: "rgba(255,71,87,.1)",  border: "rgba(255,71,87,.3)"  },
   };
   const bc = biasConfig[bias] || biasConfig.NEUTRAL;
 
-  // Pick the 3 key lines depending on mode
-  const line1 = isScalper ? data.risk_reason     : data.geopolitical_risks || data.headline_summary;
-  const line2 = isScalper ? data.scalper_note     : data.macro_context || "";
-  const line3 = isScalper
-    ? (data.imminent?.[0] ? data.imminent[0].event + " — in " + data.imminent[0].due_in : "")
-    : (data.events?.[0] ? data.events[0].title + " · " + data.events[0].time : "");
+  // Accent colour — cyan for macro/scalper, amber for equity
+  const accent = isEquity ? "#f59e0b" : "#00d4ff";
+  const accentDim = isEquity ? "rgba(245,158,11,.1)" : "rgba(0,212,255,.035)";
 
+  // Card label
+  const cardLabel = isEquity ? "EQUITY DEBRIEF" : isScalper ? "SCALPER MODE" : "MACRO BRIEF";
+
+  // Content lines
   const truncate = (str, max) => str && str.length > max ? str.slice(0, max - 1) + "…" : (str || "");
 
+  let line1, line2, line3, biasReason;
+  if (isEquity) {
+    line1      = truncate(data.earnings_context, 80);
+    line2      = truncate(data.macro_tailwinds || data.macro_headwinds, 80);
+    line3      = truncate(data.catalyst_events?.[0]?.title, 80);
+    biasReason = truncate(data.headline_summary, 70);
+  } else if (isScalper) {
+    line1      = truncate(data.risk_reason, 80);
+    line2      = truncate(data.scalper_note, 80);
+    line3      = data.imminent?.[0] ? truncate(data.imminent[0].event + " — in " + data.imminent[0].due_in, 80) : "";
+    biasReason = truncate(data.risk_reason, 70);
+  } else {
+    line1      = truncate(data.geopolitical_risks || data.headline_summary, 80);
+    line2      = truncate(data.macro_context, 80);
+    line3      = data.events?.[0] ? truncate(data.events[0].title + " · " + data.events[0].time, 80) : "";
+    biasReason = truncate(data.headline_summary, 70);
+  }
+
+  const lineIcons = isEquity
+    ? ["📊", "📈", "📅"]
+    : isScalper
+    ? ["⚡", "🎯", "📅"]
+    : ["🏦", "⚠️", "📅"];
+
+  // ── SHARE / DOWNLOAD ──────────────────────────────────────────────────────
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      // Dynamically load html2canvas
+      if (!window.html2canvas) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+
+      const el = document.getElementById("share-card-el");
+      const canvas = await window.html2canvas(el, {
+        backgroundColor: "#0a0c0f",
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+      const file = new File([blob], "marketdebriefs-" + inst.label.replace(/\//g,"-") + ".png", { type: "image/png" });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        // Native share sheet — works on mobile (iOS/Android)
+        await navigator.share({
+          files: [file],
+          text: inst.label + " — Daily Outlook
+
+marketdebriefs.com",
+        });
+        setShared(true);
+        setTimeout(() => setShared(false), 3000);
+      } else {
+        // Desktop fallback — download the image
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "marketdebriefs-" + inst.label.replace(/\//g,"-") + ".png";
+        a.click();
+        URL.revokeObjectURL(url);
+        setShared(true);
+        setTimeout(() => setShared(false), 3000);
+      }
+    } catch (e) {
+      console.error("Share failed:", e);
+    }
+    setSharing(false);
+  };
+
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.88)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.9)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
       onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, width: "100%", maxWidth: 400 }}>
 
-        {/* THE CARD — screenshot this */}
+        {/* CARD */}
         <div id="share-card-el" style={{
           background: "#0a0c0f", borderRadius: 20, padding: 28,
           width: "100%", aspectRatio: "1 / 1",
@@ -880,61 +973,57 @@ function ShareCard({ inst, data, mode, onClose }) {
           position: "relative", overflow: "hidden",
           boxShadow: "0 12px 60px rgba(0,0,0,.6)",
         }}>
-          {/* Grid bg */}
+          {/* Grid */}
           <div style={{ position: "absolute", inset: 0, pointerEvents: "none",
-            backgroundImage: "linear-gradient(rgba(0,212,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.035) 1px,transparent 1px)",
+            backgroundImage: "linear-gradient(" + accentDim + " 1px,transparent 1px),linear-gradient(90deg," + accentDim + " 1px,transparent 1px)",
             backgroundSize: "36px 36px" }} />
           {/* Glow */}
           <div style={{ position: "absolute", top: -80, left: -80, width: 260, height: 260, pointerEvents: "none",
-            background: "radial-gradient(circle,rgba(0,212,255,.1),transparent 70%)" }} />
+            background: "radial-gradient(circle," + (isEquity ? "rgba(245,158,11,.1)" : "rgba(0,212,255,.1)") + ",transparent 70%)" }} />
 
-          {/* Content */}
           <div style={{ position: "relative", zIndex: 1 }}>
-            {/* Logo */}
-            <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: -0.5, marginBottom: 20 }}>
-              MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span>
+            {/* Logo + card type */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>
+                MARKET<span style={{ color: accent }}>DEBRIEFS</span>
+              </div>
+              <div style={{ fontSize: 9, color: accent, fontFamily: "monospace", letterSpacing: 1.5, opacity: 0.7 }}>{cardLabel}</div>
             </div>
-            {/* Instrument + date */}
-            <div style={{ fontSize: 30, fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1, marginBottom: 4 }}>
-              {inst.label}
+
+            {/* Instrument */}
+            <div style={{ fontSize: isEquity ? 24 : 28, fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1, marginBottom: 4 }}>
+              {isEquity ? (data.ticker || inst.label).toUpperCase() : inst.label}
             </div>
-            <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: 16 }}>
-              {date}
-            </div>
-            {/* Bias badge */}
+            {isEquity && data.sector && (
+              <div style={{ fontSize: 10, color: "#555", letterSpacing: 1, marginBottom: 2 }}>{data.sector.toUpperCase()}</div>
+            )}
+            <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: 14 }}>{date}</div>
+
+            {/* Badge */}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20,
-              background: bc.bg, border: "1px solid " + bc.border, marginBottom: 22 }}>
-              <span style={{ fontSize: 12 }}>{bc.emoji}</span>
+              background: bc.bg, border: "1px solid " + bc.border, marginBottom: 20 }}>
+              <span style={{ fontSize: 11 }}>{bc.emoji}</span>
               <span style={{ fontSize: 11, fontWeight: 800, color: bc.color, letterSpacing: 1.5 }}>{bias}</span>
             </div>
+
             {/* Lines */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {line1 && (
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>🏦</span>
-                  <span style={{ fontSize: 12, color: "#666", lineHeight: 1.45 }}>{truncate(line1, 80)}</span>
-                </div>
-              )}
-              {line2 && (
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>⚠️</span>
-                  <span style={{ fontSize: 12, color: "#666", lineHeight: 1.45 }}>{truncate(line2, 80)}</span>
-                </div>
-              )}
-              {line3 && (
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>📅</span>
-                  <span style={{ fontSize: 12, color: "#666", lineHeight: 1.45 }}>{truncate(line3, 80)}</span>
-                </div>
-              )}
-              <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{bc.emoji}</span>
-                <span style={{ fontSize: 12, color: "#666", lineHeight: 1.45 }}>
-                  <strong style={{ color: "#e0e0e0", fontWeight: 700 }}>{bias}</strong>
-                  {" — "}
-                  {isScalper
-                    ? truncate(data.risk_reason, 60)
-                    : truncate(data.headline_summary, 60)}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {line1 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[0]}</span>
+                <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line1}</span>
+              </div>}
+              {line2 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[1]}</span>
+                <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line2}</span>
+              </div>}
+              {line3 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[2]}</span>
+                <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line3}</span>
+              </div>}
+              <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{bc.emoji}</span>
+                <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>
+                  <strong style={{ color: "#e0e0e0", fontWeight: 700 }}>{bias}</strong>{" — "}{biasReason}
                 </span>
               </div>
             </div>
@@ -942,23 +1031,36 @@ function ShareCard({ inst, data, mode, onClose }) {
 
           {/* Footer */}
           <div style={{ position: "relative", zIndex: 1 }}>
-            <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 14 }} />
+            <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 12 }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 11, color: "#00d4ff", fontFamily: "monospace", opacity: 0.6 }}>marketdebriefs.com</span>
+              <span style={{ fontSize: 11, color: accent, fontFamily: "monospace", opacity: 0.6 }}>marketdebriefs.com</span>
               <span style={{ fontSize: 9, color: "#1a1a1a", fontFamily: "monospace", letterSpacing: 1.5 }}>MACRO INTELLIGENCE</span>
             </div>
           </div>
         </div>
 
-        {/* Instructions */}
-        <div style={{ fontSize: 12, color: "#555", textAlign: "center", lineHeight: 1.6 }}>
-          Screenshot the card above → post to X
+        {/* Action buttons */}
+        <div style={{ display: "flex", gap: 10, width: "100%" }}>
+          <button onClick={handleShare} disabled={sharing} style={{
+            flex: 1, padding: "12px", borderRadius: 8,
+            border: "none", cursor: sharing ? "wait" : "pointer",
+            background: sharing ? "rgba(0,212,255,.05)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
+            color: sharing ? "#333" : "#000",
+            fontSize: 13, fontWeight: 800, fontFamily: "inherit",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+          }}>
+            {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share Card"}
+          </button>
+          <button onClick={onClose} style={{
+            padding: "12px 20px", borderRadius: 8,
+            border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)",
+            color: "#555", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+          }}>Done</button>
         </div>
 
-        {/* Close */}
-        <button onClick={onClose} style={{ padding: "10px 28px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.04)", color: "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-          Done
-        </button>
+        <div style={{ fontSize: 11, color: "#2a2a2a", textAlign: "center" }}>
+          Mobile — shares to any app · Desktop — downloads as PNG
+        </div>
       </div>
     </div>
   );
@@ -1081,6 +1183,7 @@ function AppInner({ navigate }) {
   const [stockError, setStockError] = useState(null);
   const [scalperStockData, setScalperStockData] = useState(null);
   const [showShareCard, setShowShareCard] = useState(false);
+  const [equityShareData, setEquityShareData] = useState(null);
   const [scalperStockLoading, setScalperStockLoading] = useState(false);
   const [scalperStockError, setScalperStockError] = useState(null);
 
@@ -1209,7 +1312,7 @@ function AppInner({ navigate }) {
               </div>
             )}
             {showShareCard && data && inst && (
-              <ShareCard inst={inst} data={data} mode={mode} onClose={() => setShowShareCard(false)} />
+              <ShareCard inst={inst} data={data} mode={mode} cardType={mode === "scalper" ? "scalper" : "macro"} onClose={() => setShowShareCard(false)} />
             )}
           </div>}
           {tab === "stocks" && (
@@ -1224,10 +1327,23 @@ function AppInner({ navigate }) {
                     scalperData={scalperStockData} setScalperData={setScalperStockData}
                     scalperLoading={scalperStockLoading} setScalperLoading={setScalperStockLoading}
                     scalperError={scalperStockError} setScalperError={setScalperStockError}
+                    onShareCard={(d, ct, q) => {
+                      setShowShareCard(true);
+                      setEquityShareData({ data: d, cardType: ct, query: q });
+                    }}
                   />
                 : <StockGate onUpgrade={() => triggerUpgrade("stocks")} />
           )}
           {tab === "journal" && <Journal />}
+          {showShareCard && equityShareData && tab === "stocks" && (
+            <ShareCard
+              inst={{ label: equityShareData.query, color: "#f59e0b", flag: "STOCK" }}
+              data={equityShareData.data}
+              mode={mode}
+              cardType={equityShareData.cardType}
+              onClose={() => { setShowShareCard(false); setEquityShareData(null); }}
+            />
+          )}
           {tab === "learn" && <Learn />}
         </div>
       </div>
