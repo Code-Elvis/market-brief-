@@ -1,16 +1,11 @@
 // api/auto-brief.js
 // Vercel cron job — runs weekdays at 12:30 UTC (7:30 EST / 8:30 EDT)
 // Generates macro briefs for ES, Gold, Oil and Euro
-// then posts each as a tweet to X automatically.
+// then emails all 4 formatted tweets to Elvis ready to copy-paste.
 //
 // Required environment variables (set in Vercel dashboard):
-//   ANTHROPIC_API_KEY        — your existing Claude API key
-//   X_API_KEY                — Consumer Key from X developer portal
-//   X_API_SECRET             — Consumer Secret from X developer portal
-//   X_ACCESS_TOKEN           — Access Token from X developer portal
-//   X_ACCESS_TOKEN_SECRET    — Access Token Secret from X developer portal
-
-import crypto from "crypto";
+//   ANTHROPIC_API_KEY   — your existing Claude API key
+//   LOOPS_API_KEY       — your existing Loops API key
 
 export const config = {
   maxDuration: 60,
@@ -23,6 +18,8 @@ const DAILY_INSTRUMENTS = [
   { key: "oil",  label: "WTI Crude Oil", hashtags: "#Oil #CrudeOil" },
   { key: "euro", label: "EUR/USD",       hashtags: "#EURUSD #Forex" },
 ];
+
+const DELIVERY_EMAIL = "elviskotungondo@gmail.com";
 
 // ── SYSTEM PROMPT ─────────────────────────────────────────────────────────────
 function tweetSysPrompt() {
@@ -73,8 +70,7 @@ async function generateTweetBrief(label) {
   return JSON.parse(match[0]);
 }
 
-// ── FORMAT BRIEF INTO TWEET ───────────────────────────────────────────────────
-// Designed to stay comfortably under 250 chars leaving buffer room
+// ── FORMAT BRIEF INTO TWEET TEXT ──────────────────────────────────────────────
 function formatTweet(brief, hashtags) {
   const biasEmoji = { BULLISH: "🟢", BEARISH: "🔴", NEUTRAL: "🟡" };
   const emoji = biasEmoji[brief.bias] || "🟡";
@@ -83,7 +79,6 @@ function formatTweet(brief, hashtags) {
     timeZone: "America/New_York",
   });
 
-  // Truncate any field that somehow exceeds limit — safety net
   const truncate = (str, max) =>
     str && str.length > max ? str.slice(0, max - 1) + "…" : str;
 
@@ -97,95 +92,106 @@ ${emoji} ${brief.bias} — ${truncate(brief.bias_reason, 40)}
 marketdebriefs.com
 ${hashtags} #MacroTrading`;
 
-  // Final safety check — hard truncate at 275 to stay under 280
   return tweet.length > 275 ? tweet.slice(0, 272) + "…" : tweet;
 }
 
-// ── OAUTH 1.0a SIGNING ────────────────────────────────────────────────────────
-// X API v2 posting requires OAuth 1.0a user context — no external libs needed
-function percentEncode(str) {
-  return encodeURIComponent(str)
-    .replace(/!/g, "%21")
-    .replace(/'/g, "%27")
-    .replace(/\(/g, "%28")
-    .replace(/\)/g, "%29")
-    .replace(/\*/g, "%2A");
+// ── BUILD EMAIL HTML ──────────────────────────────────────────────────────────
+function buildEmailHtml(tweets) {
+  const date = new Date().toLocaleDateString("en-GB", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+    timeZone: "America/New_York",
+  });
+
+  const tweetBlocks = tweets.map(({ label, tweet, status }) => {
+    if (status === "failed") {
+      return `
+        <div style="margin-bottom:28px;">
+          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:1.5px;margin-bottom:8px;">
+            ${label.toUpperCase()}
+          </div>
+          <div style="background:#1a0a0a;border:1px solid #ff475744;border-radius:8px;padding:14px;color:#ff4757;font-size:13px;">
+            Brief generation failed for this instrument. Run manually if needed.
+          </div>
+        </div>`;
+    }
+
+    const escaped = tweet
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    return `
+      <div style="margin-bottom:28px;">
+        <div style="font-size:11px;font-weight:700;color:#00d4ff;letter-spacing:1.5px;margin-bottom:8px;">
+          ${label.toUpperCase()}
+        </div>
+        <div style="background:#0d1117;border:1px solid rgba(0,212,255,.2);border-radius:8px;padding:16px;">
+          <pre style="margin:0;font-family:monospace;font-size:13px;color:#e0e0e0;white-space:pre-wrap;line-height:1.7;">${escaped}</pre>
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:#444;font-family:monospace;">
+          ${tweet.length} / 280 characters
+        </div>
+      </div>`;
+  }).join("");
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#0a0c0f;font-family:Inter,system-ui,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:32px 24px;">
+    <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.06);">
+      <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:4px;">
+        MARKET<span style="color:#00d4ff;">DEBRIEFS</span>
+      </div>
+      <div style="font-size:12px;color:#444;font-family:monospace;letter-spacing:1px;">
+        DAILY CONTENT — ${date.toUpperCase()}
+      </div>
+    </div>
+    <div style="background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.1);border-radius:8px;padding:14px 16px;margin-bottom:28px;">
+      <div style="font-size:13px;color:#888;line-height:1.6;">
+        Your 4 macro posts for today are ready below.
+        Copy each one and post to <strong style="color:#e0e0e0;">@MarketDebriefs</strong> on X.
+        Takes 5 minutes. ☕
+      </div>
+    </div>
+    ${tweetBlocks}
+    <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:#2a2a2a;font-family:monospace;">
+      Generated automatically by MarketDebriefs · marketdebriefs.com
+    </div>
+  </div>
+</body>
+</html>`;
 }
 
-function buildOAuthHeader(method, url, credentials) {
-  const oauthParams = {
-    oauth_consumer_key:     credentials.apiKey,
-    oauth_nonce:            crypto.randomBytes(16).toString("hex"),
-    oauth_signature_method: "HMAC-SHA1",
-    oauth_timestamp:        Math.floor(Date.now() / 1000).toString(),
-    oauth_token:            credentials.accessToken,
-    oauth_version:          "1.0",
-  };
-
-  const sortedParams = Object.keys(oauthParams)
-    .sort()
-    .map((k) => `${percentEncode(k)}=${percentEncode(oauthParams[k])}`)
-    .join("&");
-
-  const signatureBase = [
-    method.toUpperCase(),
-    percentEncode(url),
-    percentEncode(sortedParams),
-  ].join("&");
-
-  const signingKey = `${percentEncode(credentials.apiSecret)}&${percentEncode(credentials.accessTokenSecret)}`;
-
-  const signature = crypto
-    .createHmac("sha1", signingKey)
-    .update(signatureBase)
-    .digest("base64");
-
-  oauthParams.oauth_signature = signature;
-
-  return (
-    "OAuth " +
-    Object.keys(oauthParams)
-      .sort()
-      .map((k) => `${percentEncode(k)}="${percentEncode(oauthParams[k])}"`)
-      .join(", ")
-  );
-}
-
-// ── POST TWEET TO X ───────────────────────────────────────────────────────────
-async function postTweet(tweetText) {
-  const url = "https://api.twitter.com/2/tweets";
-
-  const credentials = {
-    apiKey:            process.env.X_API_KEY,
-    apiSecret:         process.env.X_API_SECRET,
-    accessToken:       process.env.X_ACCESS_TOKEN,
-    accessTokenSecret: process.env.X_ACCESS_TOKEN_SECRET,
-  };
-
-  const oauthHeader = buildOAuthHeader("POST", url, credentials);
-
-  const res = await fetch(url, {
+// ── SEND EMAIL VIA LOOPS EVENT ───────────────────────────────────────────────
+async function sendEmail(htmlContent, date) {
+  const res = await fetch("https://app.loops.so/api/v1/events/send", {
     method: "POST",
     headers: {
-      "Content-Type":  "application/json",
-      "Authorization": oauthHeader,
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.LOOPS_API_KEY}`,
     },
-    body: JSON.stringify({ text: tweetText }),
+    body: JSON.stringify({
+      email: DELIVERY_EMAIL,
+      eventName: "daily_macro_posts",
+      eventProperties: {
+        htmlContent,
+        date,
+      },
+    }),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`X API error ${res.status}: ${err}`);
+    throw new Error(`Loops email error ${res.status}: ${err}`);
   }
 
   return res.json();
 }
 
-
 // ── MAIN HANDLER ──────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
 
-  // Only allow Vercel cron calls (GET with correct header) or manual test (POST)
   const isCron = req.headers["x-vercel-cron"] === "1";
   const isManualTest = req.method === "POST" &&
     req.headers["x-manual-trigger"] === process.env.ANTHROPIC_API_KEY;
@@ -194,7 +200,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: "Unauthorised" });
   }
 
-  // Skip weekends — cron runs Mon-Fri only but double check here
+  // Skip weekends
   const day = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     timeZone: "America/New_York",
@@ -204,36 +210,44 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, skipped: "weekend" });
   }
 
+  const date = new Date().toLocaleDateString("en-GB", {
+    day: "numeric", month: "short",
+    timeZone: "America/New_York",
+  });
+
   console.log(`Auto-brief starting — ${new Date().toISOString()}`);
 
-  const results = [];
+  const tweets = [];
 
-  for (let i = 0; i < DAILY_INSTRUMENTS.length; i++) {
-    const { label, hashtags } = DAILY_INSTRUMENTS[i];
-
+  for (const { label, hashtags } of DAILY_INSTRUMENTS) {
     try {
-      // 1. Generate brief
       console.log(`Generating brief for ${label}...`);
       const brief = await generateTweetBrief(label);
-
-      // 2. Format into tweet
-      const tweetText = formatTweet(brief, hashtags);
-      console.log(`Tweet for ${label} (${tweetText.length} chars):\n${tweetText}\n`);
-
-      // 3. Post to X
-      const posted = await postTweet(tweetText);
-      console.log(`Posted ${label} — tweet ID: ${posted.data?.id}`);
-
-      results.push({ instrument: label, status: "posted", tweetId: posted.data?.id });
-
+      const tweet = formatTweet(brief, hashtags);
+      console.log(`Brief ready for ${label} — ${tweet.length} chars`);
+      tweets.push({ label, tweet, status: "ok" });
     } catch (err) {
       console.error(`Failed for ${label}:`, err.message);
-      results.push({ instrument: label, status: "failed", error: err.message });
+      tweets.push({ label, tweet: "", status: "failed" });
     }
-
-
   }
 
+  try {
+    console.log("Building and sending email...");
+    const html = buildEmailHtml(tweets);
+    await sendEmail(html, date);
+    console.log(`Email sent to ${DELIVERY_EMAIL}`);
+  } catch (err) {
+    console.error("Email send failed:", err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+
+  const results = tweets.map(({ label, status, tweet }) => ({
+    instrument: label,
+    status,
+    chars: tweet.length,
+  }));
+
   console.log("Auto-brief complete:", results);
-  return res.status(200).json({ ok: true, results });
+  return res.status(200).json({ ok: true, results, emailSent: true });
 }
