@@ -12,6 +12,10 @@
 
 import crypto from "crypto";
 
+export const config = {
+  maxDuration: 60,
+};
+
 // ── INSTRUMENTS TO BRIEF DAILY ────────────────────────────────────────────────
 const DAILY_INSTRUMENTS = [
   { key: "es",   label: "ES S&P 500",    hashtags: "#ES #SPX" },
@@ -177,9 +181,6 @@ async function postTweet(tweetText) {
   return res.json();
 }
 
-// ── DELAY HELPER — stagger posts 3 mins apart so they don't flood ─────────────
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const THREE_MINUTES = 3 * 60 * 1000;
 
 // ── MAIN HANDLER ──────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
@@ -230,11 +231,7 @@ export default async function handler(req, res) {
       results.push({ instrument: label, status: "failed", error: err.message });
     }
 
-    // Stagger posts 3 minutes apart — ES at 7:30, Gold 7:33, Oil 7:36, Euro 7:39
-    if (i < DAILY_INSTRUMENTS.length - 1) {
-      console.log(`Waiting 3 minutes before next post...`);
-      await delay(THREE_MINUTES);
-    }
+
   }
 
   console.log("Auto-brief complete:", results);
