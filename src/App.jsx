@@ -1017,7 +1017,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
             </div>
 
             {/* Instrument */}
-            <div style={{ fontSize: isEquity ? 24 : 28, fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1, marginBottom: 4 }}>
+            <div style={{ fontSize: isEquity ? 22 : isScalper ? 24 : 26, fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1, marginBottom: 4 }}>
               {isEquity ? (data.ticker || inst.label).toUpperCase() : inst.label}
             </div>
             {isEquity && data.sector && (
@@ -1027,31 +1027,31 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
 
             {/* Badge */}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20,
-              background: bc.bg, border: "1px solid " + bc.border, marginBottom: 14 }}>
+              background: bc.bg, border: "1px solid " + bc.border, marginBottom: isScalper ? 10 : 14 }}>
               <span style={{ fontSize: 11 }}>{bc.emoji}</span>
               <span style={{ fontSize: 11, fontWeight: 800, color: bc.color, letterSpacing: 1.5 }}>{bias}</span>
             </div>
 
             {/* Lines — scalper gets live desk layout, others get standard layout */}
             {isScalper ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {/* Risk reason */}
-                <div style={{ fontSize: 11, color: "#666", lineHeight: 1.5, marginBottom: 2 }}>
-                  {truncate(data.risk_reason, 90)}
+                <div style={{ fontSize: 10, color: "#666", lineHeight: 1.4, marginBottom: 1 }}>
+                  {truncate(data.risk_reason, 80)}
                 </div>
                 {/* Breaking news */}
                 {data.breaking && data.breaking.length > 0 && (
                   <div>
-                    <div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>JUST HIT THE WIRE</div>
+                    <div style={{ fontSize: 7, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>JUST HIT THE WIRE</div>
                     {data.breaking.slice(0, 2).map((b, i) => {
                       const dc = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
                       const c = dc[b.direction] || "#666";
                       return (
-                        <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, padding: "5px 8px", borderLeft: "2px solid " + c, marginBottom: 4, background: c + "08", borderRadius: "0 4px 4px 0" }}>
-                          <span style={{ fontSize: 10, color: "#888", lineHeight: 1.4, flex: 1 }}>{truncate(b.headline, 50)}</span>
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
-                            <span style={{ fontSize: 9, fontWeight: 700, color: c }}>{b.direction}</span>
-                            {b.age && <span style={{ fontSize: 9, color: "#333" }}>{b.age}</span>}
+                        <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6, padding: "4px 7px", borderLeft: "2px solid " + c, marginBottom: 3, background: c + "08", borderRadius: "0 4px 4px 0" }}>
+                          <span style={{ fontSize: 9, color: "#888", lineHeight: 1.3, flex: 1 }}>{truncate(b.headline, 44)}</span>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
+                            <span style={{ fontSize: 8, fontWeight: 700, color: c }}>{b.direction}</span>
+                            {b.age && <span style={{ fontSize: 8, color: "#333" }}>{b.age}</span>}
                           </div>
                         </div>
                       );
@@ -1061,11 +1061,11 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
                 {/* Coming up next */}
                 {data.imminent && data.imminent.length > 0 && (
                   <div>
-                    <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>COMING UP NEXT</div>
+                    <div style={{ fontSize: 7, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>COMING UP NEXT</div>
                     {data.imminent.slice(0, 1).map((ev, i) => (
-                      <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 8px", border: "1px solid rgba(255,215,0,.15)", borderRadius: 4, background: "rgba(255,215,0,.04)" }}>
-                        <span style={{ fontSize: 10, color: "#888", flex: 1 }}>{truncate(ev.event, 45)}</span>
-                        <span style={{ fontSize: 10, color: "#ffd700", fontWeight: 700, flexShrink: 0, marginLeft: 8 }}>in {ev.due_in}</span>
+                      <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 7px", border: "1px solid rgba(255,215,0,.15)", borderRadius: 4, background: "rgba(255,215,0,.04)" }}>
+                        <span style={{ fontSize: 9, color: "#888", flex: 1 }}>{truncate(ev.event, 38)}</span>
+                        <span style={{ fontSize: 9, color: "#ffd700", fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>in {ev.due_in}</span>
                       </div>
                     ))}
                   </div>
