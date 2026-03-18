@@ -1048,8 +1048,11 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
                       const c = dc[b.direction] || "#666";
                       return (
                         <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, padding: "5px 8px", borderLeft: "2px solid " + c, marginBottom: 4, background: c + "08", borderRadius: "0 4px 4px 0" }}>
-                          <span style={{ fontSize: 10, color: "#888", lineHeight: 1.4, flex: 1 }}>{truncate(b.headline, 55)}</span>
-                          <span style={{ fontSize: 9, fontWeight: 700, color: c, flexShrink: 0 }}>{b.direction}</span>
+                          <span style={{ fontSize: 10, color: "#888", lineHeight: 1.4, flex: 1 }}>{truncate(b.headline, 50)}</span>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
+                            <span style={{ fontSize: 9, fontWeight: 700, color: c }}>{b.direction}</span>
+                            {b.age && <span style={{ fontSize: 9, color: "#333" }}>{b.age}</span>}
+                          </div>
                         </div>
                       );
                     })}
@@ -1097,7 +1100,11 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
             <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 8 }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 9, color: accent, fontFamily: "monospace", opacity: 0.85, lineHeight: 1.4, letterSpacing: 0.2 }}>
-                {isEquity ? "Go Pro · marketdebriefs.com" : "Start free · marketdebriefs.com"}
+                {isEquity
+                  ? "Go Pro · marketdebriefs.com"
+                  : isScalper
+                  ? "Rebrief before every trade · marketdebriefs.com"
+                  : "Start free · marketdebriefs.com"}
               </span>
               <span style={{ fontSize: 8, color: "#1a1a1a", fontFamily: "monospace", letterSpacing: 1.2, flexShrink: 0 }}>MACRO INTELLIGENCE</span>
             </div>
