@@ -515,25 +515,53 @@ function UpgradeModal({ reason, onClose, userId, email }) {
 
 // ── AUTH SCREEN ───────────────────────────────────────────────────────────────
 function AuthScreen() {
-  const [view, setView] = useState("sign-in");
+  const [view, setView] = useState("sign-up");
   return (
     <div style={{ minHeight: "100vh", background: "#0a0c0f", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ marginBottom: 32, textAlign: "center" }}>
+
+      {/* Logo */}
+      <div style={{ marginBottom: 24, textAlign: "center" }}>
         <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px" }}>MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span></div>
-        <div style={{ fontSize: 12, color: "#333", marginTop: 4 }}>Know the macro before you trade</div>
+        <div style={{ fontSize: 12, color: "#444", marginTop: 4 }}>Know the macro before you trade</div>
       </div>
+
+      {/* Tab toggle — prominent, above the form */}
+      <div style={{ display: "flex", width: "100%", maxWidth: 400, marginBottom: 0, background: "#0d1117", borderRadius: "10px 10px 0 0", border: "1px solid rgba(255,255,255,.07)", borderBottom: "none", overflow: "hidden" }}>
+        <button
+          onClick={() => setView("sign-up")}
+          style={{ flex: 1, padding: "13px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700,
+            background: view === "sign-up" ? "rgba(0,212,255,.1)" : "transparent",
+            color: view === "sign-up" ? "#00d4ff" : "#333",
+            borderBottom: view === "sign-up" ? "2px solid #00d4ff" : "2px solid transparent",
+            transition: "all .15s"
+          }}>
+          Sign up free
+        </button>
+        <button
+          onClick={() => setView("sign-in")}
+          style={{ flex: 1, padding: "13px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700,
+            background: view === "sign-in" ? "rgba(0,212,255,.1)" : "transparent",
+            color: view === "sign-in" ? "#00d4ff" : "#333",
+            borderBottom: view === "sign-in" ? "2px solid #00d4ff" : "2px solid transparent",
+            transition: "all .15s"
+          }}>
+          Sign in
+        </button>
+      </div>
+
+      {/* Clerk form */}
       <div style={{ width: "100%", maxWidth: 400 }}>
-        {view === "sign-in"
-          ? <SignIn forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} />
-          : <SignUp forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" } }} />
+        {view === "sign-up"
+          ? <SignUp forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" }, elements: { card: { borderRadius: "0 0 10px 10px", borderTop: "none" } } }} />
+          : <SignIn forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" }, elements: { card: { borderRadius: "0 0 10px 10px", borderTop: "none" } } }} />
         }
       </div>
-      <div style={{ marginTop: 20, fontSize: 13, color: "#333" }}>
-        {view === "sign-in"
-          ? <span>Don't have an account? <button onClick={() => setView("sign-up")} style={{ background: "none", border: "none", color: "#00d4ff", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>Sign up free</button></span>
-          : <span>Already have an account? <button onClick={() => setView("sign-in")} style={{ background: "none", border: "none", color: "#00d4ff", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>Sign in</button></span>
-        }
+
+      {/* Free tier reminder */}
+      <div style={{ marginTop: 16, fontSize: 11, color: "#2a2a2a", textAlign: "center", fontFamily: "monospace", letterSpacing: 0.5 }}>
+        Free · 3 briefs/day · No credit card needed
       </div>
+
     </div>
   );
 }
