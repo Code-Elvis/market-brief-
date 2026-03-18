@@ -906,7 +906,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
   const accentDim = isEquity ? "rgba(245,158,11,.1)" : "rgba(0,212,255,.035)";
 
   // Card label
-  const cardLabel = isEquity ? "EQUITY DEBRIEF" : isScalper ? "SCALPER MODE" : "MACRO BRIEF";
+  const cardLabel = isEquity ? "EQUITY DEBRIEF" : isScalper ? "LIVE RISK CHECK" : "MACRO BRIEF";
 
   // Content lines
   const truncate = (str, max) => str && str.length > max ? str.slice(0, max - 1) + "…" : (str || "");
@@ -1032,27 +1032,64 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
               <span style={{ fontSize: 11, fontWeight: 800, color: bc.color, letterSpacing: 1.5 }}>{bias}</span>
             </div>
 
-            {/* Lines */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {line1 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[0]}</span>
-                <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line1}</span>
-              </div>}
-              {line2 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[1]}</span>
-                <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line2}</span>
-              </div>}
-              {line3 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[2]}</span>
-                <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line3}</span>
-              </div>}
-              <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{bc.emoji}</span>
-                <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>
-                  <strong style={{ color: "#e0e0e0", fontWeight: 700 }}>{bias}</strong>{" — "}{biasReason}
-                </span>
+            {/* Lines — scalper gets live desk layout, others get standard layout */}
+            {isScalper ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {/* Risk reason */}
+                <div style={{ fontSize: 11, color: "#666", lineHeight: 1.5, marginBottom: 2 }}>
+                  {truncate(data.risk_reason, 90)}
+                </div>
+                {/* Breaking news */}
+                {data.breaking && data.breaking.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>JUST HIT THE WIRE</div>
+                    {data.breaking.slice(0, 2).map((b, i) => {
+                      const dc = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
+                      const c = dc[b.direction] || "#666";
+                      return (
+                        <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, padding: "5px 8px", borderLeft: "2px solid " + c, marginBottom: 4, background: c + "08", borderRadius: "0 4px 4px 0" }}>
+                          <span style={{ fontSize: 10, color: "#888", lineHeight: 1.4, flex: 1 }}>{truncate(b.headline, 55)}</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: c, flexShrink: 0 }}>{b.direction}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {/* Coming up next */}
+                {data.imminent && data.imminent.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>COMING UP NEXT</div>
+                    {data.imminent.slice(0, 1).map((ev, i) => (
+                      <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 8px", border: "1px solid rgba(255,215,0,.15)", borderRadius: 4, background: "rgba(255,215,0,.04)" }}>
+                        <span style={{ fontSize: 10, color: "#888", flex: 1 }}>{truncate(ev.event, 45)}</span>
+                        <span style={{ fontSize: 10, color: "#ffd700", fontWeight: 700, flexShrink: 0, marginLeft: 8 }}>in {ev.due_in}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {line1 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[0]}</span>
+                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line1}</span>
+                </div>}
+                {line2 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[1]}</span>
+                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line2}</span>
+                </div>}
+                {line3 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[2]}</span>
+                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line3}</span>
+                </div>}
+                <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{bc.emoji}</span>
+                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>
+                    <strong style={{ color: "#e0e0e0", fontWeight: 700 }}>{bias}</strong>{" — "}{biasReason}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
