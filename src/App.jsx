@@ -937,9 +937,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
         // Native share sheet — works on mobile (iOS/Android)
         await navigator.share({
           files: [file],
-          text: inst.label + " — Daily Outlook
-
-marketdebriefs.com",
+          text: inst.label + " — Daily Outlook\n\nmarketdebriefs.com",
         });
         setShared(true);
         setTimeout(() => setShared(false), 3000);
