@@ -1030,9 +1030,12 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
           {/* Footer */}
           <div style={{ position: "relative", zIndex: 1 }}>
             <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 12 }} />
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 11, color: accent, fontFamily: "monospace", opacity: 0.6 }}>marketdebriefs.com</span>
-              <span style={{ fontSize: 9, color: "#1a1a1a", fontFamily: "monospace", letterSpacing: 1.5 }}>MACRO INTELLIGENCE</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span style={{ fontSize: 10, color: accent, fontFamily: "monospace", opacity: 0.85, lineHeight: 1.5 }}>
+                {isEquity
+                  ? "For full real-time Briefs — Go Pro at marketdebriefs.com"
+                  : "For a full detailed Brief — Start free at marketdebriefs.com"}
+              </span>
             </div>
           </div>
         </div>
