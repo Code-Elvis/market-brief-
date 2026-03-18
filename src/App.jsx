@@ -965,7 +965,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
 
         {/* CARD */}
         <div id="share-card-el" style={{
-          background: "#0a0c0f", borderRadius: 20, padding: 28,
+          background: "#0a0c0f", borderRadius: 20, padding: 22,
           width: "100%", aspectRatio: "1 / 1",
           display: "flex", flexDirection: "column", justifyContent: "space-between",
           position: "relative", overflow: "hidden",
@@ -981,7 +981,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
 
           <div style={{ position: "relative", zIndex: 1 }}>
             {/* Logo + card type */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
               <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>
                 MARKET<span style={{ color: accent }}>DEBRIEFS</span>
               </div>
@@ -999,7 +999,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
 
             {/* Badge */}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20,
-              background: bc.bg, border: "1px solid " + bc.border, marginBottom: 20 }}>
+              background: bc.bg, border: "1px solid " + bc.border, marginBottom: 14 }}>
               <span style={{ fontSize: 11 }}>{bc.emoji}</span>
               <span style={{ fontSize: 11, fontWeight: 800, color: bc.color, letterSpacing: 1.5 }}>{bias}</span>
             </div>
@@ -1029,13 +1029,12 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
 
           {/* Footer */}
           <div style={{ position: "relative", zIndex: 1 }}>
-            <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 12 }} />
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontSize: 10, color: accent, fontFamily: "monospace", opacity: 0.85, lineHeight: 1.5 }}>
-                {isEquity
-                  ? "For full real-time Briefs — Go Pro at marketdebriefs.com"
-                  : "For a full detailed Brief — Start free at marketdebriefs.com"}
+            <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 8 }} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 9, color: accent, fontFamily: "monospace", opacity: 0.85, lineHeight: 1.4, letterSpacing: 0.2 }}>
+                {isEquity ? "Go Pro · marketdebriefs.com" : "Start free · marketdebriefs.com"}
               </span>
+              <span style={{ fontSize: 8, color: "#1a1a1a", fontFamily: "monospace", letterSpacing: 1.2, flexShrink: 0 }}>MACRO INTELLIGENCE</span>
             </div>
           </div>
         </div>
