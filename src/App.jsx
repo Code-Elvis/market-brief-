@@ -873,6 +873,30 @@ function EquityScalperView({ ticker, data, loading, error }) {
   );
 }
 
+// ── DYNAMIC CALENDAR ICON ────────────────────────────────────────────────────
+function DynamicCalendar({ size = 18 }) {
+  const today = new Date();
+  const day = today.getDate();
+  const month = today.toLocaleDateString("en-GB", { month: "short" }).toUpperCase();
+  const s = size;
+  return (
+    <svg width={s} height={s} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: 1 }}>
+      {/* Calendar body */}
+      <rect x="1" y="3" width="16" height="14" rx="2" fill="#1a1f2e" stroke="#2a3040" strokeWidth="0.8"/>
+      {/* Red header */}
+      <rect x="1" y="3" width="16" height="5" rx="2" fill="#ff4757"/>
+      <rect x="1" y="6" width="16" height="2" fill="#ff4757"/>
+      {/* Month text */}
+      <text x="9" y="7.2" textAnchor="middle" fontSize="3.2" fontWeight="700" fill="#fff" fontFamily="monospace" letterSpacing="0.5">{month}</text>
+      {/* Day number */}
+      <text x="9" y="14.5" textAnchor="middle" fontSize="6" fontWeight="900" fill="#e0e0e0" fontFamily="monospace">{day}</text>
+      {/* Ring pins */}
+      <rect x="5" y="1.5" width="1.2" height="3.5" rx="0.6" fill="#555"/>
+      <rect x="11.8" y="1.5" width="1.2" height="3.5" rx="0.6" fill="#555"/>
+    </svg>
+  );
+}
+
 // ── SHARE CARD ───────────────────────────────────────────────────────────────
 function ShareCard({ inst, data, mode, cardType, onClose }) {
   const [sharing, setSharing] = useState(false);
@@ -930,10 +954,10 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
   }
 
   const lineIcons = isEquity
-    ? ["📊", "📈", "📅"]
+    ? ["📊", "📈", "CAL"]
     : isScalper
-    ? ["⚡", "🎯", "📅"]
-    : ["🏦", "⚠️", "📅"];
+    ? ["⚡", "🎯", "CAL"]
+    : ["🏦", "⚠️", "CAL"];
 
   // ── SHARE / DOWNLOAD ──────────────────────────────────────────────────────
   const handleShare = async () => {
@@ -965,7 +989,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
         // Native share sheet — works on mobile (iOS/Android)
         await navigator.share({
           files: [file],
-          text: inst.label + " — Daily Outlook\n\nmarketdebriefs.com",
+          text: inst.label + (isScalper ? " — Live Risk Check" : isEquity ? " — Equity Debrief" : " — Daily Outlook") + "\n\nBrief First, Trade After.\nmarketdebriefs.com",
         });
         setShared(true);
         setTimeout(() => setShared(false), 3000);
@@ -1016,9 +1040,12 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
               <div style={{ fontSize: 9, color: accent, fontFamily: "monospace", letterSpacing: 1.5, opacity: 0.7 }}>{cardLabel}</div>
             </div>
 
-            {/* Instrument */}
-            <div style={{ fontSize: isEquity ? 22 : isScalper ? 24 : 26, fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1, marginBottom: 4 }}>
+            {/* Instrument + motto */}
+            <div style={{ fontSize: isEquity ? 22 : isScalper ? 24 : 26, fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1, marginBottom: 2 }}>
               {isEquity ? (data.ticker || inst.label).toUpperCase() : inst.label}
+            </div>
+            <div style={{ fontSize: 8, color: accent, fontFamily: "monospace", letterSpacing: 0.8, opacity: 0.7, marginBottom: 4 }}>
+              Brief First, Trade After.
             </div>
             {isEquity && data.sector && (
               <div style={{ fontSize: 10, color: "#555", letterSpacing: 1, marginBottom: 2 }}>{data.sector.toUpperCase()}</div>
@@ -1074,15 +1101,15 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {line1 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[0]}</span>
+                  {lineIcons[0] === "CAL" ? <DynamicCalendar size={15} /> : <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[0]}</span>}
                   <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line1}</span>
                 </div>}
                 {line2 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[1]}</span>
+                  {lineIcons[1] === "CAL" ? <DynamicCalendar size={15} /> : <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[1]}</span>}
                   <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line2}</span>
                 </div>}
                 {line3 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[2]}</span>
+                  {lineIcons[2] === "CAL" ? <DynamicCalendar size={15} /> : <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[2]}</span>}
                   <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line3}</span>
                 </div>}
                 <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
