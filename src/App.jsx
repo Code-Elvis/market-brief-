@@ -425,16 +425,17 @@ function sysPrompt(mode) {
   const base = `You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
 CRITICAL RULES — NEVER BREAK THESE:
 1. NEVER mention specific price levels, support/resistance numbers, targets, stops, or historical price ranges.
-2. ONLY discuss CURRENT or UPCOMING macro events — central bank decisions, economic data releases, geopolitical developments relevant NOW or scheduled soon.
-3. Your job is macro context, not technical analysis.`;
+2. EVENTS must be STRICTLY UPCOMING — scheduled in the future from the current time. NEVER include events that have already occurred or already been released today. If an event has already happened, exclude it entirely.
+3. For events, only include the 2-3 most market-moving SCHEDULED releases coming up in the next 48 hours that directly affect this instrument. Include the exact scheduled time.
+4. Your job is macro context and forward-looking event risk — not technical analysis, not past events.`;
   if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}';
   return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}';
 }
 
 function userPrompt(inst, mode) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  if (mode === "scalper") return "Time: " + now + ". About to trade " + inst.label + ". What are the CURRENT macro risks right now and what events are IMMINENT? GREEN YELLOW or RED? No price levels.";
-  return "Today: " + now + ". Full macro briefing for " + inst.label + ". Focus on CURRENT central bank stance, UPCOMING scheduled events, and live geopolitical risks. No price levels — only macro context and why it moves price.";
+  if (mode === "scalper") return "Current time: " + now + ". I am about to trade " + inst.label + ". What are the live macro risks RIGHT NOW and what HIGH-IMPACT events are COMING UP — strictly after this current time? Give me GREEN YELLOW or RED. No price levels. Only forward-looking risk.";
+  return "Current time: " + now + ". Full macro briefing for " + inst.label + ". List only the most important UPCOMING scheduled events after this exact time that will move this instrument in the next 48 hours. Include their scheduled time. Do NOT include any events that have already happened today. Focus on CURRENT central bank stance and live geopolitical risks. No price levels.";
 }
 
 async function callClaude(system, userMsg) {
