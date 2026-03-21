@@ -903,8 +903,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
   const [sharing, setSharing] = useState(false);
   const [shared, setShared] = useState(false);
   const [isPostSession, setIsPostSession] = useState(false);
-  const [chartLoaded, setChartLoaded] = useState(false);
-  const chartRef = useRef(null);
+  const [priceMove, setPriceMove] = useState(null);
 
   const date = new Date().toLocaleDateString("en-GB", {
     day: "2-digit", month: "short", year: "numeric"
@@ -915,101 +914,29 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
   const isEquity  = cardType === "equity";
 
 
-  // Draw chart on canvas when switching to post-session mode
+  // Fetch price move data when switching to post-session
   useEffect(() => {
-    if (!isPostSession || !chartRef.current) return;
-    setChartLoaded(false);
-
-    const canvas = chartRef.current;
-    const ctx = canvas.getContext("2d");
-    const W = canvas.width;
-    const H = canvas.height;
-
-    const ticker = inst.label; // proxy handles mapping
-
-    const drawPlaceholder = (msg) => {
-      ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = "rgba(255,255,255,.02)";
-      ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = "#444";
-      ctx.font = "10px monospace";
-      ctx.textAlign = "center";
-      ctx.fillText(msg, W / 2, H / 2);
-      setChartLoaded(true);
-    };
-
-    const drawCandles = (candles) => {
-      if (!candles || candles.length < 2) { drawPlaceholder("No chart data"); return; }
-      ctx.clearRect(0, 0, W, H);
-
-      const highs = candles.map(c => c.h);
-      const lows  = candles.map(c => c.l);
-      const minP  = Math.min(...lows);
-      const maxP  = Math.max(...highs);
-      const range = maxP - minP || 1;
-
-      const padL = 4, padR = 4, padT = 8, padB = 16;
-      const chartW = W - padL - padR;
-      const chartH = H - padT - padB;
-
-      const toX = (i) => padL + (i / (candles.length - 1)) * chartW;
-      const toY = (p) => padT + chartH - ((p - minP) / range) * chartH;
-
-      ctx.strokeStyle = "rgba(255,255,255,.04)";
-      ctx.lineWidth = 0.5;
-      for (let i = 0; i <= 3; i++) {
-        const y = padT + (i / 3) * chartH;
-        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-      }
-
-      const candleW = Math.max(2, (chartW / candles.length) * 0.6);
-      candles.forEach((c, i) => {
-        const x  = toX(i);
-        const oY = toY(c.o);
-        const cY = toY(c.c);
-        const hY = toY(c.h);
-        const lY = toY(c.l);
-        const col = c.c >= c.o ? "#00d4aa" : "#ff4757";
-        ctx.strokeStyle = col; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(x, hY); ctx.lineTo(x, lY); ctx.stroke();
-        ctx.fillStyle = col;
-        const bodyTop = Math.min(oY, cY);
-        const bodyH   = Math.max(1, Math.abs(cY - oY));
-        ctx.fillRect(x - candleW / 2, bodyTop, candleW, bodyH);
-      });
-
-      ctx.fillStyle = "#333";
-      ctx.font = "8px monospace";
-      ctx.textAlign = "left";
-      const fd = new Date(candles[0].t * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-      const ld = new Date(candles[candles.length - 1].t * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-      ctx.fillText(fd, padL, H - 3);
-      ctx.textAlign = "right";
-      ctx.fillText(ld, W - padR, H - 3);
-
-      const last = candles[candles.length - 1];
-      const prev = candles[candles.length - 2];
-      ctx.fillStyle = last.c >= prev.c ? "#00d4aa" : "#ff4757";
-      ctx.font = "bold 9px monospace";
-      const fmt = last.c > 1000 ? last.c.toFixed(0) : last.c > 10 ? last.c.toFixed(2) : last.c.toFixed(4);
-      ctx.fillText(fmt, W - padR, padT + 8);
-      setChartLoaded(true);
-    };
-
-    if (!ticker) { drawPlaceholder("Chart N/A"); return; }
-
-    // Call our own Vercel proxy — no CORS issues
-    fetch(`/api/chart-data?instrument=${encodeURIComponent(inst.label)}`)
+    if (!isPostSession) { setPriceMove(null); return; }
+    fetch(`/api/chart-data?instrument=${encodeURIComponent(inst.label)}&days=5`)
       .then(r => r.json())
       .then(data => {
-        if (data.error || !data.candles?.length) {
-          drawPlaceholder("No data");
-          return;
-        }
-        drawCandles(data.candles);
+        if (data.error || !data.candles?.length) return;
+        const candles = data.candles;
+        const last    = candles[candles.length - 1];
+        const prev    = candles[candles.length - 2];
+        if (!last || !prev) return;
+        const change    = last.c - prev.c;
+        const changePct = (change / prev.c) * 100;
+        const isLarge   = Math.abs(last.c) > 1000;
+        const fmt       = (n) => isLarge ? n.toFixed(0) : n.toFixed(4);
+        setPriceMove({
+          close:     fmt(last.c),
+          change:    (change >= 0 ? "+" : "") + fmt(change),
+          changePct: (changePct >= 0 ? "+" : "") + changePct.toFixed(2) + "%",
+          up:        change >= 0,
+        });
       })
-      .catch(() => drawPlaceholder("Chart unavailable"));
-
+      .catch(() => setPriceMove(null));
   }, [isPostSession, inst.label]);
 
   // Determine bias
@@ -1163,19 +1090,20 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
               </div>
             </div>
 
-            {/* Chart — post-session only */}
-            {isPostSession && (
-              <div style={{ marginBottom: 10, borderRadius: 6, overflow: "hidden", border: "1px solid rgba(255,255,255,.06)", background: "rgba(255,255,255,.02)", position: "relative" }}>
-                {!chartLoaded && (
-                  <div style={{ height: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace" }}>Loading chart…</div>
+            {/* Price move — post-session only */}
+            {isPostSession && priceMove && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, background: priceMove.up ? "rgba(0,212,170,.08)" : "rgba(255,71,87,.08)", border: "1px solid " + (priceMove.up ? "rgba(0,212,170,.2)" : "rgba(255,71,87,.2)"), marginBottom: 10 }}>
+                <span style={{ fontSize: 18 }}>{priceMove.up ? "↑" : "↓"}</span>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 900, color: priceMove.up ? "#00d4aa" : "#ff4757", letterSpacing: -0.5 }}>
+                    {priceMove.changePct} <span style={{ fontSize: 11, fontWeight: 600 }}>{priceMove.change}pts</span>
                   </div>
-                )}
-                <canvas ref={chartRef} width={340} height={100} style={{ width: "100%", height: chartLoaded ? 100 : 0, opacity: chartLoaded ? 1 : 0, transition: "opacity .3s", display: "block" }} />
-                {chartLoaded && (
-                  <div style={{ position: "absolute", top: 4, left: 6, fontSize: 8, color: "#333", fontFamily: "monospace", letterSpacing: 1 }}>30D · DAILY</div>
-                )}
+                  <div style={{ fontSize: 9, color: "#444", fontFamily: "monospace", marginTop: 1 }}>CLOSED AT {priceMove.close}</div>
+                </div>
               </div>
+            )}
+            {isPostSession && !priceMove && (
+              <div style={{ height: 8 }} />
             )}
 
             {/* Lines — scalper gets live desk layout, others get standard layout */}
@@ -1217,7 +1145,40 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
                   </div>
                 )}
               </div>
+            ) : isPostSession ? (
+              // POST-SESSION — what drove the move + what's next
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {/* What drove the move */}
+                {line1 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 12, flexShrink: 0, marginTop: 1 }}>🏦</span>
+                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{truncate(line1, 75)}</span>
+                </div>}
+                {line2 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 12, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{truncate(line2, 75)}</span>
+                </div>}
+                {/* Next key event */}
+                {line3 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                  <DynamicCalendar size={13} />
+                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{truncate(line3, 70)}</span>
+                </div>}
+                {/* What the brief said vs what happened */}
+                <div style={{ marginTop: 4, padding: "8px 10px", borderRadius: 6, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                    <span style={{ fontSize: 9, color: "#444", fontFamily: "monospace" }}>BRIEF SAID THIS MORNING</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: bc.color }}>{bias}</span>
+                  </div>
+                  <div style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>
+                    {priceMove
+                      ? (priceMove.up === (bias === "BULLISH" || bias === "GREEN")
+                        ? "✓ Market confirmed the brief."
+                        : "↯ Market moved against the brief.")
+                      : "What did the market do?"}
+                  </div>
+                </div>
+              </div>
             ) : (
+              // PRE-SESSION — standard macro context
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {line1 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
                   {lineIcons[0] === "CAL" ? <DynamicCalendar size={15} /> : <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[0]}</span>}
@@ -1271,9 +1232,9 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
 
         {/* Action buttons */}
         <div style={{ display: "flex", gap: 10, width: "100%", marginTop: 4 }}>
-          <button onClick={handleShare} disabled={sharing || (isPostSession && !chartLoaded)} style={{
+          <button onClick={handleShare} disabled={sharing} style={{
             flex: 1, padding: "12px", borderRadius: 8,
-            border: "none", cursor: (sharing || (isPostSession && !chartLoaded)) ? "wait" : "pointer",
+            border: "none", cursor: sharing ? "wait" : "pointer",
             background: sharing ? "rgba(0,212,255,.05)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
             color: sharing ? "#333" : "#000",
             fontSize: 13, fontWeight: 800, fontFamily: "inherit",
