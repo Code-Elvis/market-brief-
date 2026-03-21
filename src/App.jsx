@@ -477,7 +477,8 @@ CRITICAL RULES:
 2. NEVER mention specific price levels, targets, stops or support/resistance numbers.
 3. Be specific about WHICH macro events or news actually fired today and how the market reacted.
 4. The watch_tomorrow field should name ONE specific upcoming event or theme to prepare for.
-5. session_summary should read like a trader's end-of-day journal entry — concise, factual, macro-focused.
+5. session_summary must be ONE short sentence max — like a trader's journal entry. Under 120 characters.
+6. primary_driver and what_it_revealed must each be ONE sentence, under 100 characters each.
 POST-SESSION schema: {"instrument":"string","session_summary":"string","primary_driver":"string","secondary_driver":"string","what_it_revealed":"string","watch_tomorrow":"string","next_event":{"title":"string","time":"string"}}`;
   const msg = `Current time: ${now}. The trading session for ${inst.label} has just closed. Write a post-session debrief covering: (1) a 1-sentence summary of how the session played out, (2) the primary macro driver that moved price today, (3) any secondary factor in play, (4) what today's price action revealed about the broader macro picture for this instrument, (5) the single most important thing to watch in tomorrow's session, (6) the next scheduled high-impact event. No price levels.`;
   return callClaude(sys, msg);
@@ -1068,7 +1069,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
 
         {/* CARD */}
         <div id="share-card-el" style={{
-          background: "#0a0c0f", borderRadius: 20, padding: 22,
+          background: "#0a0c0f", borderRadius: 20, padding: (isPostSession || isPostSessionBrief) ? 18 : 22,
           width: "100%", aspectRatio: "1 / 1",
           display: "flex", flexDirection: "column", justifyContent: "space-between",
           position: "relative", overflow: "hidden",
@@ -1084,7 +1085,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
 
           <div style={{ position: "relative", zIndex: 1 }}>
             {/* Logo + card type */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: (isPostSession || isPostSessionBrief) ? 10 : 14 }}>
               <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>
                 MARKET<span style={{ color: accent }}>DEBRIEFS</span>
               </div>
@@ -1101,7 +1102,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
             {isEquity && data.sector && (
               <div style={{ fontSize: 10, color: "#555", letterSpacing: 1, marginBottom: 2 }}>{data.sector.toUpperCase()}</div>
             )}
-            <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: 14 }}>{date}</div>
+            <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: (isPostSession || isPostSessionBrief) ? 8 : 14 }}>{date}</div>
 
             {/* Badge + move indicator for post-session */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: isScalper || isPostSession ? 8 : 12 }}>
@@ -1114,14 +1115,10 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
 
             {/* Price move — post-session only */}
             {isPostSession && priceMove && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 7, background: priceMove.up ? "rgba(0,212,170,.08)" : "rgba(255,71,87,.08)", border: "1px solid " + (priceMove.up ? "rgba(0,212,170,.2)" : "rgba(255,71,87,.2)"), marginBottom: 8 }}>
-                <span style={{ fontSize: 14 }}>{priceMove.up ? "↑" : "↓"}</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 900, color: priceMove.up ? "#00d4aa" : "#ff4757", letterSpacing: -0.5 }}>
-                    {priceMove.changePct} <span style={{ fontSize: 10, fontWeight: 600 }}>{priceMove.change}pts</span>
-                  </div>
-                  <div style={{ fontSize: 8, color: "#444", fontFamily: "monospace", marginTop: 1 }}>CLOSED AT {priceMove.close}</div>
-                </div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: priceMove.up ? "rgba(0,212,170,.08)" : "rgba(255,71,87,.08)", border: "1px solid " + (priceMove.up ? "rgba(0,212,170,.25)" : "rgba(255,71,87,.25)"), marginBottom: 8 }}>
+                <span style={{ fontSize: 13 }}>{priceMove.up ? "↑" : "↓"}</span>
+                <span style={{ fontSize: 15, fontWeight: 900, color: priceMove.up ? "#00d4aa" : "#ff4757", letterSpacing: -0.5 }}>{priceMove.changePct}</span>
+                <span style={{ fontSize: 9, color: priceMove.up ? "#00d4aa" : "#ff4757", opacity: 0.7, fontFamily: "monospace" }}>ON THE DAY</span>
               </div>
             )}
             {isPostSession && !priceMove && (
@@ -1171,28 +1168,28 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
               // POST-SESSION — fresh AI brief looking backwards at the day
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 {data.session_summary && (
-                  <div style={{ fontSize: 9, color: "#888", lineHeight: 1.5, fontStyle: "italic", marginBottom: 1 }}>
+                  <div style={{ fontSize: 8, color: "#888", lineHeight: 1.4, fontStyle: "italic", marginBottom: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                     "{firstSentence(data.session_summary)}"
                   </div>
                 )}
                 {data.primary_driver && (
                   <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
                     <span style={{ fontSize: 10, flexShrink: 0, marginTop: 1 }}>📌</span>
-                    <span style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.primary_driver)}</span>
+                    <span style={{ fontSize: 8, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.primary_driver)}</span>
                   </div>
                 )}
                 {data.what_it_revealed && (
                   <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
                     <span style={{ fontSize: 10, flexShrink: 0, marginTop: 1 }}>🔍</span>
-                    <span style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.what_it_revealed)}</span>
+                    <span style={{ fontSize: 8, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.what_it_revealed)}</span>
                   </div>
                 )}
                 {(data.watch_tomorrow || data.next_event?.title) && (
                   <div style={{ marginTop: 2, padding: "5px 8px", borderRadius: 5, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)" }}>
                     <div style={{ fontSize: 7, color: "#00d4ff", fontFamily: "monospace", letterSpacing: 1, marginBottom: 2, opacity: 0.7 }}>WATCH TOMORROW</div>
-                    <div style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.watch_tomorrow || data.next_event?.title)}</div>
+                    <div style={{ fontSize: 8, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.watch_tomorrow || data.next_event?.title)}</div>
                     {data.next_event?.time && (
-                      <div style={{ fontSize: 7, color: "#444", fontFamily: "monospace", marginTop: 2 }}>{data.next_event.time}</div>
+                      <div style={{ fontSize: 7, color: "#444", fontFamily: "monospace", marginTop: 1 }}>{data.next_event.time}</div>
                     )}
                   </div>
                 )}
