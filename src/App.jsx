@@ -469,6 +469,20 @@ EQUITY SCALPER schema: {"ticker":"string","risk_level":"GREEN|YELLOW|RED","risk_
   return callClaude(sys, msg);
 }
 
+async function getPostSessionBrief(inst) {
+  const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const sys = `You are a professional market intelligence analyst writing an end-of-day session debrief. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
+CRITICAL RULES:
+1. You are looking BACKWARDS at today's session — what happened, what drove price, what did the market reveal.
+2. NEVER mention specific price levels, targets, stops or support/resistance numbers.
+3. Be specific about WHICH macro events or news actually fired today and how the market reacted.
+4. The watch_tomorrow field should name ONE specific upcoming event or theme to prepare for.
+5. session_summary should read like a trader's end-of-day journal entry — concise, factual, macro-focused.
+POST-SESSION schema: {"instrument":"string","session_summary":"string","primary_driver":"string","secondary_driver":"string","what_it_revealed":"string","watch_tomorrow":"string","next_event":{"title":"string","time":"string"}}`;
+  const msg = `Current time: ${now}. The trading session for ${inst.label} has just closed. Write a post-session debrief covering: (1) a 1-sentence summary of how the session played out, (2) the primary macro driver that moved price today, (3) any secondary factor in play, (4) what today's price action revealed about the broader macro picture for this instrument, (5) the single most important thing to watch in tomorrow's session, (6) the next scheduled high-impact event. No price levels.`;
+  return callClaude(sys, msg);
+}
+
 const DC = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
 const DB = { BULLISH: "rgba(0,212,170,.08)", BEARISH: "rgba(255,71,87,.08)", NEUTRAL: "rgba(255,215,0,.06)" };
 
@@ -899,10 +913,10 @@ function DynamicCalendar({ size = 18 }) {
 }
 
 // ── SHARE CARD ───────────────────────────────────────────────────────────────
-function ShareCard({ inst, data, mode, cardType, onClose }) {
+function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) {
   const [sharing, setSharing] = useState(false);
   const [shared, setShared] = useState(false);
-  const [isPostSession, setIsPostSession] = useState(false);
+  const [isPostSession, setIsPostSession] = useState(!!isPostSessionBrief);
   const [priceMove, setPriceMove] = useState(null);
 
   const date = new Date().toLocaleDateString("en-GB", {
@@ -959,7 +973,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
   const accentDim = isEquity ? "rgba(245,158,11,.1)" : "rgba(0,212,255,.035)";
 
   // Card label
-  const cardLabel = isPostSession ? "POST-SESSION BRIEF" : isEquity ? "EQUITY DEBRIEF" : isScalper ? "LIVE RISK CHECK" : "MACRO BRIEF";
+  const cardLabel = (isPostSession || isPostSessionBrief) ? "POST-SESSION BRIEF" : isEquity ? "EQUITY DEBRIEF" : isScalper ? "LIVE RISK CHECK" : "MACRO BRIEF";
 
   // Content lines
   const truncate = (str, max) => str && str.length > max ? str.slice(0, max - 1) + "…" : (str || "");
@@ -1018,7 +1032,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
         // Native share sheet — works on mobile (iOS/Android)
         await navigator.share({
           files: [file],
-          text: inst.label + (isPostSession ? " — Post-Session Brief" : isScalper ? " — Live Risk Check" : isEquity ? " — Equity Debrief" : " — Daily Outlook") + "\n\nBrief First, Trade After.\nmarketdebriefs.com",
+          text: inst.label + ((isPostSession || isPostSessionBrief) ? " — Post-Session Brief" : isScalper ? " — Live Risk Check" : isEquity ? " — Equity Debrief" : " — Daily Outlook") + "\n\nBrief First, Trade After.\nmarketdebriefs.com",
         });
         setShared(true);
         setTimeout(() => setShared(false), 3000);
@@ -1146,22 +1160,32 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
                 )}
               </div>
             ) : isPostSession ? (
-              // POST-SESSION — what drove the move + what's next
+              // POST-SESSION — fresh AI brief looking backwards at the day
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {line1 && <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 11, flexShrink: 0, marginTop: 1 }}>🏦</span>
-                  <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(line1, 70)}</span>
-                </div>}
-                {line2 && <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 11, flexShrink: 0, marginTop: 1 }}>⚠️</span>
-                  <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(line2, 70)}</span>
-                </div>}
-
-                {/* What to watch next session */}
-                {line3 && (
+                {data.session_summary && (
+                  <div style={{ fontSize: 10, color: "#888", lineHeight: 1.5, fontStyle: "italic", marginBottom: 2 }}>
+                    "{truncate(data.session_summary, 90)}"
+                  </div>
+                )}
+                {data.primary_driver && (
+                  <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 11, flexShrink: 0, marginTop: 1 }}>📌</span>
+                    <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(data.primary_driver, 70)}</span>
+                  </div>
+                )}
+                {data.what_it_revealed && (
+                  <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 11, flexShrink: 0, marginTop: 1 }}>🔍</span>
+                    <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(data.what_it_revealed, 70)}</span>
+                  </div>
+                )}
+                {(data.watch_tomorrow || data.next_event?.title) && (
                   <div style={{ marginTop: 3, padding: "6px 9px", borderRadius: 5, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)" }}>
-                    <div style={{ fontSize: 7, color: "#00d4ff", fontFamily: "monospace", letterSpacing: 1, marginBottom: 3, opacity: 0.7 }}>WATCH NEXT SESSION</div>
-                    <div style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{truncate(line3, 70)}</div>
+                    <div style={{ fontSize: 7, color: "#00d4ff", fontFamily: "monospace", letterSpacing: 1, marginBottom: 3, opacity: 0.7 }}>WATCH TOMORROW</div>
+                    <div style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{truncate(data.watch_tomorrow || data.next_event?.title, 70)}</div>
+                    {data.next_event?.time && (
+                      <div style={{ fontSize: 8, color: "#444", fontFamily: "monospace", marginTop: 2 }}>{data.next_event.time}</div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1363,6 +1387,9 @@ function AppInner({ navigate }) {
   const [scalperStockData, setScalperStockData] = useState(null);
   const [showShareCard, setShowShareCard] = useState(false);
   const [equityShareData, setEquityShareData] = useState(null);
+  const [postSessionData, setPostSessionData] = useState(null);
+  const [postSessionLoading, setPostSessionLoading] = useState(false);
+  const [postSessionError, setPostSessionError] = useState(null);
   const [scalperStockLoading, setScalperStockLoading] = useState(false);
   const [scalperStockError, setScalperStockError] = useState(null);
 
@@ -1484,14 +1511,39 @@ function AppInner({ navigate }) {
             {!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}
             {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} />}
             {!loading && data && inst && (
-              <div style={{ marginTop: 20, textAlign: "center" }}>
-                <button onClick={() => setShowShareCard(true)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 8, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.06)", color: "#00d4ff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                  ↗ DAILY OUTLOOK CARD
+              <div style={{ marginTop: 20, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                <button onClick={() => { setPostSessionData(null); setShowShareCard(true); }} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 8, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.06)", color: "#00d4ff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                  ☀️ Pre-Session Card
+                </button>
+                <button
+                  onClick={async () => {
+                    setPostSessionLoading(true);
+                    setPostSessionError(null);
+                    try {
+                      const result = await getPostSessionBrief(inst);
+                      setPostSessionData(result);
+                      setShowShareCard(true);
+                    } catch(e) {
+                      setPostSessionError("Post-session brief failed. Try again.");
+                    }
+                    setPostSessionLoading(false);
+                  }}
+                  disabled={postSessionLoading}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 8, border: "1px solid rgba(255,165,0,.25)", background: "rgba(255,165,0,.06)", color: postSessionLoading ? "#444" : "#ffa500", fontSize: 12, fontWeight: 700, cursor: postSessionLoading ? "wait" : "pointer", fontFamily: "inherit" }}>
+                  {postSessionLoading ? "Generating…" : "🌙 Post-Session Card"}
                 </button>
               </div>
             )}
+            {postSessionError && <div style={{ marginTop: 8, textAlign: "center", fontSize: 11, color: "#ff4757" }}>{postSessionError}</div>}
             {showShareCard && data && inst && (
-              <ShareCard inst={inst} data={data} mode={mode} cardType={mode === "scalper" ? "scalper" : "macro"} onClose={() => setShowShareCard(false)} />
+              <ShareCard
+                inst={inst}
+                data={postSessionData || data}
+                mode={mode}
+                cardType={mode === "scalper" ? "scalper" : "macro"}
+                isPostSessionBrief={!!postSessionData}
+                onClose={() => { setShowShareCard(false); }}
+              />
             )}
           </div>}
           {tab === "stocks" && (
