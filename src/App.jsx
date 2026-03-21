@@ -469,18 +469,22 @@ EQUITY SCALPER schema: {"ticker":"string","risk_level":"GREEN|YELLOW|RED","risk_
   return callClaude(sys, msg);
 }
 
-async function getPostSessionBrief(inst) {
+async function getPostSessionBrief(inst, priceContext) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const priceNote = priceContext
+    ? `IMPORTANT: The actual last trading session move was ${priceContext.direction} ${priceContext.pct}. Your narrative MUST be consistent with this — if the move was positive/bullish write accordingly, if negative/bearish write accordingly.`
+    : "";
   const sys = `You are a professional market intelligence analyst writing an end-of-day session debrief. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
 CRITICAL RULES:
-1. You are looking BACKWARDS at today's session — what happened, what drove price, what did the market reveal.
+1. You are looking BACKWARDS at the most recent completed TRADING SESSION (Monday-Friday only — ignore weekends).
 2. NEVER mention specific price levels, targets, stops or support/resistance numbers.
-3. Be specific about WHICH macro events or news actually fired today and how the market reacted.
-4. The watch_tomorrow field should name ONE specific upcoming event or theme to prepare for.
+3. Be specific about WHICH macro events or news actually fired in the last session and how the market reacted.
+4. The watch_tomorrow field should name ONE specific upcoming event or theme to prepare for in the next trading session.
 5. session_summary must be ONE short sentence max — like a trader's journal entry. Under 120 characters.
 6. primary_driver and what_it_revealed must each be ONE sentence, under 100 characters each.
+7. ${priceNote}
 POST-SESSION schema: {"instrument":"string","session_summary":"string","primary_driver":"string","secondary_driver":"string","what_it_revealed":"string","watch_tomorrow":"string","next_event":{"title":"string","time":"string"}}`;
-  const msg = `Current time: ${now}. The trading session for ${inst.label} has just closed. Write a post-session debrief covering: (1) a 1-sentence summary of how the session played out, (2) the primary macro driver that moved price today, (3) any secondary factor in play, (4) what today's price action revealed about the broader macro picture for this instrument, (5) the single most important thing to watch in tomorrow's session, (6) the next scheduled high-impact event. No price levels.`;
+  const msg = `Current time: ${now}. Write a post-session debrief for the most recent TRADING DAY (Mon-Fri) for ${inst.label}. ${priceNote} Cover: (1) how the last trading session played out in one sentence, (2) the primary macro driver, (3) any secondary factor, (4) what it revealed about the macro picture, (5) what to watch in the next trading session, (6) the next scheduled high-impact event. No price levels.`;
   return callClaude(sys, msg);
 }
 
@@ -932,13 +936,17 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
   // Fetch price move data when switching to post-session
   useEffect(() => {
     if (!isPostSession) { setPriceMove(null); return; }
-    fetch(`/api/chart-data?instrument=${encodeURIComponent(inst.label)}&days=5`)
+    fetch(`/api/chart-data?instrument=${encodeURIComponent(inst.label)}&days=7`)
       .then(r => r.json())
       .then(data => {
         if (data.error || !data.candles?.length) return;
-        const candles = data.candles;
-        const last    = candles[candles.length - 1];
-        const prev    = candles[candles.length - 2];
+        // Filter to weekdays only — ignore weekend thin trading
+        const candles = data.candles.filter(c => {
+          const day = new Date(c.t * 1000).getDay();
+          return day >= 1 && day <= 5;
+        });
+        const last = candles[candles.length - 1];
+        const prev = candles[candles.length - 2];
         if (!last || !prev) return;
         const change    = last.c - prev.c;
         const changePct = (change / prev.c) * 100;
@@ -1525,7 +1533,30 @@ function AppInner({ navigate }) {
                     setPostSessionLoading(true);
                     setPostSessionError(null);
                     try {
-                      const result = await getPostSessionBrief(inst);
+                      // Fetch last trading day price move first
+                      let priceContext = null;
+                      try {
+                        const pd = await fetch(`/api/chart-data?instrument=${encodeURIComponent(inst.label)}&days=7`).then(r => r.json());
+                        if (pd.candles?.length >= 2) {
+                          // Filter to weekdays only (Mon=1 to Fri=5)
+                          const weekdayCandles = pd.candles.filter(c => {
+                            const d = new Date(c.t * 1000).getDay();
+                            return d >= 1 && d <= 5;
+                          });
+                          if (weekdayCandles.length >= 2) {
+                            const last = weekdayCandles[weekdayCandles.length - 1];
+                            const prev = weekdayCandles[weekdayCandles.length - 2];
+                            const pct = ((last.c - prev.c) / prev.c * 100).toFixed(2);
+                            priceContext = {
+                              pct: (pct >= 0 ? "+" : "") + pct + "%",
+                              direction: pct >= 0 ? "UP" : "DOWN",
+                            };
+                          }
+                        }
+                      } catch(e) { /* price fetch optional */ }
+                      const result = await getPostSessionBrief(inst, priceContext);
+                      // Attach priceMove to result for card display
+                      if (priceContext) result._priceContext = priceContext;
                       setPostSessionData(result);
                       setShowShareCard(true);
                     } catch(e) {
