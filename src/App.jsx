@@ -1156,23 +1156,14 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
                   <span style={{ fontSize: 11, flexShrink: 0, marginTop: 1 }}>⚠️</span>
                   <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(line2, 70)}</span>
                 </div>}
-                {line3 && <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
-                  <DynamicCalendar size={12} />
-                  <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(line3, 65)}</span>
-                </div>}
-                <div style={{ marginTop: 3, padding: "6px 9px", borderRadius: 5, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                    <span style={{ fontSize: 8, color: "#444", fontFamily: "monospace", letterSpacing: 0.5 }}>BRIEF SAID THIS MORNING</span>
-                    <span style={{ fontSize: 9, fontWeight: 800, color: bc.color }}>{bias}</span>
+
+                {/* What to watch next session */}
+                {line3 && (
+                  <div style={{ marginTop: 3, padding: "6px 9px", borderRadius: 5, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)" }}>
+                    <div style={{ fontSize: 7, color: "#00d4ff", fontFamily: "monospace", letterSpacing: 1, marginBottom: 3, opacity: 0.7 }}>WATCH NEXT SESSION</div>
+                    <div style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{truncate(line3, 70)}</div>
                   </div>
-                  <div style={{ fontSize: 8, color: "#555", fontFamily: "monospace" }}>
-                    {priceMove
-                      ? (priceMove.up === (bias === "BULLISH" || bias === "GREEN")
-                        ? "✓ Market confirmed the brief."
-                        : "↯ Market moved against the brief.")
-                      : "Tap Post-Session to load move data."}
-                  </div>
-                </div>
+                )}
               </div>
             ) : (
               // PRE-SESSION — standard macro context
