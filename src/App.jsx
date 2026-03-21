@@ -977,6 +977,14 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
 
   // Content lines
   const truncate = (str, max) => str && str.length > max ? str.slice(0, max - 1) + "…" : (str || "");
+  // Extract first complete sentence — no mid-word cuts
+  const firstSentence = (str) => {
+    if (!str) return "";
+    const match = str.match(/^.*?[.!?](?:\s|$)/);
+    if (match) return match[0].trim();
+    // If no sentence ending found, return whole string up to 120 chars
+    return str.length > 120 ? str.slice(0, 119) + "." : str;
+  };
 
   let line1, line2, line3, biasReason;
   if (isEquity) {
@@ -1163,26 +1171,26 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
               // POST-SESSION — fresh AI brief looking backwards at the day
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 {data.session_summary && (
-                  <div style={{ fontSize: 9, color: "#888", lineHeight: 1.4, fontStyle: "italic", marginBottom: 1 }}>
-                    "{truncate(data.session_summary, 80)}"
+                  <div style={{ fontSize: 9, color: "#888", lineHeight: 1.5, fontStyle: "italic", marginBottom: 1 }}>
+                    "{firstSentence(data.session_summary)}"
                   </div>
                 )}
                 {data.primary_driver && (
                   <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
                     <span style={{ fontSize: 10, flexShrink: 0, marginTop: 1 }}>📌</span>
-                    <span style={{ fontSize: 9, color: "#666", lineHeight: 1.35 }}>{truncate(data.primary_driver, 65)}</span>
+                    <span style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.primary_driver)}</span>
                   </div>
                 )}
                 {data.what_it_revealed && (
                   <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
                     <span style={{ fontSize: 10, flexShrink: 0, marginTop: 1 }}>🔍</span>
-                    <span style={{ fontSize: 9, color: "#666", lineHeight: 1.35 }}>{truncate(data.what_it_revealed, 65)}</span>
+                    <span style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.what_it_revealed)}</span>
                   </div>
                 )}
                 {(data.watch_tomorrow || data.next_event?.title) && (
                   <div style={{ marginTop: 2, padding: "5px 8px", borderRadius: 5, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)" }}>
                     <div style={{ fontSize: 7, color: "#00d4ff", fontFamily: "monospace", letterSpacing: 1, marginBottom: 2, opacity: 0.7 }}>WATCH TOMORROW</div>
-                    <div style={{ fontSize: 9, color: "#666", lineHeight: 1.35 }}>{truncate(data.watch_tomorrow || data.next_event?.title, 65)}</div>
+                    <div style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.watch_tomorrow || data.next_event?.title)}</div>
                     {data.next_event?.time && (
                       <div style={{ fontSize: 7, color: "#444", fontFamily: "monospace", marginTop: 2 }}>{data.next_event.time}</div>
                     )}
@@ -1219,8 +1227,8 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
             <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 8 }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 9, color: accent, fontFamily: "monospace", opacity: 0.85, lineHeight: 1.4, letterSpacing: 0.2 }}>
-                {isPostSession
-                  ? "Get tomorrow's brief — Start free · marketdebriefs.com"
+                {(isPostSession || isPostSessionBrief)
+                  ? "Get tomorrow's brief before the open · marketdebriefs.com"
                   : isEquity
                   ? "Go Pro · marketdebriefs.com"
                   : isScalper
