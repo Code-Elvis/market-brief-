@@ -925,21 +925,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
     const W = canvas.width;
     const H = canvas.height;
 
-    const apiMap = {
-      "ES S&P 500": "ES=F", "NQ NASDAQ 100": "NQ=F",
-      "Gold XAU/USD": "GC=F", "Gold": "GC=F",
-      "WTI Crude Oil": "CL=F", "Brent Crude": "BZ=F",
-      "EUR/USD": "EURUSD=X", "GBP/USD": "GBPUSD=X",
-      "USD/JPY": "USDJPY=X", "AUD/USD": "AUDUSD=X",
-      "USD/CAD": "USDCAD=X", "USD/CHF": "USDCHF=X",
-      "Bitcoin": "BTC-USD", "Ethereum": "ETH-USD",
-      "Silver XAG/USD": "SI=F", "VIX Fear Index": "^VIX",
-      "US Dollar DXY": "DX-Y.NYB", "RTY Russell 2000": "RTY=F",
-      "YM Dow Jones": "YM=F", "DAX 40": "^GDAXI",
-      "FTSE 100": "^FTSE", "Natural Gas": "NG=F",
-      "10Y Treasury Note": "ZN=F",
-    };
-    const ticker = apiMap[inst.label];
+    const ticker = inst.label; // proxy handles mapping
 
     const drawPlaceholder = (msg) => {
       ctx.clearRect(0, 0, W, H);
@@ -1012,23 +998,15 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
 
     if (!ticker) { drawPlaceholder("Chart N/A"); return; }
 
-    const end   = Math.floor(Date.now() / 1000);
-    const start = end - (30 * 24 * 60 * 60);
-    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?period1=${start}&period2=${end}&interval=1d`;
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
-
-    fetch(proxyUrl)
+    // Call our own Vercel proxy — no CORS issues
+    fetch(`/api/chart-data?instrument=${encodeURIComponent(inst.label)}`)
       .then(r => r.json())
-      .then(wrapper => {
-        const json   = JSON.parse(wrapper.contents);
-        const result = json.chart?.result?.[0];
-        if (!result) { drawPlaceholder("No data"); return; }
-        const ts   = result.timestamp;
-        const ohlc = result.indicators.quote[0];
-        const candles = ts.map((t, i) => ({
-          t, o: ohlc.open[i], h: ohlc.high[i], l: ohlc.low[i], c: ohlc.close[i]
-        })).filter(c => c.o && c.h && c.l && c.c);
-        drawCandles(candles);
+      .then(data => {
+        if (data.error || !data.candles?.length) {
+          drawPlaceholder("No data");
+          return;
+        }
+        drawCandles(data.candles);
       })
       .catch(() => drawPlaceholder("Chart unavailable"));
 
