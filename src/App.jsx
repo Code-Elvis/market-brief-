@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useUser, useClerk, useAuth, SignIn, SignUp } from "@clerk/clerk-react";
 import { useUsage } from "./useUsage.js";
 
@@ -902,6 +902,10 @@ function DynamicCalendar({ size = 18 }) {
 function ShareCard({ inst, data, mode, cardType, onClose }) {
   const [sharing, setSharing] = useState(false);
   const [shared, setShared] = useState(false);
+  const [isPostSession, setIsPostSession] = useState(false);
+  const [chartLoaded, setChartLoaded] = useState(false);
+  const chartRef = useRef(null);
+  const chartInstanceRef = useRef(null);
 
   const date = new Date().toLocaleDateString("en-GB", {
     day: "2-digit", month: "short", year: "numeric"
@@ -910,6 +914,140 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
   // cardType: "macro" | "scalper" | "equity"
   const isScalper = cardType === "scalper";
   const isEquity  = cardType === "equity";
+
+  // Map instruments to TradingView symbols for the chart
+  const TV_SYMBOLS = {
+    "ES S&P 500": "CME_MINI:ES1!",
+    "NQ NASDAQ 100": "CME_MINI:NQ1!",
+    "Gold XAU/USD": "COMEX:GC1!",
+    "Gold": "COMEX:GC1!",
+    "WTI Crude Oil": "NYMEX:CL1!",
+    "Brent Crude": "ICEUS:B1!",
+    "EUR/USD": "FX:EURUSD",
+    "GBP/USD": "FX:GBPUSD",
+    "USD/JPY": "FX:USDJPY",
+    "AUD/USD": "FX:AUDUSD",
+    "USD/CAD": "FX:USDCAD",
+    "USD/CHF": "FX:USDCHF",
+    "Bitcoin": "BINANCE:BTCUSDT",
+    "Ethereum": "BINANCE:ETHUSDT",
+    "Silver XAG/USD": "COMEX:SI1!",
+    "VIX Fear Index": "CBOE:VIX",
+    "US Dollar DXY": "TVC:DXY",
+    "RTY Russell 2000": "CME_MINI:RTY1!",
+    "YM Dow Jones": "CBOT_MINI:YM1!",
+    "DAX 40": "XETR:DAX",
+    "FTSE 100": "LSE:UKX",
+    "10Y Treasury Note": "CBOT:ZN1!",
+    "Natural Gas": "NYMEX:NG1!",
+  };
+  const tvSymbol = TV_SYMBOLS[inst.label] || TV_SYMBOLS[inst.label.split(" ")[0]] || null;
+
+  // Load lightweight chart when switching to post-session mode
+  useEffect(() => {
+    if (!isPostSession || !tvSymbol || !chartRef.current) return;
+    setChartLoaded(false);
+
+    const loadChart = async () => {
+      try {
+        // Load lightweight-charts from CDN
+        if (!window.LightweightCharts) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js";
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
+
+        const container = chartRef.current;
+        if (!container) return;
+
+        // Clear previous chart
+        if (chartInstanceRef.current) {
+          chartInstanceRef.current.remove();
+          chartInstanceRef.current = null;
+        }
+        container.innerHTML = "";
+
+        const chart = window.LightweightCharts.createChart(container, {
+          width: container.clientWidth || 340,
+          height: 120,
+          layout: { background: { color: "transparent" }, textColor: "#444" },
+          grid: { vertLines: { color: "rgba(255,255,255,.04)" }, horzLines: { color: "rgba(255,255,255,.04)" } },
+          rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } },
+          timeScale: { borderVisible: false, timeVisible: true },
+          crosshair: { mode: 0 },
+          handleScroll: false,
+          handleScale: false,
+        });
+        chartInstanceRef.current = chart;
+
+        const candleSeries = chart.addCandlestickSeries({
+          upColor: "#00d4aa", downColor: "#ff4757",
+          borderUpColor: "#00d4aa", borderDownColor: "#ff4757",
+          wickUpColor: "#00d4aa", wickDownColor: "#ff4757",
+        });
+
+        // Fetch candle data from Yahoo Finance via proxy
+        const yahooMap = {
+          "CME_MINI:ES1!": "ES=F", "CME_MINI:NQ1!": "NQ=F",
+          "COMEX:GC1!": "GC=F", "NYMEX:CL1!": "CL=F",
+          "FX:EURUSD": "EURUSD=X", "FX:GBPUSD": "GBPUSD=X",
+          "FX:USDJPY": "USDJPY=X", "BINANCE:BTCUSDT": "BTC-USD",
+          "BINANCE:ETHUSDT": "ETH-USD", "COMEX:SI1!": "SI=F",
+          "CBOE:VIX": "^VIX", "TVC:DXY": "DX-Y.NYB",
+          "ICEUS:B1!": "BZ=F", "NYMEX:NG1!": "NG=F",
+          "XETR:DAX": "^GDAXI", "LSE:UKX": "^FTSE",
+        };
+        const yahooTicker = yahooMap[tvSymbol];
+
+        if (yahooTicker) {
+          const end = Math.floor(Date.now() / 1000);
+          const start = end - (30 * 24 * 60 * 60); // 30 days
+          const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooTicker}?period1=${start}&period2=${end}&interval=1d&events=history`;
+
+          try {
+            const res = await fetch(url);
+            const json = await res.json();
+            const result = json.chart?.result?.[0];
+            if (result) {
+              const timestamps = result.timestamp;
+              const ohlc = result.indicators.quote[0];
+              const candles = timestamps.map((t, i) => ({
+                time: t,
+                open: parseFloat(ohlc.open[i]?.toFixed(2)) || 0,
+                high: parseFloat(ohlc.high[i]?.toFixed(2)) || 0,
+                low: parseFloat(ohlc.low[i]?.toFixed(2)) || 0,
+                close: parseFloat(ohlc.close[i]?.toFixed(2)) || 0,
+              })).filter(c => c.open && c.high && c.low && c.close);
+
+              candleSeries.setData(candles);
+              chart.timeScale().fitContent();
+              setChartLoaded(true);
+            }
+          } catch (e) {
+            // If fetch fails show placeholder
+            setChartLoaded(true);
+          }
+        } else {
+          setChartLoaded(true);
+        }
+      } catch (e) {
+        console.error("Chart load failed:", e);
+        setChartLoaded(true);
+      }
+    };
+
+    loadChart();
+    return () => {
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.remove();
+        chartInstanceRef.current = null;
+      }
+    };
+  }, [isPostSession, tvSymbol]);
 
   // Determine bias
   const rawBias = isScalper ? data.risk_level : data.sentiment;
@@ -931,7 +1069,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
   const accentDim = isEquity ? "rgba(245,158,11,.1)" : "rgba(0,212,255,.035)";
 
   // Card label
-  const cardLabel = isEquity ? "EQUITY DEBRIEF" : isScalper ? "LIVE RISK CHECK" : "MACRO BRIEF";
+  const cardLabel = isPostSession ? "POST-SESSION BRIEF" : isEquity ? "EQUITY DEBRIEF" : isScalper ? "LIVE RISK CHECK" : "MACRO BRIEF";
 
   // Content lines
   const truncate = (str, max) => str && str.length > max ? str.slice(0, max - 1) + "…" : (str || "");
@@ -990,7 +1128,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
         // Native share sheet — works on mobile (iOS/Android)
         await navigator.share({
           files: [file],
-          text: inst.label + (isScalper ? " — Live Risk Check" : isEquity ? " — Equity Debrief" : " — Daily Outlook") + "\n\nBrief First, Trade After.\nmarketdebriefs.com",
+          text: inst.label + (isPostSession ? " — Post-Session Brief" : isScalper ? " — Live Risk Check" : isEquity ? " — Equity Debrief" : " — Daily Outlook") + "\n\nBrief First, Trade After.\nmarketdebriefs.com",
         });
         setShared(true);
         setTimeout(() => setShared(false), 3000);
@@ -1053,12 +1191,29 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
             )}
             <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: 14 }}>{date}</div>
 
-            {/* Badge */}
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20,
-              background: bc.bg, border: "1px solid " + bc.border, marginBottom: isScalper ? 10 : 14 }}>
-              <span style={{ fontSize: 11 }}>{bc.emoji}</span>
-              <span style={{ fontSize: 11, fontWeight: 800, color: bc.color, letterSpacing: 1.5 }}>{bias}</span>
+            {/* Badge + move indicator for post-session */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: isScalper ? 10 : 14 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20,
+                background: bc.bg, border: "1px solid " + bc.border }}>
+                <span style={{ fontSize: 11 }}>{bc.emoji}</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: bc.color, letterSpacing: 1.5 }}>{bias}</span>
+              </div>
             </div>
+
+            {/* Chart — post-session only */}
+            {isPostSession && (
+              <div style={{ marginBottom: 10, borderRadius: 6, overflow: "hidden", border: "1px solid rgba(255,255,255,.06)", background: "rgba(255,255,255,.02)", position: "relative" }}>
+                {!chartLoaded && (
+                  <div style={{ height: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace" }}>Loading chart…</div>
+                  </div>
+                )}
+                <div ref={chartRef} style={{ height: chartLoaded ? 100 : 0, opacity: chartLoaded ? 1 : 0, transition: "opacity .3s" }} />
+                {chartLoaded && (
+                  <div style={{ position: "absolute", top: 4, left: 6, fontSize: 8, color: "#333", fontFamily: "monospace", letterSpacing: 1 }}>30D · DAILY</div>
+                )}
+              </div>
+            )}
 
             {/* Lines — scalper gets live desk layout, others get standard layout */}
             {isScalper ? (
@@ -1128,7 +1283,9 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
             <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 8 }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 9, color: accent, fontFamily: "monospace", opacity: 0.85, lineHeight: 1.4, letterSpacing: 0.2 }}>
-                {isEquity
+                {isPostSession
+                  ? "Get tomorrow's brief — Start free · marketdebriefs.com"
+                  : isEquity
                   ? "Go Pro · marketdebriefs.com"
                   : isScalper
                   ? "Rebrief before every trade · marketdebriefs.com"
@@ -1139,17 +1296,27 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
           </div>
         </div>
 
+        {/* Pre / Post session toggle */}
+        <div style={{ display: "flex", width: "100%", background: "#0d1117", borderRadius: 8, border: "1px solid rgba(255,255,255,.07)", overflow: "hidden" }}>
+          <button onClick={() => setIsPostSession(false)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: !isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: !isPostSession ? "#00d4ff" : "#333", borderBottom: !isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
+            ☀️ Pre-Session
+          </button>
+          <button onClick={() => setIsPostSession(true)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: isPostSession ? "#00d4ff" : "#333", borderBottom: isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
+            🌙 Post-Session
+          </button>
+        </div>
+
         {/* Action buttons */}
-        <div style={{ display: "flex", gap: 10, width: "100%" }}>
-          <button onClick={handleShare} disabled={sharing} style={{
+        <div style={{ display: "flex", gap: 10, width: "100%", marginTop: 4 }}>
+          <button onClick={handleShare} disabled={sharing || (isPostSession && !chartLoaded)} style={{
             flex: 1, padding: "12px", borderRadius: 8,
-            border: "none", cursor: sharing ? "wait" : "pointer",
+            border: "none", cursor: (sharing || (isPostSession && !chartLoaded)) ? "wait" : "pointer",
             background: sharing ? "rgba(0,212,255,.05)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
             color: sharing ? "#333" : "#000",
             fontSize: 13, fontWeight: 800, fontFamily: "inherit",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
           }}>
-            {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share Card"}
+            {sharing ? "Preparing…" : shared ? "✓ Shared!" : isPostSession ? "↗ Share Post-Session" : "↗ Share Pre-Session"}
           </button>
           <button onClick={onClose} style={{
             padding: "12px 20px", borderRadius: 8,
