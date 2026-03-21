@@ -1161,30 +1161,30 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
               </div>
             ) : isPostSession ? (
               // POST-SESSION — fresh AI brief looking backwards at the day
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 {data.session_summary && (
-                  <div style={{ fontSize: 10, color: "#888", lineHeight: 1.5, fontStyle: "italic", marginBottom: 2 }}>
-                    "{truncate(data.session_summary, 90)}"
+                  <div style={{ fontSize: 9, color: "#888", lineHeight: 1.4, fontStyle: "italic", marginBottom: 1 }}>
+                    "{truncate(data.session_summary, 80)}"
                   </div>
                 )}
                 {data.primary_driver && (
-                  <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 11, flexShrink: 0, marginTop: 1 }}>📌</span>
-                    <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(data.primary_driver, 70)}</span>
+                  <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 10, flexShrink: 0, marginTop: 1 }}>📌</span>
+                    <span style={{ fontSize: 9, color: "#666", lineHeight: 1.35 }}>{truncate(data.primary_driver, 65)}</span>
                   </div>
                 )}
                 {data.what_it_revealed && (
-                  <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 11, flexShrink: 0, marginTop: 1 }}>🔍</span>
-                    <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(data.what_it_revealed, 70)}</span>
+                  <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 10, flexShrink: 0, marginTop: 1 }}>🔍</span>
+                    <span style={{ fontSize: 9, color: "#666", lineHeight: 1.35 }}>{truncate(data.what_it_revealed, 65)}</span>
                   </div>
                 )}
                 {(data.watch_tomorrow || data.next_event?.title) && (
-                  <div style={{ marginTop: 3, padding: "6px 9px", borderRadius: 5, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)" }}>
-                    <div style={{ fontSize: 7, color: "#00d4ff", fontFamily: "monospace", letterSpacing: 1, marginBottom: 3, opacity: 0.7 }}>WATCH TOMORROW</div>
-                    <div style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{truncate(data.watch_tomorrow || data.next_event?.title, 70)}</div>
+                  <div style={{ marginTop: 2, padding: "5px 8px", borderRadius: 5, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)" }}>
+                    <div style={{ fontSize: 7, color: "#00d4ff", fontFamily: "monospace", letterSpacing: 1, marginBottom: 2, opacity: 0.7 }}>WATCH TOMORROW</div>
+                    <div style={{ fontSize: 9, color: "#666", lineHeight: 1.35 }}>{truncate(data.watch_tomorrow || data.next_event?.title, 65)}</div>
                     {data.next_event?.time && (
-                      <div style={{ fontSize: 8, color: "#444", fontFamily: "monospace", marginTop: 2 }}>{data.next_event.time}</div>
+                      <div style={{ fontSize: 7, color: "#444", fontFamily: "monospace", marginTop: 2 }}>{data.next_event.time}</div>
                     )}
                   </div>
                 )}
