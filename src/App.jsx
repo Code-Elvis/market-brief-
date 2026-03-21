@@ -905,7 +905,6 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
   const [isPostSession, setIsPostSession] = useState(false);
   const [chartLoaded, setChartLoaded] = useState(false);
   const chartRef = useRef(null);
-  const chartInstanceRef = useRef(null);
 
   const date = new Date().toLocaleDateString("en-GB", {
     day: "2-digit", month: "short", year: "numeric"
@@ -915,139 +914,125 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
   const isScalper = cardType === "scalper";
   const isEquity  = cardType === "equity";
 
-  // Map instruments to TradingView symbols for the chart
-  const TV_SYMBOLS = {
-    "ES S&P 500": "CME_MINI:ES1!",
-    "NQ NASDAQ 100": "CME_MINI:NQ1!",
-    "Gold XAU/USD": "COMEX:GC1!",
-    "Gold": "COMEX:GC1!",
-    "WTI Crude Oil": "NYMEX:CL1!",
-    "Brent Crude": "ICEUS:B1!",
-    "EUR/USD": "FX:EURUSD",
-    "GBP/USD": "FX:GBPUSD",
-    "USD/JPY": "FX:USDJPY",
-    "AUD/USD": "FX:AUDUSD",
-    "USD/CAD": "FX:USDCAD",
-    "USD/CHF": "FX:USDCHF",
-    "Bitcoin": "BINANCE:BTCUSDT",
-    "Ethereum": "BINANCE:ETHUSDT",
-    "Silver XAG/USD": "COMEX:SI1!",
-    "VIX Fear Index": "CBOE:VIX",
-    "US Dollar DXY": "TVC:DXY",
-    "RTY Russell 2000": "CME_MINI:RTY1!",
-    "YM Dow Jones": "CBOT_MINI:YM1!",
-    "DAX 40": "XETR:DAX",
-    "FTSE 100": "LSE:UKX",
-    "10Y Treasury Note": "CBOT:ZN1!",
-    "Natural Gas": "NYMEX:NG1!",
-  };
-  const tvSymbol = TV_SYMBOLS[inst.label] || TV_SYMBOLS[inst.label.split(" ")[0]] || null;
 
-  // Load lightweight chart when switching to post-session mode
+  // Draw chart on canvas when switching to post-session mode
   useEffect(() => {
-    if (!isPostSession || !tvSymbol || !chartRef.current) return;
+    if (!isPostSession || !chartRef.current) return;
     setChartLoaded(false);
 
-    const loadChart = async () => {
-      try {
-        // Load lightweight-charts from CDN
-        if (!window.LightweightCharts) {
-          await new Promise((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = "https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js";
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-          });
-        }
+    const canvas = chartRef.current;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width;
+    const H = canvas.height;
 
-        const container = chartRef.current;
-        if (!container) return;
+    const apiMap = {
+      "ES S&P 500": "ES=F", "NQ NASDAQ 100": "NQ=F",
+      "Gold XAU/USD": "GC=F", "Gold": "GC=F",
+      "WTI Crude Oil": "CL=F", "Brent Crude": "BZ=F",
+      "EUR/USD": "EURUSD=X", "GBP/USD": "GBPUSD=X",
+      "USD/JPY": "USDJPY=X", "AUD/USD": "AUDUSD=X",
+      "USD/CAD": "USDCAD=X", "USD/CHF": "USDCHF=X",
+      "Bitcoin": "BTC-USD", "Ethereum": "ETH-USD",
+      "Silver XAG/USD": "SI=F", "VIX Fear Index": "^VIX",
+      "US Dollar DXY": "DX-Y.NYB", "RTY Russell 2000": "RTY=F",
+      "YM Dow Jones": "YM=F", "DAX 40": "^GDAXI",
+      "FTSE 100": "^FTSE", "Natural Gas": "NG=F",
+      "10Y Treasury Note": "ZN=F",
+    };
+    const ticker = apiMap[inst.label];
 
-        // Clear previous chart
-        if (chartInstanceRef.current) {
-          chartInstanceRef.current.remove();
-          chartInstanceRef.current = null;
-        }
-        container.innerHTML = "";
-
-        const chart = window.LightweightCharts.createChart(container, {
-          width: container.clientWidth || 340,
-          height: 120,
-          layout: { background: { color: "transparent" }, textColor: "#444" },
-          grid: { vertLines: { color: "rgba(255,255,255,.04)" }, horzLines: { color: "rgba(255,255,255,.04)" } },
-          rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } },
-          timeScale: { borderVisible: false, timeVisible: true },
-          crosshair: { mode: 0 },
-          handleScroll: false,
-          handleScale: false,
-        });
-        chartInstanceRef.current = chart;
-
-        const candleSeries = chart.addCandlestickSeries({
-          upColor: "#00d4aa", downColor: "#ff4757",
-          borderUpColor: "#00d4aa", borderDownColor: "#ff4757",
-          wickUpColor: "#00d4aa", wickDownColor: "#ff4757",
-        });
-
-        // Fetch candle data from Yahoo Finance via proxy
-        const yahooMap = {
-          "CME_MINI:ES1!": "ES=F", "CME_MINI:NQ1!": "NQ=F",
-          "COMEX:GC1!": "GC=F", "NYMEX:CL1!": "CL=F",
-          "FX:EURUSD": "EURUSD=X", "FX:GBPUSD": "GBPUSD=X",
-          "FX:USDJPY": "USDJPY=X", "BINANCE:BTCUSDT": "BTC-USD",
-          "BINANCE:ETHUSDT": "ETH-USD", "COMEX:SI1!": "SI=F",
-          "CBOE:VIX": "^VIX", "TVC:DXY": "DX-Y.NYB",
-          "ICEUS:B1!": "BZ=F", "NYMEX:NG1!": "NG=F",
-          "XETR:DAX": "^GDAXI", "LSE:UKX": "^FTSE",
-        };
-        const yahooTicker = yahooMap[tvSymbol];
-
-        if (yahooTicker) {
-          const end = Math.floor(Date.now() / 1000);
-          const start = end - (30 * 24 * 60 * 60); // 30 days
-          const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooTicker}?period1=${start}&period2=${end}&interval=1d&events=history`;
-
-          try {
-            const res = await fetch(url);
-            const json = await res.json();
-            const result = json.chart?.result?.[0];
-            if (result) {
-              const timestamps = result.timestamp;
-              const ohlc = result.indicators.quote[0];
-              const candles = timestamps.map((t, i) => ({
-                time: t,
-                open: parseFloat(ohlc.open[i]?.toFixed(2)) || 0,
-                high: parseFloat(ohlc.high[i]?.toFixed(2)) || 0,
-                low: parseFloat(ohlc.low[i]?.toFixed(2)) || 0,
-                close: parseFloat(ohlc.close[i]?.toFixed(2)) || 0,
-              })).filter(c => c.open && c.high && c.low && c.close);
-
-              candleSeries.setData(candles);
-              chart.timeScale().fitContent();
-              setChartLoaded(true);
-            }
-          } catch (e) {
-            // If fetch fails show placeholder
-            setChartLoaded(true);
-          }
-        } else {
-          setChartLoaded(true);
-        }
-      } catch (e) {
-        console.error("Chart load failed:", e);
-        setChartLoaded(true);
-      }
+    const drawPlaceholder = (msg) => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(255,255,255,.02)";
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#444";
+      ctx.font = "10px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(msg, W / 2, H / 2);
+      setChartLoaded(true);
     };
 
-    loadChart();
-    return () => {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.remove();
-        chartInstanceRef.current = null;
+    const drawCandles = (candles) => {
+      if (!candles || candles.length < 2) { drawPlaceholder("No chart data"); return; }
+      ctx.clearRect(0, 0, W, H);
+
+      const highs = candles.map(c => c.h);
+      const lows  = candles.map(c => c.l);
+      const minP  = Math.min(...lows);
+      const maxP  = Math.max(...highs);
+      const range = maxP - minP || 1;
+
+      const padL = 4, padR = 4, padT = 8, padB = 16;
+      const chartW = W - padL - padR;
+      const chartH = H - padT - padB;
+
+      const toX = (i) => padL + (i / (candles.length - 1)) * chartW;
+      const toY = (p) => padT + chartH - ((p - minP) / range) * chartH;
+
+      ctx.strokeStyle = "rgba(255,255,255,.04)";
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= 3; i++) {
+        const y = padT + (i / 3) * chartH;
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
       }
+
+      const candleW = Math.max(2, (chartW / candles.length) * 0.6);
+      candles.forEach((c, i) => {
+        const x  = toX(i);
+        const oY = toY(c.o);
+        const cY = toY(c.c);
+        const hY = toY(c.h);
+        const lY = toY(c.l);
+        const col = c.c >= c.o ? "#00d4aa" : "#ff4757";
+        ctx.strokeStyle = col; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x, hY); ctx.lineTo(x, lY); ctx.stroke();
+        ctx.fillStyle = col;
+        const bodyTop = Math.min(oY, cY);
+        const bodyH   = Math.max(1, Math.abs(cY - oY));
+        ctx.fillRect(x - candleW / 2, bodyTop, candleW, bodyH);
+      });
+
+      ctx.fillStyle = "#333";
+      ctx.font = "8px monospace";
+      ctx.textAlign = "left";
+      const fd = new Date(candles[0].t * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      const ld = new Date(candles[candles.length - 1].t * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      ctx.fillText(fd, padL, H - 3);
+      ctx.textAlign = "right";
+      ctx.fillText(ld, W - padR, H - 3);
+
+      const last = candles[candles.length - 1];
+      const prev = candles[candles.length - 2];
+      ctx.fillStyle = last.c >= prev.c ? "#00d4aa" : "#ff4757";
+      ctx.font = "bold 9px monospace";
+      const fmt = last.c > 1000 ? last.c.toFixed(0) : last.c > 10 ? last.c.toFixed(2) : last.c.toFixed(4);
+      ctx.fillText(fmt, W - padR, padT + 8);
+      setChartLoaded(true);
     };
-  }, [isPostSession, tvSymbol]);
+
+    if (!ticker) { drawPlaceholder("Chart N/A"); return; }
+
+    const end   = Math.floor(Date.now() / 1000);
+    const start = end - (30 * 24 * 60 * 60);
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?period1=${start}&period2=${end}&interval=1d`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
+
+    fetch(proxyUrl)
+      .then(r => r.json())
+      .then(wrapper => {
+        const json   = JSON.parse(wrapper.contents);
+        const result = json.chart?.result?.[0];
+        if (!result) { drawPlaceholder("No data"); return; }
+        const ts   = result.timestamp;
+        const ohlc = result.indicators.quote[0];
+        const candles = ts.map((t, i) => ({
+          t, o: ohlc.open[i], h: ohlc.high[i], l: ohlc.low[i], c: ohlc.close[i]
+        })).filter(c => c.o && c.h && c.l && c.c);
+        drawCandles(candles);
+      })
+      .catch(() => drawPlaceholder("Chart unavailable"));
+
+  }, [isPostSession, inst.label]);
 
   // Determine bias
   const rawBias = isScalper ? data.risk_level : data.sentiment;
@@ -1208,7 +1193,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
                     <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace" }}>Loading chart…</div>
                   </div>
                 )}
-                <div ref={chartRef} style={{ height: chartLoaded ? 100 : 0, opacity: chartLoaded ? 1 : 0, transition: "opacity .3s" }} />
+                <canvas ref={chartRef} width={340} height={100} style={{ width: "100%", height: chartLoaded ? 100 : 0, opacity: chartLoaded ? 1 : 0, transition: "opacity .3s", display: "block" }} />
                 {chartLoaded && (
                   <div style={{ position: "absolute", top: 4, left: 6, fontSize: 8, color: "#333", fontFamily: "monospace", letterSpacing: 1 }}>30D · DAILY</div>
                 )}
