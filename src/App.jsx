@@ -1082,7 +1082,7 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
             <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: 14 }}>{date}</div>
 
             {/* Badge + move indicator for post-session */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: isScalper ? 10 : 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: isScalper || isPostSession ? 8 : 12 }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20,
                 background: bc.bg, border: "1px solid " + bc.border }}>
                 <span style={{ fontSize: 11 }}>{bc.emoji}</span>
@@ -1092,18 +1092,18 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
 
             {/* Price move — post-session only */}
             {isPostSession && priceMove && (
-              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, background: priceMove.up ? "rgba(0,212,170,.08)" : "rgba(255,71,87,.08)", border: "1px solid " + (priceMove.up ? "rgba(0,212,170,.2)" : "rgba(255,71,87,.2)"), marginBottom: 10 }}>
-                <span style={{ fontSize: 18 }}>{priceMove.up ? "↑" : "↓"}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 7, background: priceMove.up ? "rgba(0,212,170,.08)" : "rgba(255,71,87,.08)", border: "1px solid " + (priceMove.up ? "rgba(0,212,170,.2)" : "rgba(255,71,87,.2)"), marginBottom: 8 }}>
+                <span style={{ fontSize: 14 }}>{priceMove.up ? "↑" : "↓"}</span>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 900, color: priceMove.up ? "#00d4aa" : "#ff4757", letterSpacing: -0.5 }}>
-                    {priceMove.changePct} <span style={{ fontSize: 11, fontWeight: 600 }}>{priceMove.change}pts</span>
+                  <div style={{ fontSize: 13, fontWeight: 900, color: priceMove.up ? "#00d4aa" : "#ff4757", letterSpacing: -0.5 }}>
+                    {priceMove.changePct} <span style={{ fontSize: 10, fontWeight: 600 }}>{priceMove.change}pts</span>
                   </div>
-                  <div style={{ fontSize: 9, color: "#444", fontFamily: "monospace", marginTop: 1 }}>CLOSED AT {priceMove.close}</div>
+                  <div style={{ fontSize: 8, color: "#444", fontFamily: "monospace", marginTop: 1 }}>CLOSED AT {priceMove.close}</div>
                 </div>
               </div>
             )}
             {isPostSession && !priceMove && (
-              <div style={{ height: 8 }} />
+              <div style={{ height: 4 }} />
             )}
 
             {/* Lines — scalper gets live desk layout, others get standard layout */}
@@ -1147,33 +1147,30 @@ function ShareCard({ inst, data, mode, cardType, onClose }) {
               </div>
             ) : isPostSession ? (
               // POST-SESSION — what drove the move + what's next
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {/* What drove the move */}
-                {line1 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 12, flexShrink: 0, marginTop: 1 }}>🏦</span>
-                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{truncate(line1, 75)}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {line1 && <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 11, flexShrink: 0, marginTop: 1 }}>🏦</span>
+                  <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(line1, 70)}</span>
                 </div>}
-                {line2 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 12, flexShrink: 0, marginTop: 1 }}>⚠️</span>
-                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{truncate(line2, 75)}</span>
+                {line2 && <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 11, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+                  <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(line2, 70)}</span>
                 </div>}
-                {/* Next key event */}
-                {line3 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                  <DynamicCalendar size={13} />
-                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{truncate(line3, 70)}</span>
+                {line3 && <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
+                  <DynamicCalendar size={12} />
+                  <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(line3, 65)}</span>
                 </div>}
-                {/* What the brief said vs what happened */}
-                <div style={{ marginTop: 4, padding: "8px 10px", borderRadius: 6, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                    <span style={{ fontSize: 9, color: "#444", fontFamily: "monospace" }}>BRIEF SAID THIS MORNING</span>
-                    <span style={{ fontSize: 10, fontWeight: 800, color: bc.color }}>{bias}</span>
+                <div style={{ marginTop: 3, padding: "6px 9px", borderRadius: 5, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                    <span style={{ fontSize: 8, color: "#444", fontFamily: "monospace", letterSpacing: 0.5 }}>BRIEF SAID THIS MORNING</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, color: bc.color }}>{bias}</span>
                   </div>
-                  <div style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>
+                  <div style={{ fontSize: 8, color: "#555", fontFamily: "monospace" }}>
                     {priceMove
                       ? (priceMove.up === (bias === "BULLISH" || bias === "GREEN")
                         ? "✓ Market confirmed the brief."
                         : "↯ Market moved against the brief.")
-                      : "What did the market do?"}
+                      : "Tap Post-Session to load move data."}
                   </div>
                 </div>
               </div>
