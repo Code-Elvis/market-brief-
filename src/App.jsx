@@ -220,6 +220,114 @@ function LandingPage({ navigate }) {
         ))}
       </div>
 
+      {/* ── DATA VS ANSWERS ── */}
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "0 24px 100px", position: "relative" }}>
+
+        {/* Grid bg glow */}
+        <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 500, height: 300, background: "radial-gradient(ellipse, rgba(0,229,255,.05) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+        {/* Label */}
+        <div style={{ textAlign: "center", fontSize: 11, color: "#00e5ff", letterSpacing: 3, fontWeight: 700, marginBottom: 28, opacity: 0.7 }}>WHY ANSWERS BEAT DATA</div>
+
+        {/* Hero */}
+        <div style={{ textAlign: "center", fontSize: "clamp(28px, 5vw, 56px)", fontWeight: 900, color: "#fff", lineHeight: 1.2, letterSpacing: -1, marginBottom: 24, fontFamily: "Georgia, serif" }}>
+          <span style={{ color: "#444", textDecoration: "line-through", textDecorationColor: "#ff4757", textDecorationThickness: 2 }}>Data</span> tells you what.<br />
+          <span style={{ color: "#00e5ff" }}>Answers</span> tell you what to do.
+        </div>
+
+        {/* Bloomberg context */}
+        <p style={{ textAlign: "center", maxWidth: 640, margin: "0 auto 56px", fontSize: 15, color: "#555", lineHeight: 1.85, fontFamily: "Georgia, serif" }}>
+          When NFP drops, Bloomberg gives you the number. What you actually need to know is: does this change the Fed's next move — and how does that hit the Dollar, Gold, and yields in the <span style={{ color: "#00e5ff", fontWeight: 700 }}>next 4 hours</span>?
+        </p>
+
+        {/* Data vs Answers cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 0, alignItems: "center", marginBottom: 64 }}>
+
+          {/* Data side */}
+          <div style={{ padding: "24px 20px", borderRadius: 12, background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.15)" }}>
+            <div style={{ fontSize: 22, marginBottom: 8 }}>📊</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#ff4757", marginBottom: 8, letterSpacing: -0.5 }}>Data</div>
+            <div style={{ fontSize: 11, color: "#444", marginBottom: 14, lineHeight: 1.5 }}>The number. The release. The headline.</div>
+            {[["NFP:", "+180k"], ["CPI:", "+3.2% YoY"], ["Fed Rate:", "5.25–5.50%"]].map(([k, v]) => (
+              <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#555", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                <span style={{ color: "#333" }}>{k}</span><span>{v}</span>
+              </div>
+            ))}
+            <div style={{ marginTop: 14, display: "inline-block", padding: "3px 10px", borderRadius: 4, fontSize: 10, fontWeight: 700, letterSpacing: 1, background: "rgba(255,71,87,.1)", color: "#ff4757", border: "1px solid rgba(255,71,87,.2)" }}>RAW. UNINTERPRETED.</div>
+          </div>
+
+          {/* Arrow */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "0 16px" }}>
+            <div style={{ width: 1, height: 60, background: "linear-gradient(to bottom, rgba(255,71,87,.4), rgba(0,229,255,.4))" }} />
+            <div style={{ fontSize: 9, color: "#2a2a2a", textAlign: "center", lineHeight: 1.5, letterSpacing: 0.5 }}>gap where<br />traders bleed</div>
+            <div style={{ width: 1, height: 60, background: "linear-gradient(to bottom, rgba(255,71,87,.4), rgba(0,229,255,.4))" }} />
+          </div>
+
+          {/* Answers side */}
+          <div style={{ padding: "24px 20px", borderRadius: 12, background: "rgba(0,229,255,.04)", border: "1px solid rgba(0,229,255,.15)" }}>
+            <div style={{ fontSize: 22, marginBottom: 8 }}>⚡</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#00e5ff", marginBottom: 8, letterSpacing: -0.5 }}>Answers</div>
+            <div style={{ fontSize: 11, color: "#444", marginBottom: 14, lineHeight: 1.5 }}>The interpretation. The implication. The edge.</div>
+            {["Fed pivot pushed back — Dollar bullish", "Gold faces headwinds next 48hrs", "Yields pricing in higher-for-longer"].map(a => (
+              <div key={a} style={{ fontSize: 11, color: "#666", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,.04)", lineHeight: 1.4 }}>{a}</div>
+            ))}
+            <div style={{ marginTop: 14, display: "inline-block", padding: "3px 10px", borderRadius: 4, fontSize: 10, fontWeight: 700, letterSpacing: 1, background: "rgba(0,229,255,.1)", color: "#00e5ff", border: "1px solid rgba(0,229,255,.2)" }}>ACTIONABLE. IMMEDIATE.</div>
+          </div>
+        </div>
+
+        {/* 4 things data requires */}
+        <div style={{ marginBottom: 56 }}>
+          <div style={{ textAlign: "center", fontSize: 11, color: "#333", letterSpacing: 2, marginBottom: 20 }}>DATA REQUIRES YOU TO:</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {[
+              ["01", "Know what it means in context"],
+              ["02", "Cross-reference it with macro trends"],
+              ["03", "Form a view under pressure"],
+              ["04", "Decide — while the market is already moving"],
+            ].map(([n, t]) => (
+              <div key={n} style={{ display: "flex", gap: 12, padding: "14px 16px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 8, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 10, color: "#00e5ff", opacity: 0.4, fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{n}</span>
+                <span style={{ fontSize: 12, color: "#555", lineHeight: 1.5 }}>{t}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Core truth */}
+        <div style={{ maxWidth: 640, margin: "0 auto 48px", textAlign: "center" }}>
+          <div style={{ height: 1, background: "linear-gradient(to right, transparent, rgba(0,229,255,.15), transparent)", marginBottom: 28 }} />
+          <p style={{ fontSize: 15, color: "#444", lineHeight: 1.9, fontFamily: "Georgia, serif" }}>
+            Most retail traders don't lose because they lacked data.<br />
+            They lose because they had <span style={{ color: "#e0e0e0", fontWeight: 600 }}>too much uninterpreted data</span> and not enough time or expertise to turn it into a clear position.
+          </p>
+          <div style={{ height: 1, background: "linear-gradient(to right, transparent, rgba(0,229,255,.15), transparent)", marginTop: 28 }} />
+        </div>
+
+        {/* Gap statement */}
+        <div style={{ textAlign: "center", fontSize: "clamp(18px, 3vw, 32px)", fontWeight: 800, color: "#222", lineHeight: 1.3, letterSpacing: -0.5, marginBottom: 56, fontFamily: "Georgia, serif" }}>
+          The gap between data and a decision<br />
+          <span style={{ color: "#ff4757" }}>is where most traders bleed.</span>
+        </div>
+
+        {/* MarketDebriefs proposition */}
+        <div style={{ textAlign: "center", padding: "40px 32px", background: "rgba(0,229,255,.03)", border: "1px solid rgba(0,229,255,.1)", borderRadius: 16, maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ fontSize: 14, fontWeight: 900, color: "#fff", letterSpacing: 1, marginBottom: 18 }}>
+            MARKET<span style={{ color: "#00e5ff" }}>DEBRIEFS</span>
+          </div>
+          <p style={{ fontSize: 16, color: "#666", lineHeight: 1.75, marginBottom: 14, fontFamily: "Georgia, serif" }}>
+            Not another data feed.<br />
+            A <span style={{ color: "#00e5ff", fontWeight: 600 }}>macro interpreter</span> sitting between the news and your trade.
+          </p>
+          <p style={{ fontSize: 13, color: "#333", lineHeight: 1.7, marginBottom: 28, fontFamily: "Georgia, serif" }}>
+            Bloomberg charges $30,000/year to give you data.<br />
+            We give you answers. <span style={{ color: "#00e5ff" }}>Free to start.</span>
+          </p>
+          <button onClick={() => navigate("/app")} style={{ padding: "14px 32px", background: "linear-gradient(135deg,#00e5ff,#0099bb)", color: "#000", fontSize: 14, fontWeight: 800, borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.5 }}>
+            Get Your First Brief Free →
+          </button>
+        </div>
+      </div>
+
       {/* ── HOW IT WORKS ── */}
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 32px 80px", textAlign: "center" }}>
         <div style={{ fontSize: 11, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 32 }}>HOW IT WORKS</div>
