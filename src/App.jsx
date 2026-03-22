@@ -240,45 +240,48 @@ function LandingPage({ navigate }) {
           When NFP drops, Bloomberg gives you the number. What you actually need to know is: does this change the Fed's next move — and how does that hit the Dollar, Gold, and yields in the <span style={{ color: "#00e5ff", fontWeight: 700 }}>next 4 hours</span>?
         </p>
 
-        {/* Data vs Answers cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 0, alignItems: "center", marginBottom: 64 }}>
+        {/* Data vs Answers cards — stacked on mobile, side by side on desktop */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 64, maxWidth: 680, margin: "0 auto 64px" }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "stretch" }}>
 
-          {/* Data side */}
-          <div style={{ padding: "24px 20px", borderRadius: 12, background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.15)" }}>
-            <div style={{ fontSize: 22, marginBottom: 8 }}>📊</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#ff4757", marginBottom: 8, letterSpacing: -0.5 }}>Data</div>
-            <div style={{ fontSize: 11, color: "#444", marginBottom: 14, lineHeight: 1.5 }}>The number. The release. The headline.</div>
-            {[["NFP:", "+180k"], ["CPI:", "+3.2% YoY"], ["Fed Rate:", "5.25–5.50%"]].map(([k, v]) => (
-              <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#555", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
-                <span style={{ color: "#333" }}>{k}</span><span>{v}</span>
-              </div>
-            ))}
-            <div style={{ marginTop: 14, display: "inline-block", padding: "3px 10px", borderRadius: 4, fontSize: 10, fontWeight: 700, letterSpacing: 1, background: "rgba(255,71,87,.1)", color: "#ff4757", border: "1px solid rgba(255,71,87,.2)" }}>RAW. UNINTERPRETED.</div>
-          </div>
+            {/* Data side */}
+            <div style={{ flex: 1, padding: "20px 16px", borderRadius: 12, background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.15)" }}>
+              <div style={{ fontSize: 20, marginBottom: 6 }}>📊</div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "#ff4757", marginBottom: 6, letterSpacing: -0.5 }}>Data</div>
+              <div style={{ fontSize: 11, color: "#444", marginBottom: 12, lineHeight: 1.5 }}>The number. The release. The headline.</div>
+              {[["NFP:", "+180k"], ["CPI:", "+3.2% YoY"], ["Fed Rate:", "5.25–5.50%"]].map(([k, v]) => (
+                <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#555", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                  <span style={{ color: "#333" }}>{k}</span><span>{v}</span>
+                </div>
+              ))}
+              <div style={{ marginTop: 12, display: "inline-block", padding: "3px 9px", borderRadius: 4, fontSize: 9, fontWeight: 700, letterSpacing: 1, background: "rgba(255,71,87,.1)", color: "#ff4757", border: "1px solid rgba(255,71,87,.2)" }}>RAW. UNINTERPRETED.</div>
+            </div>
 
-          {/* Arrow */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "0 16px" }}>
-            <div style={{ width: 1, height: 60, background: "linear-gradient(to bottom, rgba(255,71,87,.4), rgba(0,229,255,.4))" }} />
-            <div style={{ fontSize: 9, color: "#2a2a2a", textAlign: "center", lineHeight: 1.5, letterSpacing: 0.5 }}>gap where<br />traders bleed</div>
-            <div style={{ width: 1, height: 60, background: "linear-gradient(to bottom, rgba(255,71,87,.4), rgba(0,229,255,.4))" }} />
-          </div>
+            {/* Divider */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: "0 8px", flexShrink: 0 }}>
+              <div style={{ width: 1, height: 50, background: "linear-gradient(to bottom, rgba(255,71,87,.3), rgba(0,229,255,.3))" }} />
+              <div style={{ fontSize: 8, color: "#2a2a2a", textAlign: "center", lineHeight: 1.5, letterSpacing: 0.3, writingMode: "vertical-rl" }}>gap · traders bleed</div>
+              <div style={{ width: 1, height: 50, background: "linear-gradient(to bottom, rgba(255,71,87,.3), rgba(0,229,255,.3))" }} />
+            </div>
 
-          {/* Answers side */}
-          <div style={{ padding: "24px 20px", borderRadius: 12, background: "rgba(0,229,255,.04)", border: "1px solid rgba(0,229,255,.15)" }}>
-            <div style={{ fontSize: 22, marginBottom: 8 }}>⚡</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#00e5ff", marginBottom: 8, letterSpacing: -0.5 }}>Answers</div>
-            <div style={{ fontSize: 11, color: "#444", marginBottom: 14, lineHeight: 1.5 }}>The interpretation. The implication. The edge.</div>
-            {["Fed pivot pushed back — Dollar bullish", "Gold faces headwinds next 48hrs", "Yields pricing in higher-for-longer"].map(a => (
-              <div key={a} style={{ fontSize: 11, color: "#666", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,.04)", lineHeight: 1.4 }}>{a}</div>
-            ))}
-            <div style={{ marginTop: 14, display: "inline-block", padding: "3px 10px", borderRadius: 4, fontSize: 10, fontWeight: 700, letterSpacing: 1, background: "rgba(0,229,255,.1)", color: "#00e5ff", border: "1px solid rgba(0,229,255,.2)" }}>ACTIONABLE. IMMEDIATE.</div>
+            {/* Answers side */}
+            <div style={{ flex: 1, padding: "20px 16px", borderRadius: 12, background: "rgba(0,229,255,.04)", border: "1px solid rgba(0,229,255,.15)" }}>
+              <div style={{ fontSize: 20, marginBottom: 6 }}>⚡</div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "#00e5ff", marginBottom: 6, letterSpacing: -0.5 }}>Answers</div>
+              <div style={{ fontSize: 11, color: "#444", marginBottom: 12, lineHeight: 1.5 }}>The interpretation. The implication. The edge.</div>
+              {["Fed pivot pushed back — Dollar bullish", "Gold faces headwinds next 48hrs", "Yields pricing in higher-for-longer"].map(a => (
+                <div key={a} style={{ fontSize: 11, color: "#666", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,.04)", lineHeight: 1.4 }}>{a}</div>
+              ))}
+              <div style={{ marginTop: 12, display: "inline-block", padding: "3px 9px", borderRadius: 4, fontSize: 9, fontWeight: 700, letterSpacing: 1, background: "rgba(0,229,255,.1)", color: "#00e5ff", border: "1px solid rgba(0,229,255,.2)" }}>ACTIONABLE. IMMEDIATE.</div>
+            </div>
           </div>
         </div>
 
         {/* 4 things data requires */}
         <div style={{ marginBottom: 56 }}>
           <div style={{ textAlign: "center", fontSize: 11, color: "#333", letterSpacing: 2, marginBottom: 20 }}>DATA REQUIRES YOU TO:</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }} className="dva-req-grid">
+          <style>{`@media (max-width: 480px) { .dva-req-grid { grid-template-columns: 1fr !important; } }`}</style>
             {[
               ["01", "Know what it means in context"],
               ["02", "Cross-reference it with macro trends"],
