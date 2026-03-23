@@ -1891,7 +1891,7 @@ function AppInner({ navigate }) {
                     onClick={async () => {
                       setFeedLoading(true);
                       try {
-                        const r = await fetch("/api/narratives");
+                        const r = await fetch("/api/narratives?force=true");
                         const d = await r.json();
                         if (d.narratives?.length > 0) {
                           setNarrativeFeed(prev => {
