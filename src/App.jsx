@@ -1076,7 +1076,7 @@ function BreakingShareCard({ data, onClose }) {
       const blob   = await new Promise(r => canvas.toBlob(r, "image/png"));
       const file   = new File([blob], "marketdebriefs-breaking.png", { type: "image/png" });
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], text: "⚡ Breaking Narrative\n\n" + data.headline + "\n\nBrief First, Trade After.\nmarketdebriefs.com" });
+        await navigator.share({ files: [file], text: "Don't Trade Blind. Don't Get Fixated on what you think the market should do. Adapt your Trading Bias with Real time Narrative shifts.\n\nBrief First, Trade After. Get your Full Briefs in Real Time @ marketdebriefs.com" });
         setShared(true); setTimeout(() => setShared(false), 3000);
       } else {
         const url = URL.createObjectURL(blob);
@@ -1135,7 +1135,7 @@ function BreakingShareCard({ data, onClose }) {
                     <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 9px", background: "rgba(255,255,255,.02)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0", marginBottom: 5 }}>
                       <div style={{ flexShrink: 0, minWidth: 42 }}>
                         <div style={{ fontSize: 10, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
-                        <div style={{ fontSize: 7, color: c, fontWeight: 700, letterSpacing: 0.5 }}>{inst.flow || "WATCH"}</div>
+                        <div style={{ fontSize: 7, color: c, fontWeight: 700, letterSpacing: 0 }}>{inst.flow || "WATCH"}</div>
                       </div>
                       <div style={{ fontSize: 9, color: "#555", lineHeight: 1.4 }}>{truncate(inst.impact, 70)}</div>
                     </div>
@@ -1943,7 +1943,7 @@ function AppInner({ navigate }) {
                                 <div key={j} style={{ display: "flex", gap: 8, padding: "6px 9px", background: "rgba(255,255,255,.02)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0", marginBottom: 5 }}>
                                   <div style={{ flexShrink: 0, minWidth: 52 }}>
                                     <div style={{ fontSize: 10, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
-                                    <div style={{ fontSize: 8, color: c, fontWeight: 700 }}>{inst.flow}</div>
+                                    <div style={{ fontSize: 8, color: c, fontWeight: 700, letterSpacing: 0 }}>{inst.flow}</div>
                                   </div>
                                   <div style={{ fontSize: 11, color: "#666", lineHeight: 1.4 }}>{inst.impact}</div>
                                 </div>
@@ -2057,7 +2057,7 @@ function AppInner({ navigate }) {
                           <div key={i} style={{ display: "flex", gap: 12, padding: "11px 14px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderLeft: "3px solid " + c, borderRadius: "0 8px 8px 0", marginBottom: 8, alignItems: "flex-start" }}>
                             <div style={{ display: "flex", flexDirection: "column", gap: 3, flexShrink: 0, minWidth: 60 }}>
                               <div style={{ fontSize: 11, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
-                              <div style={{ fontSize: 8, fontWeight: 700, color: c, letterSpacing: 0.8 }}>{inst.flow || "WATCH"}</div>
+                              <div style={{ fontSize: 8, fontWeight: 700, color: c, letterSpacing: 0 }}>{inst.flow || "WATCH"}</div>
                             </div>
                             <div style={{ fontSize: 12, color: "#666", lineHeight: 1.5 }}>{inst.impact}</div>
                           </div>
