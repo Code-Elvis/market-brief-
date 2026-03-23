@@ -6,7 +6,7 @@
 
 export const config = { maxDuration: 30 };
 
-let cache = { narratives: [], fetched_at: null, ttl_ms: 30 * 60 * 1000 };
+let cache = { narratives: [], fetched_at: null, ttl_ms: 15 * 60 * 1000 }; // 15 min during market hours
 
 function isCacheValid() {
   return cache.fetched_at && cache.narratives.length > 0 &&
@@ -84,11 +84,34 @@ export default async function handler(req, res) {
     // This ensures Marketaux returns genuinely market-moving news
     const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000)
       .toISOString().replace(/\.\d{3}Z$/, "");
+    // Two parallel fetches:
+    // 1. Symbol-based — news tagged to our core instruments
+    // 2. Search-based — breaking macro keywords regardless of tagging
     const macroSymbols = "XAUUSD,EURUSD,GBPUSD,USDJPY,CL,GC,ES,NQ,DXY,BTCUSD";
-    const url = `https://api.marketaux.com/v1/news/all?language=en&symbols=${macroSymbols}&filter_entities=true&limit=20&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
-    const newsRes = await fetch(url);
-    if (!newsRes.ok) throw new Error(`Marketaux ${newsRes.status}`);
-    const { data: articles = [] } = await newsRes.json();
+    const searchTerms = "trump tariff iran fed powell rate opec oil gold dollar sanctions war geopolitical";
+    const url1 = `https://api.marketaux.com/v1/news/all?language=en&symbols=${macroSymbols}&filter_entities=true&limit=10&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
+    const url2 = `https://api.marketaux.com/v1/news/all?language=en&search=${encodeURIComponent(searchTerms)}&limit=10&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
+    // Run both fetches in parallel — costs 2 Marketaux requests per refresh
+    const [res1, res2] = await Promise.allSettled([fetch(url1), fetch(url2)]);
+
+    let articles = [];
+    if (res1.status === "fulfilled" && res1.value.ok) {
+      const d = await res1.value.json();
+      articles = [...articles, ...(d.data || [])];
+    }
+    if (res2.status === "fulfilled" && res2.value.ok) {
+      const d = await res2.value.json();
+      articles = [...articles, ...(d.data || [])];
+    }
+
+    // Deduplicate by uuid
+    const seen = new Set();
+    articles = articles.filter(a => {
+      if (!a.uuid || seen.has(a.uuid)) return false;
+      seen.add(a.uuid); return true;
+    });
+
+    if (!articles.length) throw new Error("No articles from Marketaux");
 
     // Marketaux topics filter already ensures relevance
     // Apply our keyword filter as a secondary pass, fall back to all if none match
