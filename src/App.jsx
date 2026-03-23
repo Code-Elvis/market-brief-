@@ -601,15 +601,17 @@ POST-SESSION schema: {"instrument":"string","session_summary":"string","primary_
 
 async function getBreakingNarrative(headline) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  const sys = `You are a professional macro market interpreter. A breaking news headline or event has just hit. Your job is to instantly explain what it means for markets — no fluff, no caveats, just clear macro interpretation. Respond ONLY with valid JSON. No markdown, no backticks. Start with { and end with }.
+  const sys = `You are a professional macro market interpreter. A breaking news headline has just hit. Your job is to explain what it means for markets — no fluff, no directional signals, just clear macro cause-and-effect. Respond ONLY with valid JSON. No markdown, no backticks. Start with { and end with }.
 RULES:
 1. NEVER mention specific price levels, targets or stops.
-2. Be direct and specific — name which instruments are affected and how.
-3. narrative_summary must be 1-2 punchy sentences max — the interpretation a trader needs in 10 seconds.
-4. Each instrument impact must be ONE sentence: what happens and why.
-5. urgency: CRITICAL (market moving now), HIGH (significant impact expected), MEDIUM (watch closely).
-BREAKING NARRATIVE schema: {"headline":"string","narrative_summary":"string","urgency":"CRITICAL|HIGH|MEDIUM","instruments":[{"name":"string","direction":"BULLISH|BEARISH|NEUTRAL","impact":"string"}],"watch_for":"string","fades_when":"string"}`;
-  const msg = `Current time: ${now}. Breaking headline: "${headline}". Interpret this instantly for macro traders. Which instruments are affected, in which direction, and why? What should traders watch for next? When does this narrative fade?`;
+2. NEVER label instruments as BULLISH or BEARISH — instead describe the MECHANISM: what force is acting on this instrument and why.
+3. CRITICAL: Always check for cross-instrument tensions. For example if Dollar strengthens, that typically creates headwinds for Gold. If you list both, explicitly note the conflict in the impact text.
+4. narrative_summary must be 1-2 punchy sentences — the macro cause-and-effect a trader needs in 10 seconds.
+5. Each instrument impact must be ONE sentence describing what macro force is acting on it and why.
+6. urgency: CRITICAL (market moving now), HIGH (significant impact expected), MEDIUM (watch closely).
+BREAKING NARRATIVE schema: {"headline":"string","narrative_summary":"string","urgency":"CRITICAL|HIGH|MEDIUM","instruments":[{"name":"string","flow":"DEMAND|PRESSURE|VOLATILE|WATCH","impact":"string"}],"tensions":"string","watch_for":"string","fades_when":"string"}
+tensions field: if any instruments have conflicting forces (e.g. safe haven demand for Gold vs Dollar strength weighing on Gold) — describe the conflict here in one sentence. Leave empty string if no conflicts.`;
+  const msg = `Current time: ${now}. Breaking headline: "${headline}". Interpret this for macro traders. For each affected instrument explain the MACRO MECHANISM — what force is acting on it and why. Check for cross-instrument conflicts (e.g. Dollar vs Gold, Risk-off vs Oil). Never use bullish/bearish labels — describe the flow instead.`;
   return callClaude(sys, msg);
 }
 
@@ -1127,12 +1129,13 @@ function BreakingShareCard({ data, onClose }) {
             {data.instruments && (
               <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
                 {data.instruments.slice(0, 3).map((inst, i) => {
-                  const c = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" }[inst.direction] || "#666";
+                  const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
+                  const c = FC[inst.flow] || "#555";
                   return (
-                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 9px", background: c + "08", border: "1px solid " + c + "22", borderRadius: 6 }}>
-                      <div style={{ flexShrink: 0, minWidth: 40 }}>
+                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 9px", background: "rgba(255,255,255,.02)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0", marginBottom: 5 }}>
+                      <div style={{ flexShrink: 0, minWidth: 42 }}>
                         <div style={{ fontSize: 10, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
-                        <div style={{ fontSize: 8, color: c, fontWeight: 700 }}>{inst.direction}</div>
+                        <div style={{ fontSize: 7, color: c, fontWeight: 700, letterSpacing: 0.5 }}>{inst.flow || "WATCH"}</div>
                       </div>
                       <div style={{ fontSize: 9, color: "#555", lineHeight: 1.4 }}>{truncate(inst.impact, 70)}</div>
                     </div>
@@ -1938,12 +1941,13 @@ function AppInner({ navigate }) {
                     <div style={{ marginBottom: 16 }}>
                       <div style={{ fontSize: 9, color: "#444", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>INSTRUMENT IMPACT</div>
                       {breakingData.instruments.map((inst, i) => {
-                        const c = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" }[inst.direction] || "#666";
+                        const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
+                        const c = FC[inst.flow] || "#555";
                         return (
-                          <div key={i} style={{ display: "flex", gap: 12, padding: "11px 14px", background: c + "08", border: "1px solid " + c + "22", borderRadius: 8, marginBottom: 8, alignItems: "flex-start" }}>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, flexShrink: 0, minWidth: 54 }}>
+                          <div key={i} style={{ display: "flex", gap: 12, padding: "11px 14px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderLeft: "3px solid " + c, borderRadius: "0 8px 8px 0", marginBottom: 8, alignItems: "flex-start" }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 3, flexShrink: 0, minWidth: 60 }}>
                               <div style={{ fontSize: 11, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
-                              <div style={{ fontSize: 9, fontWeight: 700, color: c, letterSpacing: 1 }}>{inst.direction}</div>
+                              <div style={{ fontSize: 8, fontWeight: 700, color: c, letterSpacing: 0.8 }}>{inst.flow || "WATCH"}</div>
                             </div>
                             <div style={{ fontSize: 12, color: "#666", lineHeight: 1.5 }}>{inst.impact}</div>
                           </div>
@@ -1953,6 +1957,12 @@ function AppInner({ navigate }) {
                   )}
                   {/* Watch for + fades when */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+                    {breakingData.tensions && (
+                      <div style={{ padding: "12px 14px", background: "rgba(255,165,0,.04)", border: "1px solid rgba(255,165,0,.15)", borderRadius: 8, marginBottom: 10 }}>
+                        <div style={{ fontSize: 8, color: "#ffa500", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>⚡ CONFLICTING FORCES</div>
+                        <div style={{ fontSize: 12, color: "#888", lineHeight: 1.5 }}>{breakingData.tensions}</div>
+                      </div>
+                    )}
                     {breakingData.watch_for && (
                       <div style={{ padding: "12px 14px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)", borderRadius: 8 }}>
                         <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>WATCH FOR</div>
@@ -1971,6 +1981,7 @@ function AppInner({ navigate }) {
                     onClick={() => {
                       setPostSessionData(null);
                       setShowShareCard(true);
+                      setTab("breaking");
                     }}
                     style={{ width: "100%", padding: "11px", borderRadius: 8, border: "1px solid rgba(255,71,87,.25)", background: "rgba(255,71,87,.06)", color: "#ff4757", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                     ↗ Share Breaking Narrative Card
