@@ -60,8 +60,11 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Cache-Control", "s-maxage=1800, stale-while-revalidate");
 
+  // Allow force refresh to bypass cache
+  const force = req.query?.force === "true";
+
   // Serve from cache if still valid — costs 0 Marketaux requests
-  if (isCacheValid()) {
+  if (!force && isCacheValid()) {
     return res.status(200).json({
       narratives: cache.narratives.map(n => ({ ...n, age: getAge(n.published_at) })),
       fetched_at: new Date(cache.fetched_at).toISOString(),
@@ -77,11 +80,12 @@ export default async function handler(req, res) {
 
   try {
     const since = new Date(Date.now() - 2*60*60*1000).toISOString().replace(/\.\d{3}Z$/,"");
-    // Use topics filter to get macro-relevant news only
-    // Also broaden the time window to 6 hours to ensure we get results
+    // Filter by macro-relevant symbols — forex, commodities, futures, indices
+    // This ensures Marketaux returns genuinely market-moving news
     const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000)
       .toISOString().replace(/\.\d{3}Z$/, "");
-    const url = `https://api.marketaux.com/v1/news/all?language=en&filter_entities=true&limit=20&published_after=${sixHoursAgo}&topics=central-banks,forex,commodities,economics,financial-markets,geopolitics&api_token=${MX_KEY}`;
+    const macroSymbols = "XAUUSD,EURUSD,GBPUSD,USDJPY,CL,GC,ES,NQ,DXY,BTCUSD";
+    const url = `https://api.marketaux.com/v1/news/all?language=en&symbols=${macroSymbols}&filter_entities=true&limit=20&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
     const newsRes = await fetch(url);
     if (!newsRes.ok) throw new Error(`Marketaux ${newsRes.status}`);
     const { data: articles = [] } = await newsRes.json();
