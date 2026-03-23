@@ -1069,12 +1069,7 @@ function BreakingShareCard({ data, onClose }) {
       const blob   = await new Promise(r => canvas.toBlob(r, "image/png"));
       const file   = new File([blob], "marketdebriefs-breaking.png", { type: "image/png" });
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], text: "⚡ Breaking Narrative
-
-" + data.headline + "
-
-Brief First, Trade After.
-marketdebriefs.com" });
+        await navigator.share({ files: [file], text: "⚡ Breaking Narrative\n\n" + data.headline + "\n\nBrief First, Trade After.\nmarketdebriefs.com" });
         setShared(true); setTimeout(() => setShared(false), 3000);
       } else {
         const url = URL.createObjectURL(blob);
