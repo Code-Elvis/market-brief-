@@ -77,12 +77,22 @@ export default async function handler(req, res) {
 
   try {
     const since = new Date(Date.now() - 2*60*60*1000).toISOString().replace(/\.\d{3}Z$/,"");
-    const url = `https://api.marketaux.com/v1/news/all?language=en&filter_entities=true&limit=20&published_after=${since}&api_token=${MX_KEY}`;
+    // Use topics filter to get macro-relevant news only
+    // Also broaden the time window to 6 hours to ensure we get results
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000)
+      .toISOString().replace(/\.\d{3}Z$/, "");
+    const url = `https://api.marketaux.com/v1/news/all?language=en&filter_entities=true&limit=20&published_after=${sixHoursAgo}&topics=central-banks,forex,commodities,economics,financial-markets,geopolitics&api_token=${MX_KEY}`;
     const newsRes = await fetch(url);
     if (!newsRes.ok) throw new Error(`Marketaux ${newsRes.status}`);
     const { data: articles = [] } = await newsRes.json();
 
-    const filtered = articles.filter(a => a.title && isHighImpact(a.title)).slice(0, 6);
+    // Marketaux topics filter already ensures relevance
+    // Apply our keyword filter as a secondary pass, fall back to all if none match
+    let filtered = articles.filter(a => a.title && isHighImpact(a.title)).slice(0, 6);
+    if (!filtered.length) {
+      // Fallback — take top articles from Marketaux even without keyword match
+      filtered = articles.filter(a => a.title).slice(0, 4);
+    }
     if (!filtered.length) {
       cache = { narratives: [], fetched_at: Date.now(), ttl_ms: cache.ttl_ms };
       return res.status(200).json({ narratives: [], fetched_at: new Date().toISOString() });
