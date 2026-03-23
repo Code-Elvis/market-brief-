@@ -892,9 +892,9 @@ function BreakingGate({ onUpgrade }) {
       <div style={{ maxWidth: 360, margin: "0 auto 24px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 10, padding: "14px 16px" }}>
         <div style={{ fontSize: 10, color: "#333", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>EXAMPLE USE CASES</div>
         {[
-          { q: ""Fed signals higher for longer"", a: "What does this mean for EUR/USD and Gold?" },
-          { q: ""Trump announces new Iran sanctions"", a: "How does this hit Oil, Dollar and risk assets?" },
-          { q: ""OPEC+ cuts production by 1M barrels"", a: "Why does this move Brent and what's the macro chain?" },
+          { q: "'Fed signals higher for longer'", a: "What does this mean for EUR/USD and Gold?" },
+          { q: "'Trump announces new Iran sanctions'", a: "How does this hit Oil, Dollar and risk assets?" },
+          { q: "'OPEC+ cuts production by 1M barrels'", a: "Why does this move Brent and what's the macro chain?" },
         ].map((ex, i) => (
           <div key={i} style={{ marginBottom: i < 2 ? 10 : 0, paddingBottom: i < 2 ? 10 : 0, borderBottom: i < 2 ? "1px solid rgba(255,255,255,.04)" : "none" }}>
             <div style={{ fontSize: 11, color: "#888", fontStyle: "italic", marginBottom: 3 }}>{ex.q}</div>
