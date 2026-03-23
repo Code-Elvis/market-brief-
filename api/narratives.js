@@ -13,18 +13,31 @@ function isCacheValid() {
     Date.now() - cache.fetched_at < cache.ttl_ms;
 }
 
-const HIGH_IMPACT = [
-  "fed","federal reserve","powell","fomc","rate decision",
-  "tariff","trump","sanctions","iran","israel","war","military",
-  "inflation","cpi","nfp","payroll","gdp","recession",
-  "opec","oil production","crude","gold","dollar index",
-  "yields","treasury","bond","central bank",
-  "emergency","crisis","crash","surge","plunge","spike","escalat",
+const MACRO_REQUIRED = [
+  "fed","federal reserve","powell","fomc","interest rate","rate decision","rate cut","rate hike",
+  "tariff","trump","sanctions","iran","israel","war","military strike","airstrike",
+  "inflation","cpi","pce","nfp","payroll","gdp","recession","unemployment",
+  "opec","oil production","crude oil","brent","wti","natural gas",
+  "gold","silver","dollar index","dxy","yen","euro","pound","yuan",
+  "yields","treasury","10-year","bond market","central bank",
+  "geopolit","conflict","escalat","de-escalat","ceasefire",
+  "bank of england","ecb","boj","pboc","rba","bank of japan",
+  "emergency","crisis","market crash","stock market","equity market",
+];
+
+// These indicate equity-specific stories — filter them out
+const EQUITY_NOISE = [
+  "buyback","share repurchase","earnings per share","quarterly results",
+  "annual report","ipo","acquisition","merger","dividend declared",
+  "analyst upgrade","analyst downgrade","price target","revenue guidance",
+  "ceo appoint","board of directors","proxy vote","shareholder meeting",
 ];
 
 function isHighImpact(h) {
   const l = h.toLowerCase();
-  return HIGH_IMPACT.some(kw => l.includes(kw));
+  const hasMacro = MACRO_REQUIRED.some(kw => l.includes(kw));
+  const isEquityNoise = EQUITY_NOISE.some(kw => l.includes(kw));
+  return hasMacro && !isEquityNoise;
 }
 
 async function interpretHeadline(headline, apiKey) {
@@ -84,13 +97,12 @@ export default async function handler(req, res) {
     // This ensures Marketaux returns genuinely market-moving news
     const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000)
       .toISOString().replace(/\.\d{3}Z$/, "");
-    // Two parallel fetches:
-    // 1. Symbol-based — news tagged to our core instruments
-    // 2. Search-based — breaking macro keywords regardless of tagging
-    const macroSymbols = "XAUUSD,EURUSD,GBPUSD,USDJPY,CL,GC,ES,NQ,DXY,BTCUSD";
-    const searchTerms = "trump tariff iran fed powell rate opec oil gold dollar sanctions war geopolitical";
-    const url1 = `https://api.marketaux.com/v1/news/all?language=en&symbols=${macroSymbols}&filter_entities=true&limit=10&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
-    const url2 = `https://api.marketaux.com/v1/news/all?language=en&search=${encodeURIComponent(searchTerms)}&limit=10&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
+    // Two keyword searches targeting macro events only
+    // No symbols filter — that pulls equity-specific stories (earnings, buybacks etc)
+    const search1 = "federal reserve fed powell fomc interest rate inflation tariff";
+    const search2 = "iran oil opec gold dollar geopolitical war sanctions trump crude";
+    const url1 = `https://api.marketaux.com/v1/news/all?language=en&search=${encodeURIComponent(search1)}&must_have_entities=true&limit=10&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
+    const url2 = `https://api.marketaux.com/v1/news/all?language=en&search=${encodeURIComponent(search2)}&must_have_entities=true&limit=10&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
     // Run both fetches in parallel — costs 2 Marketaux requests per refresh
     const [res1, res2] = await Promise.allSettled([fetch(url1), fetch(url2)]);
 
