@@ -1675,6 +1675,10 @@ function AppInner({ navigate }) {
   const [breakingData, setBreakingData] = useState(null);
   const [breakingLoading, setBreakingLoading] = useState(false);
   const [breakingError, setBreakingError] = useState(null);
+  const [narrativeFeed, setNarrativeFeed] = useState([]);
+  const [feedLoading, setFeedLoading] = useState(false);
+  const [feedLastFetched, setFeedLastFetched] = useState(null);
+  const [selectedNarrative, setSelectedNarrative] = useState(null);
   const [scalperStockLoading, setScalperStockLoading] = useState(false);
   const [scalperStockError, setScalperStockError] = useState(null);
 
@@ -1878,6 +1882,107 @@ function AppInner({ navigate }) {
           {tab === "journal" && <Journal />}
           {tab === "breaking" && (
             <div style={{ paddingBottom: 40 }}>
+
+              {/* ── LIVE FEED ── */}
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, color: "#ff4757", letterSpacing: 2, fontWeight: 700 }}>📰 TODAY'S NARRATIVES</div>
+                  <button
+                    onClick={async () => {
+                      setFeedLoading(true);
+                      try {
+                        const r = await fetch("/api/narratives");
+                        const d = await r.json();
+                        if (d.narratives?.length > 0) {
+                          setNarrativeFeed(prev => {
+                            const existingIds = new Set(prev.map(n => n.id));
+                            const newOnes = d.narratives.filter(n => !existingIds.has(n.id));
+                            return [...newOnes, ...prev].slice(0, 20);
+                          });
+                          setFeedLastFetched(new Date());
+                        }
+                      } catch(e) { console.error(e); }
+                      setFeedLoading(false);
+                    }}
+                    disabled={feedLoading}
+                    style={{ fontSize: 10, color: feedLoading ? "#333" : "#ff4757", background: "none", border: "1px solid rgba(255,71,87,.2)", borderRadius: 6, padding: "4px 10px", cursor: feedLoading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+                    {feedLoading ? "Fetching…" : "↻ Refresh"}
+                  </button>
+                </div>
+
+                {feedLastFetched && (
+                  <div style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "monospace", marginBottom: 10 }}>
+                    Last updated {feedLastFetched.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                  </div>
+                )}
+
+                {/* Feed items */}
+                {narrativeFeed.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {narrativeFeed.map((n, i) => (
+                      <div key={n.id || i}
+                        onClick={() => setSelectedNarrative(selectedNarrative?.id === n.id ? null : n)}
+                        style={{ background: selectedNarrative?.id === n.id ? "rgba(255,71,87,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (selectedNarrative?.id === n.id ? "rgba(255,71,87,.2)" : "rgba(255,255,255,.06)"), borderLeft: "3px solid " + (n.urgency === "CRITICAL" ? "#ff4757" : n.urgency === "HIGH" ? "#ffa500" : "#ffd700"), borderRadius: "0 8px 8px 0", padding: "11px 13px", cursor: "pointer" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ fontSize: 9, fontWeight: 700, color: n.tag === "BREAKING" ? "#ff4757" : "#555", fontFamily: "monospace" }}>{n.tag === "BREAKING" ? "⚡" : "📰"} {n.tag}</span>
+                            <span style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "monospace" }}>{n.age || n.published_at?.slice(11,16)}</span>
+                          </div>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: n.urgency === "CRITICAL" ? "#ff4757" : n.urgency === "HIGH" ? "#ffa500" : "#ffd700", flexShrink: 0 }}>{n.urgency}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: "#e0e0e0", fontWeight: 600, lineHeight: 1.4, marginBottom: selectedNarrative?.id === n.id ? 10 : 0 }}>{n.headline}</div>
+
+                        {/* Expanded view */}
+                        {selectedNarrative?.id === n.id && (
+                          <div>
+                            <div style={{ fontSize: 12, color: "#888", lineHeight: 1.6, fontStyle: "italic", marginBottom: 10 }}>"{n.narrative_summary}"</div>
+                            {n.instruments?.map((inst, j) => {
+                              const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
+                              const c = FC[inst.flow] || "#555";
+                              return (
+                                <div key={j} style={{ display: "flex", gap: 8, padding: "6px 9px", background: "rgba(255,255,255,.02)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0", marginBottom: 5 }}>
+                                  <div style={{ flexShrink: 0, minWidth: 52 }}>
+                                    <div style={{ fontSize: 10, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
+                                    <div style={{ fontSize: 8, color: c, fontWeight: 700 }}>{inst.flow}</div>
+                                  </div>
+                                  <div style={{ fontSize: 11, color: "#666", lineHeight: 1.4 }}>{inst.impact}</div>
+                                </div>
+                              );
+                            })}
+                            {n.tensions && (
+                              <div style={{ padding: "7px 10px", background: "rgba(255,165,0,.04)", border: "1px solid rgba(255,165,0,.12)", borderRadius: 6, marginBottom: 8 }}>
+                                <div style={{ fontSize: 7, color: "#ffa500", letterSpacing: 1, fontWeight: 700, marginBottom: 3 }}>⚡ CONFLICTING FORCES</div>
+                                <div style={{ fontSize: 11, color: "#666", lineHeight: 1.4 }}>{n.tensions}</div>
+                              </div>
+                            )}
+                            {n.watch_for && (
+                              <div style={{ padding: "7px 10px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)", borderRadius: 6, marginBottom: 10 }}>
+                                <div style={{ fontSize: 7, color: "#00d4ff", letterSpacing: 1, fontWeight: 700, marginBottom: 3 }}>WATCH FOR</div>
+                                <div style={{ fontSize: 11, color: "#666", lineHeight: 1.4 }}>{n.watch_for}</div>
+                              </div>
+                            )}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setBreakingData(n); setShowShareCard(true); }}
+                              style={{ width: "100%", padding: "9px", borderRadius: 7, border: "1px solid rgba(255,71,87,.25)", background: "rgba(255,71,87,.06)", color: "#ff4757", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                              ↗ Share This Narrative Card
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ padding: "20px", textAlign: "center", border: "1px dashed rgba(255,255,255,.06)", borderRadius: 8 }}>
+                    <div style={{ fontSize: 12, color: "#2a2a2a", lineHeight: 1.7 }}>
+                      Tap Refresh to load today's narratives<br/>
+                      <span style={{ fontSize: 10 }}>Auto-updates every 30 minutes during market hours</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 20 }} />
+
               {/* Header */}
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 11, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 6 }}>⚡ BREAKING NARRATIVE</div>
@@ -1905,6 +2010,16 @@ function AppInner({ navigate }) {
                   setBreakingData(null);
                   try {
                     const result = await getBreakingNarrative(breakingHeadline.trim());
+                    // Add to feed as ⚡ BREAKING with priority
+                    const manualNarrative = {
+                      ...result,
+                      id: "manual-" + Date.now(),
+                      headline: breakingHeadline.trim(),
+                      tag: "BREAKING",
+                      age: "just now",
+                      published_at: new Date().toISOString(),
+                    };
+                    setNarrativeFeed(prev => [manualNarrative, ...prev].slice(0, 20));
                     setBreakingData(result);
                   } catch(e) {
                     setBreakingError("Interpretation failed. Try again.");
