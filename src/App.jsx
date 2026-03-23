@@ -1876,16 +1876,11 @@ function AppInner({ navigate }) {
                 <textarea
                   value={breakingHeadline}
                   onChange={e => setBreakingHeadline(e.target.value)}
-                  placeholder={"e.g. Trump announces 25% tariffs on all Chinese goods effective immediately
-
-or: Fed Chair Powell signals rate cuts delayed until Q4
-
-or: Iran nuclear deal collapsed — US threatens military action"}
+                  placeholder={"e.g. Trump announces 25% tariffs on all Chinese goods\n\nor: Fed Chair Powell signals rate cuts delayed until Q4\n\nor: Iran nuclear deal collapsed — US threatens military action"}
                   rows={4}
                   style={{ width: "100%", background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.15)", borderRadius: 10, color: "#e0e0e0", fontSize: 13, padding: "12px 14px", outline: "none", fontFamily: "inherit", lineHeight: 1.6, resize: "none" }}
                 />
               </div>
-
               {/* Interpret button */}
               <button
                 onClick={async () => {
@@ -1905,9 +1900,7 @@ or: Iran nuclear deal collapsed — US threatens military action"}
                 style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: breakingLoading || !breakingHeadline.trim() ? "rgba(255,71,87,.08)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: breakingLoading || !breakingHeadline.trim() ? "#333" : "#fff", fontSize: 14, fontWeight: 800, cursor: breakingLoading || !breakingHeadline.trim() ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: 0.5, marginBottom: 20 }}>
                 {breakingLoading ? "Interpreting…" : "⚡ INTERPRET NOW"}
               </button>
-
               {breakingError && <div style={{ color: "#ff4757", fontSize: 13, marginBottom: 16 }}>{breakingError}</div>}
-
               {/* Results */}
               {breakingData && (
                 <div>
@@ -1923,7 +1916,6 @@ or: Iran nuclear deal collapsed — US threatens military action"}
                       "{breakingData.narrative_summary}"
                     </div>
                   </div>
-
                   {/* Instrument impacts */}
                   {breakingData.instruments && breakingData.instruments.length > 0 && (
                     <div style={{ marginBottom: 16 }}>
@@ -1942,7 +1934,6 @@ or: Iran nuclear deal collapsed — US threatens military action"}
                       })}
                     </div>
                   )}
-
                   {/* Watch for + fades when */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
                     {breakingData.watch_for && (
@@ -1958,7 +1949,6 @@ or: Iran nuclear deal collapsed — US threatens military action"}
                       </div>
                     )}
                   </div>
-
                   {/* Share card button */}
                   <button
                     onClick={() => {
@@ -1970,7 +1960,6 @@ or: Iran nuclear deal collapsed — US threatens military action"}
                   </button>
                 </div>
               )}
-
               {/* Empty state */}
               {!breakingData && !breakingLoading && (
                 <div style={{ textAlign: "center", padding: "40px 20px" }}>
