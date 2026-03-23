@@ -1854,12 +1854,7 @@ function AppInner({ navigate }) {
                 onClose={() => { setShowShareCard(false); }}
               />
             )}
-            {showShareCard && tab === "breaking" && breakingData && (
-              <BreakingShareCard
-                data={breakingData}
-                onClose={() => setShowShareCard(false)}
-              />
-            )}
+
           </div>}
           {tab === "stocks" && (
             // Both Full Brief and Scalper Mode are now supported in the Stocks tab
@@ -1979,9 +1974,7 @@ function AppInner({ navigate }) {
                   {/* Share card button */}
                   <button
                     onClick={() => {
-                      setPostSessionData(null);
                       setShowShareCard(true);
-                      setTab("breaking");
                     }}
                     style={{ width: "100%", padding: "11px", borderRadius: 8, border: "1px solid rgba(255,71,87,.25)", background: "rgba(255,71,87,.06)", color: "#ff4757", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                     ↗ Share Breaking Narrative Card
@@ -2012,6 +2005,13 @@ function AppInner({ navigate }) {
             />
           )}
           {tab === "learn" && <Learn />}
+          {/* Breaking narrative share card — rendered outside tab conditions */}
+          {showShareCard && breakingData && tab === "breaking" && (
+            <BreakingShareCard
+              data={breakingData}
+              onClose={() => setShowShareCard(false)}
+            />
+          )}
         </div>
       </div>
     </>
