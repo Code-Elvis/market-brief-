@@ -70,6 +70,8 @@ function HelpPage({ navigate }) {
   const sections = [
     { id: "getting-started", icon: "🚀", title: "Getting Started", color: "rgba(0,212,255,.1)", items: [
       { q: "How do I get started with MarketDebriefs?", a: "Getting started takes under 60 seconds. Type any instrument into the search bar — ES, Gold, EUR/USD, BTC, Oil — and hit BRIEF ME. Your first brief is ready in under 30 seconds. No credit card needed." },
+      { q: "What is the Breaking Narratives tab?", a: "Breaking Narratives serves two purposes. First, it's a live macro learning tool — if you see a headline in Discord, on Twitter or in the news and don't understand how it affects your trade, paste it in and get a clear explanation of the macro mechanism and which instruments are affected. Second, it monitors the financial wire in real time and surfaces market-moving stories automatically every 15 minutes, so you know when a breaking event invalidates your setup before it shows on the chart. Pro feature." },
+      { q: "What is the recommended workflow before and during trading?", a: "Step 1 — Type your instrument (EUR/USD, ES, Gold, Oil etc) and run a Full Brief. Read the macro theme, high-impact events and geopolitical risks. Step 2 — Run Scalper Mode for a CLEAR / CAUTION / STAND DOWN risk check. If something is imminent — you'll know before you enter. Step 3 — Check the Breaking tab. Live macro narratives are interpreted in real time every 15 minutes. If a narrative hits that invalidates your setup you see it here first. Step 4 — If a major event fires during your session (Fed comment, Trump tweet, geopolitical escalation) — run a fresh brief immediately. Adapt your bias. Never trade on stale context. Brief First, Trade After." },
       { q: "What exactly does MarketDebriefs do?", a: "MarketDebriefs is a macro intelligence tool for active traders. Before you enter a trade, type in your instrument and receive an instant AI-powered briefing covering the current central bank stance, live geopolitical risks, upcoming high-impact events (CPI, NFP, Fed decisions), and why they move price. Think of it as having an institutional macro analyst on call — in seconds, before every trade." },
       { q: "Which instruments are supported?", a: "25+ instruments across all major asset classes. Equity Indices: ES S&P 500, NQ NASDAQ, RTY Russell 2000, YM Dow Jones, DAX, Nikkei, FTSE, CAC. Metals: Gold, Silver, Copper. Energy: WTI Crude, Brent, Natural Gas. FX: EUR/USD, GBP/USD, USD/JPY, AUD/USD, USD/CAD, USD/CHF, DXY. Crypto: Bitcoin, Ethereum. Rates: 10Y Treasury. Volatility: VIX. You can also type any custom instrument or stock ticker." },
       { q: "How many free briefs do I get?", a: "On the Free plan you get 3 Full Briefs per day. The limit resets every 24 hours. Upgrade to Pro (€49/month) for unlimited briefs plus Scalper Mode and Equity Debriefs." },
@@ -82,7 +84,7 @@ function HelpPage({ navigate }) {
       { q: "Do you offer promo or discount codes?", a: "Promo codes are occasionally offered through our affiliate partners and creator collaborations. If you have a code, enter it at the Pro checkout screen." },
     ]},
     { id: "features", icon: "⚡", title: "Features", color: "rgba(0,212,170,.1)", items: [
-      { q: "What is Scalper Mode?", a: "Scalper Mode is a Pro feature for intraday traders who need a fast macro risk awareness check before entering. You get CLEAR / CAUTION / STAND DOWN in seconds. CLEAR — macro conditions are calm, no imminent events. CAUTION — something is close on the calendar, proceed carefully. STAND DOWN — a major event is imminent or breaking news is active, not the time to scalp. This is a risk awareness tool, not a directional signal." },
+      { q: "What is Scalper Mode?", a: "Scalper Mode is an upcoming events awareness check for active traders. Before you enter a position, it shows you what high-impact events are scheduled on the calendar that could move your instrument — so you don't get caught on the wrong side of a data release. You get CLEAR / CAUTION / STAND DOWN in seconds. CLEAR — no imminent events, macro conditions calm. CAUTION — something is close on the calendar, be aware. STAND DOWN — a major event is imminent, stay out of the market until it passes. This is an event calendar awareness tool, not a directional signal. Pro feature." },
       { q: "How do Equity (Stocks) Debriefs work?", a: "Go to the Stocks tab, type any stock name or ticker (Apple, NVDA, TSLA, MSFT, etc.) and get an instant debrief covering earnings context, macro tailwinds and headwinds, upcoming catalyst events, sector rotation signals, and institutional flow direction. Pro feature." },
       { q: "What is the Reflection tab?", a: "A daily trading journal built into the app. At the end of each trading day it presents 6 reflection prompts to build self-awareness around your trading decisions. Free for all users." },
       { q: "What is Learn to Fish?", a: "A free educational library of macro concepts — why high-impact news moves markets, the role of the US Dollar, risk-on vs risk-off, how interest rates affect currencies, and more. The goal is to help you understand why markets move." },
@@ -331,31 +333,101 @@ function LandingPage({ navigate }) {
         </div>
       </div>
 
-      {/* ── HOW IT WORKS ── */}
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 32px 80px", textAlign: "center" }}>
-        <div style={{ fontSize: 11, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 32 }}>HOW IT WORKS</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 0, position: "relative" }}>
+      {/* ── THE TRADER WORKFLOW ── */}
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 32px 80px" }}>
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <div style={{ fontSize: 11, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 12 }}>THE TRADER WORKFLOW</div>
+          <div style={{ fontSize: "clamp(20px, 3.5vw, 28px)", fontWeight: 900, color: "#fff", letterSpacing: -0.5, lineHeight: 1.2 }}>
+            Five steps. Every session.<br/>
+            <span style={{ color: "#00d4ff" }}>Brief First, Trade After.</span>
+          </div>
+        </div>
+
+        {/* Workflow steps */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {[
-            { step: "01", icon: "🎯", title: "Pick Your Instrument", desc: "Select any market — ES, Gold, EUR/USD, BTC, Oil. Whatever you're about to trade." },
-            { step: "02", icon: "📡", title: "Get Your Briefing", desc: "AI reads macro data, central bank stance, geopolitical risk, and live event risk in seconds." },
-            { step: "03", icon: "🧠", title: "Trade With Context", desc: "Know the macro forces behind price. Enter with conviction — or stay out when the odds aren't with you." },
+            {
+              step: "01",
+              phase: "PRE-TRADE",
+              phaseColor: "#00d4ff",
+              icon: "🎯",
+              title: "Pick your instrument",
+              desc: "Type any market — EUR/USD, ES, Gold, Oil, BTC. Whatever you're about to trade.",
+              detail: "Full Brief tab",
+              detailColor: "#00d4ff",
+            },
+            {
+              step: "02",
+              phase: "PRE-TRADE",
+              phaseColor: "#00d4ff",
+              icon: "📋",
+              title: "Read the Full Brief",
+              desc: "Get the macro theme, high-impact events, geopolitical risks and what to watch. Understand the forces driving price before you look at a chart.",
+              detail: "Intelligence tab",
+              detailColor: "#00d4ff",
+            },
+            {
+              step: "03",
+              phase: "PRE-TRADE",
+              phaseColor: "#00d4ff",
+              icon: "⚡",
+              title: "Run the Scalper Mode risk check",
+              desc: "Get CLEAR / CAUTION / STAND DOWN in seconds. If something is imminent on the calendar — you'll know before you enter.",
+              detail: "Scalper Mode",
+              detailColor: "#f59e0b",
+            },
+            {
+              step: "04",
+              phase: "DURING SESSION",
+              phaseColor: "#ffd700",
+              icon: "📡",
+              title: "Monitor Breaking Narratives",
+              desc: "Two uses: (1) Paste any headline or Discord narrative you don't understand — get an instant macro explanation for your instrument. (2) Live wire stories auto-interpreted every 15 minutes. If a narrative invalidates your setup — you see it here first.",
+              detail: "Breaking tab",
+              detailColor: "#ff4757",
+            },
+            {
+              step: "05",
+              phase: "DURING SESSION",
+              phaseColor: "#ffd700",
+              icon: "🔄",
+              title: "Rebrief when narratives shift",
+              desc: "Markets don't stand still. If a major event fires — Trump tweet, Fed comment, geopolitical escalation — run a fresh brief. Adapt your bias. Never trade on stale context.",
+              detail: "Brief First, Trade After.",
+              detailColor: "#00d4ff",
+            },
           ].map((s, i) => (
-            <div key={s.step} style={{ padding: "24px 20px", position: "relative" }}>
-              {i < 2 && <div style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", color: "#1a1a1a", fontSize: 20, display: "none" }}>→</div>}
-              <div style={{ fontSize: 10, color: "#00d4ff", fontWeight: 800, letterSpacing: 3, marginBottom: 12, opacity: 0.5 }}>{s.step}</div>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>{s.icon}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#e0e0e0", marginBottom: 8 }}>{s.title}</div>
-              <div style={{ fontSize: 12, color: "#444", lineHeight: 1.65 }}>{s.desc}</div>
+            <div key={s.step} style={{ display: "flex", gap: 0, position: "relative" }}>
+              {/* Connector line */}
+              {i < 4 && <div style={{ position: "absolute", left: 19, top: 52, width: 2, height: "calc(100% - 20px)", background: "linear-gradient(to bottom, rgba(0,212,255,.15), rgba(0,212,255,.05))", zIndex: 0 }} />}
+
+              {/* Step number circle */}
+              <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: "50%", background: "#0a0c0f", border: "1px solid rgba(0,212,255,.2)", display: "flex", alignItems: "center", justifyContent: "center", marginRight: 16, marginTop: 4, zIndex: 1, flexShrink: 0 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "#00d4ff", opacity: 0.7 }}>{s.step}</span>
+              </div>
+
+              {/* Content */}
+              <div style={{ flex: 1, paddingBottom: 28 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 16 }}>{s.icon}</span>
+                  <div style={{ fontSize: 9, color: s.phaseColor, fontWeight: 700, letterSpacing: 1.5, opacity: 0.6 }}>{s.phase}</div>
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", marginBottom: 6, letterSpacing: -0.3 }}>{s.title}</div>
+                <div style={{ fontSize: 13, color: "#444", lineHeight: 1.7, marginBottom: 8 }}>{s.desc}</div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 20, background: s.detailColor + "10", border: "1px solid " + s.detailColor + "30" }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: s.detailColor, letterSpacing: 0.5 }}>{s.detail}</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
-        <div style={{ marginTop: 32, padding: "20px 24px", background: "rgba(0,212,255,.03)", border: "1px solid rgba(0,212,255,.08)", borderRadius: 12, textAlign: "left" }}>
-          <div style={{ fontSize: 11, color: "#00d4ff", fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>WHY MACRO MATTERS</div>
-          <p style={{ fontSize: 13, color: "#555", lineHeight: 1.75, margin: 0 }}>
-            Most retail traders lose not because of bad entries — but because they trade <em style={{ color: "#888" }}>against</em> the macro tide.
-            A hawkish Fed, a risk-off geopolitical shock, or a surprise CPI print can invalidate any technical setup instantly.
-            Institutional desks have economists and macro analysts. Market Debriefs gives independent traders that same edge —
-            in seconds, before every trade.
+
+        {/* Bottom CTA */}
+        <div style={{ marginTop: 8, padding: "20px 24px", background: "rgba(0,212,255,.03)", border: "1px solid rgba(0,212,255,.08)", borderRadius: 12 }}>
+          <p style={{ fontSize: 13, color: "#555", lineHeight: 1.8, margin: 0, textAlign: "center" }}>
+            Most retail traders lose not because of bad entries — but because they trade <em style={{ color: "#888" }}>against</em> the macro tide.<br/>
+            A hawkish Fed comment, a geopolitical escalation, a surprise CPI print — any of these can invalidate a perfect technical setup instantly.<br/>
+            <span style={{ color: "#888" }}>MarketDebriefs makes sure you always know which way the macro tide is running.</span>
           </p>
         </div>
       </div>
@@ -779,6 +851,80 @@ function StockGate({ onUpgrade }) {
         UPGRADE TO PRO — €49/mo
       </button>
       <div style={{ marginTop: 10, fontSize: 11, color: "#2a2a2a" }}>Includes Scalper Mode & all instruments</div>
+    </div>
+  );
+}
+
+// ── BREAKING NARRATIVE GATE (Pro) ───────────────────────────────────────────
+function BreakingGate({ onUpgrade }) {
+  return (
+    <div style={{ padding: "40px 20px 20px" }}>
+
+      {/* Hero */}
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
+        <div style={{ fontSize: 17, fontWeight: 900, color: "#fff", marginBottom: 10, letterSpacing: -0.5 }}>Breaking Narratives</div>
+        <div style={{ fontSize: 13, color: "#555", lineHeight: 1.75, maxWidth: 340, margin: "0 auto" }}>
+          See a headline in Discord or on Twitter and have no idea how it affects your trade?
+          <span style={{ color: "#e0e0e0" }}> Paste it in. Get the full macro explanation instantly.</span>
+        </div>
+      </div>
+
+      {/* Two use cases */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24, maxWidth: 360, margin: "0 auto 24px" }}>
+        <div style={{ padding: "14px 16px", background: "rgba(255,71,87,.05)", border: "1px solid rgba(255,71,87,.15)", borderRadius: 10 }}>
+          <div style={{ fontSize: 10, color: "#ff4757", fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>📡 LIVE FEED</div>
+          <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6 }}>
+            Real-time macro wire stories interpreted every 15 minutes during market hours.
+            Know when a breaking event invalidates your setup <em style={{ color: "#888" }}>before</em> it hits the chart.
+          </div>
+        </div>
+        <div style={{ padding: "14px 16px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.12)", borderRadius: 10 }}>
+          <div style={{ fontSize: 10, color: "#00d4ff", fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>🧠 MACRO LEARNING TOOL</div>
+          <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6 }}>
+            Paste any headline, tweet or Discord narrative you don't understand.
+            Get a clear explanation of what it means macro-wise and how it affects your instrument — so you trade informed, not confused.
+          </div>
+        </div>
+      </div>
+
+      {/* Example scenarios */}
+      <div style={{ maxWidth: 360, margin: "0 auto 24px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 10, padding: "14px 16px" }}>
+        <div style={{ fontSize: 10, color: "#333", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>EXAMPLE USE CASES</div>
+        {[
+          { q: ""Fed signals higher for longer"", a: "What does this mean for EUR/USD and Gold?" },
+          { q: ""Trump announces new Iran sanctions"", a: "How does this hit Oil, Dollar and risk assets?" },
+          { q: ""OPEC+ cuts production by 1M barrels"", a: "Why does this move Brent and what's the macro chain?" },
+        ].map((ex, i) => (
+          <div key={i} style={{ marginBottom: i < 2 ? 10 : 0, paddingBottom: i < 2 ? 10 : 0, borderBottom: i < 2 ? "1px solid rgba(255,255,255,.04)" : "none" }}>
+            <div style={{ fontSize: 11, color: "#888", fontStyle: "italic", marginBottom: 3 }}>{ex.q}</div>
+            <div style={{ fontSize: 11, color: "#444" }}>→ {ex.a}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Feature list */}
+      <div style={{ maxWidth: 360, margin: "0 auto 24px" }}>
+        {[
+          "Live interpreted macro wire feed — every 15 minutes",
+          "Paste any headline for instant macro breakdown",
+          "Instrument-level impact — DEMAND / PRESSURE / VOLATILE",
+          "Conflicting forces flagged automatically",
+          "Watch For and Fades When guidance",
+          "Shareable narrative cards for X",
+        ].map(f => (
+          <div key={f} style={{ fontSize: 12, color: "#555", marginBottom: 7, display: "flex", gap: 8, alignItems: "flex-start" }}>
+            <span style={{ color: "#ff4757", flexShrink: 0 }}>✓</span>{f}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ textAlign: "center" }}>
+        <button onClick={onUpgrade} style={{ background: "linear-gradient(135deg,#ff4757,#cc0011)", color: "#fff", border: "none", padding: "13px 36px", borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}>
+          UPGRADE TO PRO — €49/mo
+        </button>
+        <div style={{ fontSize: 11, color: "#2a2a2a" }}>Includes Equity Debriefs, Scalper Mode & all instruments</div>
+      </div>
     </div>
   );
 }
@@ -1723,7 +1869,7 @@ function AppInner({ navigate }) {
   const TABS = [
     { id: "intel",     label: "Intelligence" },
     { id: "stocks",    label: "Stocks" },
-    { id: "breaking",  label: "⚡ Breaking" },
+    { id: "breaking",  label: "⚡ Breaking", pro: true },
     { id: "journal",   label: "Reflection" },
     { id: "learn",     label: "Learn" }
   ];
@@ -1762,7 +1908,7 @@ function AppInner({ navigate }) {
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
-              {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Scalper Mode", sub: isPro ? "Live risk check" : "Pro only 🔒" }].map(m => (
+              {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Scalper Mode", sub: isPro ? "Event awareness check" : "Pro only 🔒" }].map(m => (
                 <button key={m.id} onClick={() => switchMode(m.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: mode === m.id ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.02)", border: mode === m.id ? "1px solid rgba(0,212,255,.25)" : "1px solid rgba(255,255,255,.05)", color: mode === m.id ? "#00d4ff" : (m.id === "scalper" && !isPro ? "#2a2a2a" : "#444") }}>
                   <div style={{ fontSize: 11, fontWeight: 700 }}>{m.label}</div>
                   <div style={{ fontSize: 9, marginTop: 2, opacity: 0.7 }}>{m.sub}</div>
@@ -1782,6 +1928,7 @@ function AppInner({ navigate }) {
                   {t.label}
                   {t.id === "stocks" && !isPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}
                   {t.id === "stocks" && isPro && <span style={{ marginLeft: 4, fontSize: 8, color: "#f59e0b", opacity: 0.6 }}>●</span>}
+                  {t.id === "breaking" && !isPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}
                 </button>
               ))}
             </div>
@@ -1882,6 +2029,8 @@ function AppInner({ navigate }) {
           {tab === "journal" && <Journal />}
           {tab === "breaking" && (
             <div style={{ paddingBottom: 40 }}>
+              {!isPro && <BreakingGate onUpgrade={() => triggerUpgrade("breaking")} />}
+              {isPro && <>
 
               {/* ── LIVE FEED ── */}
               <div style={{ marginBottom: 24 }}>
@@ -1987,7 +2136,8 @@ function AppInner({ navigate }) {
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 11, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 6 }}>⚡ BREAKING NARRATIVE</div>
                 <div style={{ fontSize: 13, color: "#444", lineHeight: 1.6 }}>
-                  Paste any headline, tweet or breaking news — get an instant macro interpretation across all affected instruments.
+                  See a headline you don't understand? Paste it in — get a clear macro explanation and how it affects your instruments.
+                  Also monitors the live wire for market-moving events every 15 minutes.
                 </div>
               </div>
 
@@ -1996,7 +2146,7 @@ function AppInner({ navigate }) {
                 <textarea
                   value={breakingHeadline}
                   onChange={e => setBreakingHeadline(e.target.value)}
-                  placeholder={"e.g. Trump announces 25% tariffs on all Chinese goods\n\nor: Fed Chair Powell signals rate cuts delayed until Q4\n\nor: Iran nuclear deal collapsed — US threatens military action"}
+                  placeholder={"Paste any headline, tweet or Discord narrative you don't understand...\n\ne.g. \"Fed signals higher for longer\" — what does this mean for my EUR/USD trade?\n\nor: \"OPEC+ cuts 1M barrels\" — how does this hit Oil and the Dollar?"}
                   rows={4}
                   style={{ width: "100%", background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.15)", borderRadius: 10, color: "#e0e0e0", fontSize: 13, padding: "12px 14px", outline: "none", fontFamily: "inherit", lineHeight: 1.6, resize: "none" }}
                 />
@@ -2108,6 +2258,7 @@ function AppInner({ navigate }) {
                   </div>
                 </div>
               )}
+              </>}
             </div>
           )}
           {showShareCard && equityShareData && tab === "stocks" && (
