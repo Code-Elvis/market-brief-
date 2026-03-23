@@ -97,12 +97,10 @@ export default async function handler(req, res) {
     // This ensures Marketaux returns genuinely market-moving news
     const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000)
       .toISOString().replace(/\.\d{3}Z$/, "");
-    // Two keyword searches targeting macro events only
-    // No symbols filter — that pulls equity-specific stories (earnings, buybacks etc)
-    const search1 = "federal reserve fed powell fomc interest rate inflation tariff";
-    const search2 = "iran oil opec gold dollar geopolitical war sanctions trump crude";
-    const url1 = `https://api.marketaux.com/v1/news/all?language=en&search=${encodeURIComponent(search1)}&must_have_entities=true&limit=10&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
-    const url2 = `https://api.marketaux.com/v1/news/all?language=en&search=${encodeURIComponent(search2)}&must_have_entities=true&limit=10&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
+    // Simple broad fetch — let Marketaux return general financial news
+    // then filter server-side for macro relevance
+    const url1 = `https://api.marketaux.com/v1/news/all?language=en&limit=15&published_after=${sixHoursAgo}&api_token=${MX_KEY}`;
+    const url2 = `https://api.marketaux.com/v1/news/all?language=en&limit=15&published_after=${sixHoursAgo}&sort_by=relevance_score&api_token=${MX_KEY}`;
     // Run both fetches in parallel — costs 2 Marketaux requests per refresh
     const [res1, res2] = await Promise.allSettled([fetch(url1), fetch(url2)]);
 
@@ -123,15 +121,24 @@ export default async function handler(req, res) {
       seen.add(a.uuid); return true;
     });
 
+    console.log(`Marketaux returned ${articles.length} articles`);
+    if (articles.length > 0) {
+      console.log("Sample headlines:", articles.slice(0,3).map(a => a.title).join(" | "));
+    }
+
     if (!articles.length) throw new Error("No articles from Marketaux");
 
-    // Marketaux topics filter already ensures relevance
-    // Apply our keyword filter as a secondary pass, fall back to all if none match
+    // Filter to macro-relevant headlines first
     let filtered = articles.filter(a => a.title && isHighImpact(a.title)).slice(0, 6);
+
+    // Fallback — if nothing matches our strict filter, take top financial stories anyway
+    // Claude will still interpret them in macro context
     if (!filtered.length) {
-      // Fallback — take top articles from Marketaux even without keyword match
-      filtered = articles.filter(a => a.title).slice(0, 4);
+      filtered = articles
+        .filter(a => a.title && !EQUITY_NOISE.some(n => a.title.toLowerCase().includes(n)))
+        .slice(0, 4);
     }
+
     if (!filtered.length) {
       cache = { narratives: [], fetched_at: Date.now(), ttl_ms: cache.ttl_ms };
       return res.status(200).json({ narratives: [], fetched_at: new Date().toISOString() });
