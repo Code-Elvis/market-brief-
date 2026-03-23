@@ -599,6 +599,20 @@ POST-SESSION schema: {"instrument":"string","session_summary":"string","primary_
   return callClaude(sys, msg);
 }
 
+async function getBreakingNarrative(headline) {
+  const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const sys = `You are a professional macro market interpreter. A breaking news headline or event has just hit. Your job is to instantly explain what it means for markets — no fluff, no caveats, just clear macro interpretation. Respond ONLY with valid JSON. No markdown, no backticks. Start with { and end with }.
+RULES:
+1. NEVER mention specific price levels, targets or stops.
+2. Be direct and specific — name which instruments are affected and how.
+3. narrative_summary must be 1-2 punchy sentences max — the interpretation a trader needs in 10 seconds.
+4. Each instrument impact must be ONE sentence: what happens and why.
+5. urgency: CRITICAL (market moving now), HIGH (significant impact expected), MEDIUM (watch closely).
+BREAKING NARRATIVE schema: {"headline":"string","narrative_summary":"string","urgency":"CRITICAL|HIGH|MEDIUM","instruments":[{"name":"string","direction":"BULLISH|BEARISH|NEUTRAL","impact":"string"}],"watch_for":"string","fades_when":"string"}`;
+  const msg = `Current time: ${now}. Breaking headline: "${headline}". Interpret this instantly for macro traders. Which instruments are affected, in which direction, and why? What should traders watch for next? When does this narrative fade?`;
+  return callClaude(sys, msg);
+}
+
 const DC = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
 const DB = { BULLISH: "rgba(0,212,170,.08)", BEARISH: "rgba(255,71,87,.08)", NEUTRAL: "rgba(255,215,0,.06)" };
 
@@ -1025,6 +1039,134 @@ function DynamicCalendar({ size = 18 }) {
       <rect x="5" y="1.5" width="1.2" height="3.5" rx="0.6" fill="#555"/>
       <rect x="11.8" y="1.5" width="1.2" height="3.5" rx="0.6" fill="#555"/>
     </svg>
+  );
+}
+
+// ── BREAKING NARRATIVE SHARE CARD ───────────────────────────────────────────
+function BreakingShareCard({ data, onClose }) {
+  const [sharing, setSharing] = useState(false);
+  const [shared, setShared]   = useState(false);
+
+  const date  = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+  const urgencyColor = { CRITICAL: "#ff4757", HIGH: "#ffa500", MEDIUM: "#ffd700" }[data.urgency] || "#ffd700";
+  const urgencyBg    = { CRITICAL: "rgba(255,71,87,.1)", HIGH: "rgba(255,165,0,.1)", MEDIUM: "rgba(255,215,0,.08)" }[data.urgency] || "rgba(255,215,0,.08)";
+  const truncate = (s, n) => s && s.length > n ? s.slice(0, n-1) + "…" : (s || "");
+  const firstSentence = (s) => { if (!s) return ""; const m = s.match(/^.*?[.!?](?:\s|$)/); return m ? m[0].trim() : s.length > 100 ? s.slice(0,99)+"." : s; };
+
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      if (!window.html2canvas) {
+        await new Promise((res, rej) => {
+          const sc = document.createElement("script");
+          sc.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+          sc.onload = res; sc.onerror = rej;
+          document.head.appendChild(sc);
+        });
+      }
+      const el     = document.getElementById("breaking-card-el");
+      const canvas = await window.html2canvas(el, { backgroundColor: "#0a0c0f", scale: 2, useCORS: true, logging: false });
+      const blob   = await new Promise(r => canvas.toBlob(r, "image/png"));
+      const file   = new File([blob], "marketdebriefs-breaking.png", { type: "image/png" });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], text: "⚡ Breaking Narrative
+
+" + data.headline + "
+
+Brief First, Trade After.
+marketdebriefs.com" });
+        setShared(true); setTimeout(() => setShared(false), 3000);
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = "marketdebriefs-breaking.png"; a.click();
+        URL.revokeObjectURL(url); setShared(true); setTimeout(() => setShared(false), 3000);
+      }
+    } catch(e) { console.error(e); }
+    setSharing(false);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.92)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, width: "100%", maxWidth: 400 }}>
+
+        {/* CARD */}
+        <div id="breaking-card-el" style={{ background: "#0a0c0f", borderRadius: 20, padding: 22, width: "100%", position: "relative", overflow: "hidden", boxShadow: "0 12px 60px rgba(0,0,0,.6)" }}>
+          {/* Grid */}
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,71,87,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,71,87,.025) 1px,transparent 1px)", backgroundSize: "36px 36px" }} />
+          {/* Glow */}
+          <div style={{ position: "absolute", top: -60, left: -60, width: 220, height: 220, pointerEvents: "none", background: "radial-gradient(circle,rgba(255,71,87,.08),transparent 70%)" }} />
+
+          <div style={{ position: "relative", zIndex: 1 }}>
+            {/* Logo + badge */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: "#fff" }}>MARKET<span style={{ color: "#ff4757" }}>DEBRIEFS</span></div>
+              <div style={{ fontSize: 9, color: "#ff4757", fontFamily: "monospace", letterSpacing: 1.5, opacity: 0.7 }}>BREAKING NARRATIVE</div>
+            </div>
+
+            {/* Urgency + date */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 20, background: urgencyBg, border: "1px solid " + urgencyColor + "44" }}>
+                <span style={{ fontSize: 10 }}>{data.urgency === "CRITICAL" ? "🔴" : data.urgency === "HIGH" ? "🟠" : "🟡"}</span>
+                <span style={{ fontSize: 10, fontWeight: 800, color: urgencyColor, letterSpacing: 1 }}>{data.urgency}</span>
+              </div>
+              <span style={{ fontSize: 9, color: "#333", fontFamily: "monospace" }}>{date}</span>
+            </div>
+
+            {/* Headline */}
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#e0e0e0", lineHeight: 1.45, marginBottom: 10, fontFamily: "Georgia, serif" }}>
+              "{truncate(data.headline, 120)}"
+            </div>
+
+            {/* Narrative summary */}
+            <div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6, opacity: 0.7 }}>MACRO INTERPRETATION</div>
+            <div style={{ fontSize: 11, color: "#888", lineHeight: 1.6, marginBottom: 14, fontStyle: "italic" }}>
+              {firstSentence(data.narrative_summary)}
+            </div>
+
+            {/* Top 3 instrument impacts */}
+            {data.instruments && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+                {data.instruments.slice(0, 3).map((inst, i) => {
+                  const c = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" }[inst.direction] || "#666";
+                  return (
+                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 9px", background: c + "08", border: "1px solid " + c + "22", borderRadius: 6 }}>
+                      <div style={{ flexShrink: 0, minWidth: 40 }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
+                        <div style={{ fontSize: 8, color: c, fontWeight: 700 }}>{inst.direction}</div>
+                      </div>
+                      <div style={{ fontSize: 9, color: "#555", lineHeight: 1.4 }}>{truncate(inst.impact, 70)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Watch for */}
+            {data.watch_for && (
+              <div style={{ padding: "6px 9px", borderRadius: 6, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)", marginBottom: 14 }}>
+                <div style={{ fontSize: 7, color: "#00d4ff", letterSpacing: 1, fontWeight: 700, marginBottom: 2, opacity: 0.7 }}>WATCH FOR</div>
+                <div style={{ fontSize: 9, color: "#555", lineHeight: 1.4 }}>{firstSentence(data.watch_for)}</div>
+              </div>
+            )}
+
+            {/* Footer */}
+            <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 10 }} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 9, color: "#ff4757", fontFamily: "monospace", opacity: 0.7 }}>Brief First, Trade After · marketdebriefs.com</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: "flex", gap: 10, width: "100%" }}>
+          <button onClick={handleShare} disabled={sharing} style={{ flex: 1, padding: "12px", borderRadius: 8, border: "none", cursor: sharing ? "wait" : "pointer", background: sharing ? "rgba(255,71,87,.05)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: sharing ? "#333" : "#fff", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>
+            {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share Card"}
+          </button>
+          <button onClick={onClose} style={{ padding: "12px 20px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#555", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Done</button>
+        </div>
+        <div style={{ fontSize: 11, color: "#2a2a2a", textAlign: "center" }}>Mobile — shares to any app · Desktop — downloads as PNG</div>
+      </div>
+    </div>
   );
 }
 
@@ -1514,6 +1656,10 @@ function AppInner({ navigate }) {
   const [postSessionData, setPostSessionData] = useState(null);
   const [postSessionLoading, setPostSessionLoading] = useState(false);
   const [postSessionError, setPostSessionError] = useState(null);
+  const [breakingHeadline, setBreakingHeadline] = useState("");
+  const [breakingData, setBreakingData] = useState(null);
+  const [breakingLoading, setBreakingLoading] = useState(false);
+  const [breakingError, setBreakingError] = useState(null);
   const [scalperStockLoading, setScalperStockLoading] = useState(false);
   const [scalperStockError, setScalperStockError] = useState(null);
 
@@ -1556,10 +1702,11 @@ function AppInner({ navigate }) {
 
   // Tabs — Options Flow removed until API is ready
   const TABS = [
-    { id: "intel", label: "Intelligence" },
-    { id: "stocks", label: "Stocks" },
-    { id: "journal", label: "Reflection" },
-    { id: "learn", label: "Learn" }
+    { id: "intel",     label: "Intelligence" },
+    { id: "stocks",    label: "Stocks" },
+    { id: "breaking",  label: "⚡ Breaking" },
+    { id: "journal",   label: "Reflection" },
+    { id: "learn",     label: "Learn" }
   ];
 
   return (
@@ -1682,7 +1829,7 @@ function AppInner({ navigate }) {
               </div>
             )}
             {postSessionError && <div style={{ marginTop: 8, textAlign: "center", fontSize: 11, color: "#ff4757" }}>{postSessionError}</div>}
-            {showShareCard && data && inst && (
+            {showShareCard && tab !== "breaking" && data && inst && (
               <ShareCard
                 inst={inst}
                 data={postSessionData || data}
@@ -1690,6 +1837,12 @@ function AppInner({ navigate }) {
                 cardType={mode === "scalper" ? "scalper" : "macro"}
                 isPostSessionBrief={!!postSessionData}
                 onClose={() => { setShowShareCard(false); }}
+              />
+            )}
+            {showShareCard && tab === "breaking" && breakingData && (
+              <BreakingShareCard
+                data={breakingData}
+                onClose={() => setShowShareCard(false)}
               />
             )}
           </div>}
@@ -1713,6 +1866,130 @@ function AppInner({ navigate }) {
                 : <StockGate onUpgrade={() => triggerUpgrade("stocks")} />
           )}
           {tab === "journal" && <Journal />}
+          {tab === "breaking" && (
+            <div style={{ paddingBottom: 40 }}>
+              {/* Header */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 11, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 6 }}>⚡ BREAKING NARRATIVE</div>
+                <div style={{ fontSize: 13, color: "#444", lineHeight: 1.6 }}>
+                  Paste any headline, tweet or breaking news — get an instant macro interpretation across all affected instruments.
+                </div>
+              </div>
+
+              {/* Input */}
+              <div style={{ marginBottom: 14 }}>
+                <textarea
+                  value={breakingHeadline}
+                  onChange={e => setBreakingHeadline(e.target.value)}
+                  placeholder={"e.g. Trump announces 25% tariffs on all Chinese goods effective immediately
+
+or: Fed Chair Powell signals rate cuts delayed until Q4
+
+or: Iran nuclear deal collapsed — US threatens military action"}
+                  rows={4}
+                  style={{ width: "100%", background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.15)", borderRadius: 10, color: "#e0e0e0", fontSize: 13, padding: "12px 14px", outline: "none", fontFamily: "inherit", lineHeight: 1.6, resize: "none" }}
+                />
+              </div>
+
+              {/* Interpret button */}
+              <button
+                onClick={async () => {
+                  if (!breakingHeadline.trim()) return;
+                  setBreakingLoading(true);
+                  setBreakingError(null);
+                  setBreakingData(null);
+                  try {
+                    const result = await getBreakingNarrative(breakingHeadline.trim());
+                    setBreakingData(result);
+                  } catch(e) {
+                    setBreakingError("Interpretation failed. Try again.");
+                  }
+                  setBreakingLoading(false);
+                }}
+                disabled={breakingLoading || !breakingHeadline.trim()}
+                style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: breakingLoading || !breakingHeadline.trim() ? "rgba(255,71,87,.08)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: breakingLoading || !breakingHeadline.trim() ? "#333" : "#fff", fontSize: 14, fontWeight: 800, cursor: breakingLoading || !breakingHeadline.trim() ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: 0.5, marginBottom: 20 }}>
+                {breakingLoading ? "Interpreting…" : "⚡ INTERPRET NOW"}
+              </button>
+
+              {breakingError && <div style={{ color: "#ff4757", fontSize: 13, marginBottom: 16 }}>{breakingError}</div>}
+
+              {/* Results */}
+              {breakingData && (
+                <div>
+                  {/* Urgency badge + summary */}
+                  <div style={{ background: "rgba(255,71,87,.06)", border: "1px solid rgba(255,71,87,.2)", borderRadius: 12, padding: "16px 18px", marginBottom: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, color: breakingData.urgency === "CRITICAL" ? "#ff4757" : breakingData.urgency === "HIGH" ? "#ffa500" : "#ffd700" }}>
+                        {breakingData.urgency === "CRITICAL" ? "🔴" : breakingData.urgency === "HIGH" ? "🟠" : "🟡"} {breakingData.urgency}
+                      </div>
+                      <div style={{ fontSize: 9, color: "#333", fontFamily: "monospace" }}>BREAKING NARRATIVE</div>
+                    </div>
+                    <div style={{ fontSize: 13, color: "#e0e0e0", lineHeight: 1.65, fontStyle: "italic" }}>
+                      "{breakingData.narrative_summary}"
+                    </div>
+                  </div>
+
+                  {/* Instrument impacts */}
+                  {breakingData.instruments && breakingData.instruments.length > 0 && (
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ fontSize: 9, color: "#444", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>INSTRUMENT IMPACT</div>
+                      {breakingData.instruments.map((inst, i) => {
+                        const c = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" }[inst.direction] || "#666";
+                        return (
+                          <div key={i} style={{ display: "flex", gap: 12, padding: "11px 14px", background: c + "08", border: "1px solid " + c + "22", borderRadius: 8, marginBottom: 8, alignItems: "flex-start" }}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, flexShrink: 0, minWidth: 54 }}>
+                              <div style={{ fontSize: 11, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
+                              <div style={{ fontSize: 9, fontWeight: 700, color: c, letterSpacing: 1 }}>{inst.direction}</div>
+                            </div>
+                            <div style={{ fontSize: 12, color: "#666", lineHeight: 1.5 }}>{inst.impact}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Watch for + fades when */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+                    {breakingData.watch_for && (
+                      <div style={{ padding: "12px 14px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)", borderRadius: 8 }}>
+                        <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>WATCH FOR</div>
+                        <div style={{ fontSize: 11, color: "#666", lineHeight: 1.5 }}>{breakingData.watch_for}</div>
+                      </div>
+                    )}
+                    {breakingData.fades_when && (
+                      <div style={{ padding: "12px 14px", background: "rgba(255,215,0,.03)", border: "1px solid rgba(255,215,0,.1)", borderRadius: 8 }}>
+                        <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>FADES WHEN</div>
+                        <div style={{ fontSize: 11, color: "#666", lineHeight: 1.5 }}>{breakingData.fades_when}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Share card button */}
+                  <button
+                    onClick={() => {
+                      setPostSessionData(null);
+                      setShowShareCard(true);
+                    }}
+                    style={{ width: "100%", padding: "11px", borderRadius: 8, border: "1px solid rgba(255,71,87,.25)", background: "rgba(255,71,87,.06)", color: "#ff4757", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                    ↗ Share Breaking Narrative Card
+                  </button>
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!breakingData && !breakingLoading && (
+                <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
+                  <div style={{ fontSize: 13, color: "#2a2a2a", lineHeight: 1.7 }}>
+                    Paste any market-moving headline<br/>and get an instant macro read
+                  </div>
+                  <div style={{ marginTop: 16, fontSize: 11, color: "#1a1a1a" }}>
+                    Trump tweets · Fed comments · Geopolitical events<br/>Economic surprises · Central bank decisions
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           {showShareCard && equityShareData && tab === "stocks" && (
             <ShareCard
               inst={{ label: equityShareData.query, color: "#f59e0b", flag: "STOCK" }}
