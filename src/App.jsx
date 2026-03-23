@@ -82,7 +82,7 @@ function HelpPage({ navigate }) {
       { q: "Do you offer promo or discount codes?", a: "Promo codes are occasionally offered through our affiliate partners and creator collaborations. If you have a code, enter it at the Pro checkout screen." },
     ]},
     { id: "features", icon: "⚡", title: "Features", color: "rgba(0,212,170,.1)", items: [
-      { q: "What is Scalper Mode?", a: "Scalper Mode is a Pro feature for intraday traders who need a fast macro risk check before entering. You get a GREEN / YELLOW / RED signal in seconds. GREEN — macro conditions are clear. YELLOW — proceed with caution, something is close on the calendar. RED — hold off, a major event is imminent. It also shows breaking headlines and upcoming events." },
+      { q: "What is Scalper Mode?", a: "Scalper Mode is a Pro feature for intraday traders who need a fast macro risk awareness check before entering. You get CLEAR / CAUTION / STAND DOWN in seconds. CLEAR — macro conditions are calm, no imminent events. CAUTION — something is close on the calendar, proceed carefully. STAND DOWN — a major event is imminent or breaking news is active, not the time to scalp. This is a risk awareness tool, not a directional signal." },
       { q: "How do Equity (Stocks) Debriefs work?", a: "Go to the Stocks tab, type any stock name or ticker (Apple, NVDA, TSLA, MSFT, etc.) and get an instant debrief covering earnings context, macro tailwinds and headwinds, upcoming catalyst events, sector rotation signals, and institutional flow direction. Pro feature." },
       { q: "What is the Reflection tab?", a: "A daily trading journal built into the app. At the end of each trading day it presents 6 reflection prompts to build self-awareness around your trading decisions. Free for all users." },
       { q: "What is Learn to Fish?", a: "A free educational library of macro concepts — why high-impact news moves markets, the role of the US Dollar, risk-on vs risk-off, how interest rates affect currencies, and more. The goal is to help you understand why markets move." },
@@ -539,13 +539,13 @@ CRITICAL RULES — NEVER BREAK THESE:
 2. EVENTS must be STRICTLY UPCOMING — scheduled in the future from the current time. NEVER include events that have already occurred or already been released today. If an event has already happened, exclude it entirely.
 3. For events, only include the 2-3 most market-moving SCHEDULED releases coming up in the next 48 hours that directly affect this instrument. Include the exact scheduled time.
 4. Your job is macro context and forward-looking event risk — not technical analysis, not past events.`;
-  if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}';
-  return base + ' FULL BRIEF schema: {"instrument":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}';
+  if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}. risk_level means: GREEN=macro conditions calm and no imminent events (CLEAR to trade), YELLOW=something is close on the calendar or in the news (proceed with CAUTION), RED=major event imminent or breaking news active (STAND DOWN — not the time to scalp). This is a RISK AWARENESS check, NOT a directional signal.';
+  return base + ' FULL BRIEF schema: {"instrument":"string","macro_theme":"string","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}. macro_theme must be a SHORT neutral phrase describing the dominant macro forces at play — e.g. "Safe haven demand vs dollar strength" or "Fed hawkishness weighing on rate-sensitive assets". NO directional bias words like bullish/bearish in macro_theme.';
 }
 
 function userPrompt(inst, mode) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  if (mode === "scalper") return "Current time: " + now + ". I am about to trade " + inst.label + ". What are the live macro risks RIGHT NOW and what HIGH-IMPACT events are COMING UP — strictly after this current time? Give me GREEN YELLOW or RED. No price levels. Only forward-looking risk.";
+  if (mode === "scalper") return "Current time: " + now + ". I am about to trade " + inst.label + ". What are the live macro risks RIGHT NOW? Is this a CLEAR, CAUTION or STAND DOWN moment? GREEN=clear macro conditions, YELLOW=caution something is close, RED=stand down major event imminent. No price levels. No directional signals. Risk awareness only.";
   return "Current time: " + now + ". Full macro briefing for " + inst.label + ". List only the most important UPCOMING scheduled events after this exact time that will move this instrument in the next 48 hours. Include their scheduled time. Do NOT include any events that have already happened today. Focus on CURRENT central bank stance and live geopolitical risks. No price levels.";
 }
 
@@ -818,7 +818,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
           {isScalper ? "EQUITY SCALPER — PRO" : "EQUITY DEBRIEF — PRO"}
         </div>
         <div style={{ fontSize: 10, color: "#333", marginLeft: "auto" }}>
-          {isScalper ? "GREEN / YELLOW / RED for stocks" : "Full macro & fundamental analysis"}
+          {isScalper ? "CLEAR / CAUTION / STAND DOWN" : "Full macro & fundamental analysis"}
         </div>
       </div>
 
@@ -895,9 +895,9 @@ function EquityView({ inst, data }) {
             <div style={{ fontSize: 21, fontWeight: 800, color: "#f59e0b" }}>{data.ticker || inst.label.toUpperCase()}</div>
             <div style={{ fontSize: 11, color: "#555", marginTop: 3, letterSpacing: 1 }}>{data.sector || "EQUITY"}</div>
           </div>
-          <div style={{ fontSize: 11, fontWeight: 800, padding: "5px 12px", borderRadius: 6, color: cc, border: "1px solid " + cc + "55", background: cc + "11", textTransform: "uppercase" }}>{data.sentiment}</div>
         </div>
-        <div style={{ fontSize: 14, color: "#c8d6e5", lineHeight: 1.6, fontStyle: "italic" }}>{data.headline_summary}</div>
+        <div style={{ fontSize: 9, color: "#444", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>MACRO THEME</div>
+        <div style={{ fontSize: 14, color: "#c8d6e5", lineHeight: 1.6 }}>{data.macro_theme || data.headline_summary}</div>
       </div>
       {data.earnings_context && (
         <div style={{ background: "rgba(245,158,11,.07)", border: "1px solid rgba(245,158,11,.2)", borderRadius: 8, padding: 14, marginBottom: 13 }}>
@@ -952,21 +952,26 @@ function EquityScalperView({ ticker, data, loading, error }) {
   if (error) return <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>;
   if (!data) return null;
 
-  const RC = { GREEN: "#00d4aa", YELLOW: "#ffd700", RED: "#ff4757" };
-  const rc = RC[data.risk_level] || "#888";
-  const rl = data.risk_level === "GREEN" ? "ALL CLEAR" : data.risk_level === "YELLOW" ? "CAUTION" : "HOLD OFF";
+  const RL = {
+    GREEN:  { label: "CLEAR",      sub: "Macro conditions calm",         color: "#00d4ff", bg: "rgba(0,212,255,.08)",  border: "rgba(0,212,255,.2)"  },
+    YELLOW: { label: "CAUTION",    sub: "Something is close — be aware", color: "#f59e0b", bg: "rgba(245,158,11,.08)", border: "rgba(245,158,11,.2)" },
+    RED:    { label: "STAND DOWN", sub: "Major event imminent — wait",   color: "#ff4757", bg: "rgba(255,71,87,.08)",  border: "rgba(255,71,87,.2)"  },
+  };
+  const rl = RL[data.risk_level] || RL.YELLOW;
   const EC = { SAFE: { color: "#00d4aa", label: "EARNINGS SAFE", bg: "rgba(0,212,170,.08)" }, NEAR: { color: "#ffd700", label: "EARNINGS NEAR", bg: "rgba(255,215,0,.06)" }, IMMINENT: { color: "#ff4757", label: "EARNINGS IMMINENT", bg: "rgba(255,71,87,.08)" } };
   const ep = EC[data.earnings_proximity] || EC.SAFE;
 
   return (
     <div>
       {/* Risk signal */}
-      <div style={{ background: rc + "12", border: "2px solid " + rc + "44", borderRadius: 12, padding: "22px 20px", marginBottom: 14, textAlign: "center" }}>
-        <div style={{ fontSize: 10, color: "#555", letterSpacing: 2, fontWeight: 700, marginBottom: 7 }}>
-          {(data.ticker || ticker).toUpperCase()} — TRADE NOW?
+      <div style={{ background: rl.bg, border: "1px solid " + rl.border, borderRadius: 12, padding: "22px 20px", marginBottom: 14, textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: "#444", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>
+          {(data.ticker || ticker).toUpperCase()} — MACRO RISK CHECK
         </div>
-        <div style={{ fontSize: 30, fontWeight: 800, color: rc, marginBottom: 9 }}>{rl}</div>
-        <div style={{ fontSize: 13, color: "#aaa", lineHeight: 1.5 }}>{data.risk_reason}</div>
+        <div style={{ fontSize: 32, fontWeight: 900, color: rl.color, marginBottom: 4, letterSpacing: -1 }}>{rl.label}</div>
+        <div style={{ fontSize: 10, color: rl.color, opacity: 0.6, fontFamily: "monospace", letterSpacing: 1, marginBottom: 10 }}>{rl.sub}</div>
+        <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 10 }} />
+        <div style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>{data.risk_reason}</div>
       </div>
 
       {/* Earnings proximity badge */}
@@ -1215,13 +1220,13 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
   const bias = rawBias ? rawBias.toUpperCase() : "NEUTRAL";
 
   const biasConfig = {
-    BULLISH: { emoji: "🟢", color: "#00d4aa", bg: "rgba(0,212,170,.1)",  border: "rgba(0,212,170,.3)"  },
-    BEARISH: { emoji: "🔴", color: "#ff4757", bg: "rgba(255,71,87,.1)",  border: "rgba(255,71,87,.3)"  },
-    NEUTRAL: { emoji: "🟡", color: "#ffd700", bg: "rgba(255,215,0,.08)", border: "rgba(255,215,0,.25)" },
-    MIXED:   { emoji: "🟡", color: "#c084fc", bg: "rgba(192,132,252,.1)",border: "rgba(192,132,252,.3)"},
-    GREEN:   { emoji: "🟢", color: "#00d4aa", bg: "rgba(0,212,170,.1)",  border: "rgba(0,212,170,.3)"  },
-    YELLOW:  { emoji: "🟡", color: "#ffd700", bg: "rgba(255,215,0,.08)", border: "rgba(255,215,0,.25)" },
-    RED:     { emoji: "🔴", color: "#ff4757", bg: "rgba(255,71,87,.1)",  border: "rgba(255,71,87,.3)"  },
+    BULLISH: { emoji: "", color: "#00d4aa", bg: "rgba(0,212,170,.1)",  border: "rgba(0,212,170,.3)"  },
+    BEARISH: { emoji: "", color: "#ff4757", bg: "rgba(255,71,87,.1)",  border: "rgba(255,71,87,.3)"  },
+    NEUTRAL: { emoji: "", color: "#ffd700", bg: "rgba(255,215,0,.08)", border: "rgba(255,215,0,.25)" },
+    MIXED:   { emoji: "", color: "#c084fc", bg: "rgba(192,132,252,.1)",border: "rgba(192,132,252,.3)"},
+    GREEN:   { emoji: "", color: "#00d4ff", bg: "rgba(0,212,255,.1)",  border: "rgba(0,212,255,.3)"  },
+    YELLOW:  { emoji: "", color: "#f59e0b", bg: "rgba(245,158,11,.1)", border: "rgba(245,158,11,.3)" },
+    RED:     { emoji: "", color: "#ff4757", bg: "rgba(255,71,87,.1)",  border: "rgba(255,71,87,.3)"  },
   };
   const bc = biasConfig[bias] || biasConfig.NEUTRAL;
 
@@ -1360,13 +1365,20 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
             )}
             <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: (isPostSession || isPostSessionBrief) ? 8 : 14 }}>{date}</div>
 
-            {/* Badge + move indicator for post-session */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: isScalper || isPostSession ? 8 : 12 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20,
-                background: bc.bg, border: "1px solid " + bc.border }}>
-                <span style={{ fontSize: 11 }}>{bc.emoji}</span>
-                <span style={{ fontSize: 11, fontWeight: 800, color: bc.color, letterSpacing: 1.5 }}>{bias}</span>
-              </div>
+            {/* Theme pill — scalper keeps GREEN/YELLOW/RED, others show macro theme */}
+            <div style={{ marginBottom: isScalper || isPostSession ? 8 : 12 }}>
+              {isScalper ? (
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 16px", borderRadius: 20, background: bc.bg, border: "1px solid " + bc.border }}>
+                  <span style={{ fontSize: 11, fontWeight: 900, color: bc.color, letterSpacing: 1 }}>
+                    {bias === "GREEN" ? "CLEAR" : bias === "YELLOW" ? "CAUTION" : bias === "RED" ? "STAND DOWN" : bias}
+                  </span>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontSize: 8, color: "#444", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>MACRO THEME</div>
+                  <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4 }}>{truncate(data.macro_theme || data.headline_summary, 90)}</div>
+                </div>
+              )}
             </div>
 
             {/* Price move — post-session only */}
@@ -1465,12 +1477,12 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
                   {lineIcons[2] === "CAL" ? <DynamicCalendar size={15} /> : <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[2]}</span>}
                   <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line3}</span>
                 </div>}
-                <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{bc.emoji}</span>
-                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>
-                    <strong style={{ color: "#e0e0e0", fontWeight: 700 }}>{bias}</strong>{" — "}{biasReason}
-                  </span>
-                </div>
+                {data.macro_context && (
+                  <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>🔍</span>
+                    <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{truncate(data.macro_context, 80)}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1536,11 +1548,11 @@ function FullView({ inst, data }) {
   return (
     <div>
       <div style={{ background: "linear-gradient(135deg," + inst.color + "15,transparent)", border: "1px solid " + inst.color + "33", borderRadius: 12, padding: 20, marginBottom: 18 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <div style={{ fontSize: 21, fontWeight: 800, color: inst.color }}>{inst.flag} {inst.label}</div>
-          <div style={{ fontSize: 11, fontWeight: 800, padding: "5px 12px", borderRadius: 6, color: cc, border: "1px solid " + cc + "55", background: cc + "11", textTransform: "uppercase" }}>{data.sentiment}</div>
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 21, fontWeight: 800, color: inst.color, marginBottom: 8 }}>{inst.flag} {inst.label}</div>
+          <div style={{ fontSize: 9, color: "#444", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>MACRO THEME</div>
+          <div style={{ fontSize: 14, color: "#c8d6e5", lineHeight: 1.6 }}>{data.macro_theme || data.headline_summary}</div>
         </div>
-        <div style={{ fontSize: 14, color: "#c8d6e5", lineHeight: 1.6, fontStyle: "italic" }}>{data.headline_summary}</div>
       </div>
       {data.geopolitical_risks && <div style={{ background: "rgba(255,140,0,.08)", border: "1px solid rgba(255,140,0,.25)", borderRadius: 8, padding: 14, marginBottom: 15 }}><div style={{ fontSize: 9, color: "#ff8c00", fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>GEOPOLITICAL RISK</div><div style={{ fontSize: 13, color: "#e0c88a", lineHeight: 1.6 }}>{data.geopolitical_risks}</div></div>}
       <div style={{ fontSize: 9, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 11 }}>HIGH-IMPACT EVENTS</div>
@@ -1552,15 +1564,20 @@ function FullView({ inst, data }) {
 }
 
 function ScalperView({ inst, data }) {
-  const RC = { GREEN: "#00d4aa", YELLOW: "#ffd700", RED: "#ff4757" };
-  const rc = RC[data.risk_level] || "#888";
-  const label = data.risk_level === "GREEN" ? "ALL CLEAR" : data.risk_level === "YELLOW" ? "CAUTION" : "HOLD OFF";
+  const RL = {
+    GREEN:  { label: "CLEAR",       sub: "Macro conditions calm",         color: "#00d4ff", bg: "rgba(0,212,255,.08)",  border: "rgba(0,212,255,.2)"  },
+    YELLOW: { label: "CAUTION",     sub: "Something is close — be aware", color: "#f59e0b", bg: "rgba(245,158,11,.08)", border: "rgba(245,158,11,.2)" },
+    RED:    { label: "STAND DOWN",  sub: "Major event imminent — wait",   color: "#ff4757", bg: "rgba(255,71,87,.08)",  border: "rgba(255,71,87,.2)"  },
+  };
+  const rl = RL[data.risk_level] || RL.YELLOW;
   return (
     <div>
-      <div style={{ background: rc + "12", border: "2px solid " + rc + "44", borderRadius: 12, padding: "22px 20px", marginBottom: 18, textAlign: "center" }}>
-        <div style={{ fontSize: 10, color: "#555", letterSpacing: 2, fontWeight: 700, marginBottom: 7 }}>{inst.flag} {inst.label} — TRADE NOW?</div>
-        <div style={{ fontSize: 30, fontWeight: 800, color: rc, marginBottom: 9 }}>{label}</div>
-        <div style={{ fontSize: 13, color: "#aaa", lineHeight: 1.5 }}>{data.risk_reason}</div>
+      <div style={{ background: rl.bg, border: "1px solid " + rl.border, borderRadius: 12, padding: "22px 20px", marginBottom: 18, textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: "#444", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>{inst.flag} {inst.label} — MACRO RISK CHECK</div>
+        <div style={{ fontSize: 32, fontWeight: 900, color: rl.color, marginBottom: 4, letterSpacing: -1 }}>{rl.label}</div>
+        <div style={{ fontSize: 10, color: rl.color, opacity: 0.6, fontFamily: "monospace", letterSpacing: 1, marginBottom: 10 }}>{rl.sub}</div>
+        <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 10 }} />
+        <div style={{ fontSize: 13, color: "#888", lineHeight: 1.6 }}>{data.risk_reason}</div>
       </div>
       <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, padding: 13, marginBottom: 14 }}><div style={{ fontSize: 9, color: "#666", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>SCALPER NOTE</div><div style={{ fontSize: 14, color: "#e0e0e0", lineHeight: 1.6, fontWeight: 500 }}>{data.scalper_note}</div></div>
       {data.breaking && data.breaking.length > 0 && <div style={{ marginBottom: 14 }}><div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>JUST HIT THE WIRE</div>{data.breaking.map((b, i) => (<div key={i} style={{ background: DB[b.direction] || "rgba(255,255,255,.02)", borderLeft: "3px solid " + (DC[b.direction] || "#555"), borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}><div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, flex: 1 }}>{b.headline}</div><div style={{ textAlign: "right", flexShrink: 0 }}><div style={{ fontSize: 10, fontWeight: 800, color: DC[b.direction] || "#888" }}>{b.direction}</div><div style={{ fontSize: 10, color: "#444", marginTop: 2 }}>{b.age}</div></div></div></div>))}</div>}
