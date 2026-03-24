@@ -613,7 +613,7 @@ CRITICAL RULES — NEVER BREAK THESE:
 3. For events, only include the 2-3 most market-moving SCHEDULED releases coming up in the next 48 hours that directly affect this instrument. Include the exact scheduled time.
 4. Your job is macro context and forward-looking event risk — not technical analysis, not past events.`;
   if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}. risk_level means: GREEN=macro conditions calm and no imminent events (CLEAR to trade), YELLOW=something is close on the calendar or in the news (proceed with CAUTION), RED=major event imminent or breaking news active (STAND DOWN — not the time to scalp). This is a RISK AWARENESS check, NOT a directional signal.';
-  return base + ' FULL BRIEF schema: {"instrument":"string","macro_theme":"string","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}. macro_theme must be a SHORT neutral phrase describing the dominant macro forces at play — e.g. "Safe haven demand vs dollar strength" or "Fed hawkishness weighing on rate-sensitive assets". NO directional bias words like bullish/bearish in macro_theme.';
+  return base + ' FULL BRIEF schema: {"instrument":"string","macro_theme":"string","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}. CRITICAL RULES: (1) macro_theme = SHORT neutral phrase of dominant macro forces, NO bullish/bearish. (2) headline_summary = one sentence on the PRIMARY macro driver right now. (3) macro_context = what to WATCH NEXT — forward-looking, must NOT repeat headline_summary. (4) geopolitical_risks = ONLY if a specific geopolitical risk exists, otherwise omit. (5) Every field must contain DISTINCT information — no repeating the same sentence across fields.';
 }
 
 function userPrompt(inst, mode) {
@@ -1452,7 +1452,13 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
         // Native share sheet — works on mobile (iOS/Android)
         await navigator.share({
           files: [file],
-          text: inst.label + ((isPostSession || isPostSessionBrief) ? " — Post-Session Brief" : isScalper ? " — Live Risk Check" : isEquity ? " — Equity Debrief" : " — Daily Outlook") + "\n\nBrief First, Trade After.\nmarketdebriefs.com",
+          text: (() => {
+            const name = inst.label;
+            if (isPostSession || isPostSessionBrief) return name + " — Post-Session Brief\n\nBrief First, Trade After. Get your full briefs @ marketdebriefs.com";
+            if (isScalper) return name + " — Event Awareness Check\n\nKnow what's on the calendar before you enter. Brief First, Trade After. @ marketdebriefs.com";
+            if (isEquity) return name + " — Equity Debrief\n\nBrief First, Trade After. Get your full briefs @ marketdebriefs.com";
+            return name + " — Daily Session Outlook\n\nDon't jump blindly into the charts. Know how the market is positioned from a macro context — what's driving price and what to watch going into your session.\n\nBrief First, Trade After. Start free @ marketdebriefs.com";
+          })(),
         });
         setShared(true);
         setTimeout(() => setShared(false), 3000);
@@ -1627,7 +1633,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
                   {lineIcons[2] === "CAL" ? <DynamicCalendar size={15} /> : <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[2]}</span>}
                   <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line3}</span>
                 </div>}
-                {data.macro_context && (
+                {data.macro_context && data.macro_context !== data.headline_summary && (
                   <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
                     <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>🔍</span>
                     <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{truncate(data.macro_context, 80)}</span>
@@ -1707,7 +1713,7 @@ function FullView({ inst, data }) {
       {data.geopolitical_risks && <div style={{ background: "rgba(255,140,0,.08)", border: "1px solid rgba(255,140,0,.25)", borderRadius: 8, padding: 14, marginBottom: 15 }}><div style={{ fontSize: 9, color: "#ff8c00", fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>GEOPOLITICAL RISK</div><div style={{ fontSize: 13, color: "#e0c88a", lineHeight: 1.6 }}>{data.geopolitical_risks}</div></div>}
       <div style={{ fontSize: 9, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 11 }}>HIGH-IMPACT EVENTS</div>
       {data.events && data.events.map((e, i) => <EventCard key={i} ev={e} />)}
-      {data.macro_context && <div style={{ background: "rgba(0,212,255,.06)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 8, padding: 13, marginBottom: 13 }}><div style={{ fontSize: 9, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>WHAT TO WATCH</div><div style={{ fontSize: 13, color: "#a8d8ea", lineHeight: 1.65 }}>{data.macro_context}</div></div>}
+      {data.macro_context && data.macro_context !== data.headline_summary && <div style={{ background: "rgba(0,212,255,.06)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 8, padding: 13, marginBottom: 13 }}><div style={{ fontSize: 9, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>WHAT TO WATCH</div><div style={{ fontSize: 13, color: "#a8d8ea", lineHeight: 1.65 }}>{data.macro_context}</div></div>}
       {data.teaching_moment && <div style={{ background: "rgba(192,132,252,.06)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 8, padding: 15 }}><div style={{ fontSize: 9, color: "#c084fc", fontWeight: 700, letterSpacing: 1.5, marginBottom: 7 }}>TEACH ME TO FISH</div><div style={{ fontSize: 13, color: "#d4b8f7", lineHeight: 1.75 }}>{data.teaching_moment}</div></div>}
     </div>
   );
