@@ -1410,10 +1410,23 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
     line3      = data.imminent?.[0] ? truncate(data.imminent[0].event + " — in " + data.imminent[0].due_in, 80) : "";
     biasReason = truncate(data.risk_reason, 70);
   } else {
-    line1      = truncate(data.geopolitical_risks || data.headline_summary, 80);
-    line2      = truncate(data.macro_context, 80);
-    line3      = data.events?.[0] ? truncate(data.events[0].title + " · " + data.events[0].time, 80) : "";
-    biasReason = truncate(data.headline_summary, 70);
+    // line1 = primary macro driver (geopolitical if exists, else headline)
+    // line2 = first event's why_it_moves_price OR macro_context if distinct from line1
+    // line3 = next scheduled event on the calendar
+    const geo = data.geopolitical_risks;
+    const hs  = data.headline_summary || "";
+    const mc  = data.macro_context || "";
+    const ev0 = data.events?.[0];
+    line1      = truncate(geo || hs, 80);
+    // Use first event's why_it_moves_price as line2 — always distinct from line1
+    // Fall back to macro_context only if it differs meaningfully from line1
+    const why  = ev0?.why_it_moves_price || "";
+    const mcDistinct = mc && mc.slice(0,35) !== (geo || hs).slice(0,35);
+    line2      = truncate(why || (mcDistinct ? mc : ""), 80);
+    // line3 = next event on the calendar (skip ev0 if we used its why above)
+    const calEv = ev0 ? ev0 : data.events?.[1];
+    line3      = calEv ? truncate(calEv.title + " · " + calEv.time, 80) : "";
+    biasReason = truncate(hs, 70);
   }
 
   const lineIcons = isEquity
