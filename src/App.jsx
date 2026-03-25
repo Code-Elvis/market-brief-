@@ -543,7 +543,7 @@ const INSTRUMENTS = {
   ym:     { label: "YM Dow Jones",      aliases: ["ym","ym1","dow","djia","dia","dow jones","dowjones"], color: "#a78bfa", flag: "YM",  optionsTicker: "DIA" },
   dax:    { label: "DAX 40",            aliases: ["dax","dax40","germany","german index","fdax"], color: "#4ade80", flag: "DAX", optionsTicker: null },
   nikkei: { label: "Nikkei 225",        aliases: ["nikkei","nk","n225","nikkei225","japan","japanese index","nk225"], color: "#f97316", flag: "NIK", optionsTicker: null },
-  ftse:   { label: "FTSE 100",          aliases: ["ftse","ftse100","ftse 100","uk index","z"], color: "#60a5fa", flag: "UK",  optionsTicker: null },
+  ftse:   { label: "FTSE 100",          aliases: ["ftse","ftse100","ftse 100","uk index","uk100"], color: "#60a5fa", flag: "UK",  optionsTicker: null },
   cac:    { label: "CAC 40",            aliases: ["cac","cac40","cac 40","france","french index"], color: "#e879f9", flag: "CAC", optionsTicker: null },
   gold:   { label: "Gold XAU/USD",      aliases: ["gold","xauusd","xau","gc","gc1","xag/usd","gold futures"], color: "#ffd700", flag: "XAU", optionsTicker: "GLD" },
   silver: { label: "Silver XAG/USD",    aliases: ["silver","xagusd","xag","si","si1","silver futures"], color: "#c0c0c0", flag: "XAG", optionsTicker: "SLV" },
@@ -557,6 +557,7 @@ const INSTRUMENTS = {
   aud:    { label: "AUD/USD",           aliases: ["aud","aussie","audusd","6a","aud/usd","australian dollar"], color: "#34d399", flag: "AUD", optionsTicker: null },
   cad:    { label: "USD/CAD",           aliases: ["cad","usdcad","6c","usd/cad","loonie","canadian dollar"], color: "#facc15", flag: "CAD", optionsTicker: null },
   chf:    { label: "USD/CHF",           aliases: ["chf","usdchf","6s","usd/chf","swiss franc","swissie"], color: "#e2e8f0", flag: "CHF", optionsTicker: null },
+  nzd:    { label: "NZD/USD",           aliases: ["nzd","nzdusd","6n","nzd/usd","kiwi","new zealand dollar","newzealand"], color: "#4ade80", flag: "NZD", optionsTicker: null },
   dxy:    { label: "US Dollar DXY",     aliases: ["dxy","dollar","usd","dx","dollar index","us dollar"], color: "#c084fc", flag: "DXY", optionsTicker: "UUP" },
   btc:    { label: "Bitcoin",           aliases: ["btc","bitcoin","crypto","btcusd","xbt"], color: "#f7931a", flag: "BTC", optionsTicker: null },
   eth:    { label: "Ethereum",          aliases: ["eth","ethereum","ethusd","ether"], color: "#627eea", flag: "ETH", optionsTicker: null },
@@ -598,7 +599,8 @@ function detect(query) {
     if (val.aliases.some(a => a === q)) return { key, ...val };
   }
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
-    if (val.aliases.some(a => q.includes(a) || a.includes(q))) return { key, ...val };
+    // For short aliases (1-2 chars), only match if they are the ENTIRE query — no substring matching
+    if (val.aliases.some(a => a.length <= 2 ? a === q : (q.includes(a) || a.includes(q)))) return { key, ...val };
   }
   // Flag as equity so the run() function can redirect instead of running a broken brief
   if (isLikelyStock(q)) return { key: "equity", label: query.trim(), aliases: [], color: "#f59e0b", flag: "STOCK", optionsTicker: null };
