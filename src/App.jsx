@@ -1843,9 +1843,30 @@ function AppInner({ navigate }) {
   const [breakingData, setBreakingData] = useState(null);
   const [breakingLoading, setBreakingLoading] = useState(false);
   const [breakingError, setBreakingError] = useState(null);
-  const [narrativeFeed, setNarrativeFeed] = useState([]);
+  const [narrativeFeed, setNarrativeFeed] = useState(() => {
+    // Load today's feed from localStorage on mount
+    try {
+      const stored = localStorage.getItem("md_narrative_feed");
+      if (stored) {
+        const { date, feed } = JSON.parse(stored);
+        const today = new Date().toISOString().slice(0, 10);
+        if (date === today && Array.isArray(feed)) return feed;
+      }
+    } catch(e) {}
+    return [];
+  });
   const [feedLoading, setFeedLoading] = useState(false);
-  const [feedLastFetched, setFeedLastFetched] = useState(null);
+  const [feedLastFetched, setFeedLastFetched] = useState(() => {
+    try {
+      const stored = localStorage.getItem("md_narrative_feed_ts");
+      if (stored) {
+        const { date, ts } = JSON.parse(stored);
+        const today = new Date().toISOString().slice(0, 10);
+        if (date === today) return new Date(ts);
+      }
+    } catch(e) {}
+    return null;
+  });
   const [selectedNarrative, setSelectedNarrative] = useState(null);
   const [scalperStockLoading, setScalperStockLoading] = useState(false);
   const [scalperStockError, setScalperStockError] = useState(null);
@@ -2068,9 +2089,20 @@ function AppInner({ navigate }) {
                           setNarrativeFeed(prev => {
                             const existingIds = new Set(prev.map(n => n.id));
                             const newOnes = d.narratives.filter(n => !existingIds.has(n.id));
-                            return [...newOnes, ...prev].slice(0, 20);
+                            const updated = [...newOnes, ...prev].slice(0, 40);
+                            // Persist to localStorage with today's date
+                            const today = new Date().toISOString().slice(0, 10);
+                            try {
+                              localStorage.setItem("md_narrative_feed", JSON.stringify({ date: today, feed: updated }));
+                            } catch(e) {}
+                            return updated;
                           });
-                          setFeedLastFetched(new Date());
+                          const now = new Date();
+                          setFeedLastFetched(now);
+                          try {
+                            const today = new Date().toISOString().slice(0, 10);
+                            localStorage.setItem("md_narrative_feed_ts", JSON.stringify({ date: today, ts: now.toISOString() }));
+                          } catch(e) {}
                         }
                       } catch(e) { console.error(e); }
                       setFeedLoading(false);
@@ -2191,7 +2223,12 @@ function AppInner({ navigate }) {
                       age: "just now",
                       published_at: new Date().toISOString(),
                     };
-                    setNarrativeFeed(prev => [manualNarrative, ...prev].slice(0, 20));
+                    setNarrativeFeed(prev => {
+                        const updated = [manualNarrative, ...prev].slice(0, 40);
+                        const today = new Date().toISOString().slice(0, 10);
+                        try { localStorage.setItem("md_narrative_feed", JSON.stringify({ date: today, feed: updated })); } catch(e) {}
+                        return updated;
+                      });
                     setBreakingData(result);
                   } catch(e) {
                     setBreakingError("Interpretation failed. Try again.");
