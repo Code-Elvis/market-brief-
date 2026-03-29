@@ -185,6 +185,84 @@ export default function App() {
   return <><UpdateBanner /><LandingPage navigate={navigate} /></>;
 }
 
+// ── EMAIL CAPTURE COMPONENT ──────────────────────────────────────────────────
+function EmailCapture() {
+  const [email, setEmail]   = useState("");
+  const [status, setStatus] = useState("idle"); // idle | loading | success | error
+  const [msg, setMsg]       = useState("");
+
+  const handleSubmit = async () => {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setStatus("error"); setMsg("Please enter a valid email address."); return;
+    }
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatus("success");
+        setMsg("You're in. First brief arriving tomorrow morning.");
+      } else {
+        setStatus("error");
+        setMsg(data.message || "Something went wrong. Try again.");
+      }
+    } catch(e) {
+      setStatus("error"); setMsg("Network error. Please try again.");
+    }
+  };
+
+  if (status === "success") {
+    return (
+      <div style={{ padding: "16px 20px", background: "rgba(0,212,170,.08)", border: "1px solid rgba(0,212,170,.2)", borderRadius: 10, textAlign: "center" }}>
+        <div style={{ fontSize: 20, marginBottom: 8 }}>✓</div>
+        <div style={{ fontSize: 14, color: "#00d4aa", fontWeight: 700, marginBottom: 4 }}>You're subscribed.</div>
+        <div style={{ fontSize: 12, color: "#444" }}>{msg}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, maxWidth: 460, margin: "0 auto" }}>
+        <input
+          type="email"
+          value={email}
+          onChange={e => { setEmail(e.target.value); setStatus("idle"); setMsg(""); }}
+          onKeyDown={e => e.key === "Enter" && handleSubmit()}
+          placeholder="your@email.com"
+          style={{
+            flex: 1, padding: "13px 16px", borderRadius: 8, border: "1px solid rgba(0,212,255,.2)",
+            background: "rgba(0,0,0,.3)", color: "#e0e0e0", fontSize: 14, fontFamily: "inherit",
+            outline: "none",
+          }}
+        />
+        <button
+          onClick={handleSubmit}
+          disabled={status === "loading"}
+          style={{
+            padding: "13px 20px", borderRadius: 8, border: "none", cursor: status === "loading" ? "wait" : "pointer",
+            background: status === "loading" ? "rgba(0,212,255,.1)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
+            color: status === "loading" ? "#333" : "#000", fontSize: 13, fontWeight: 800, fontFamily: "inherit",
+            whiteSpace: "nowrap",
+          }}>
+          {status === "loading" ? "..." : "Get Briefs Free"}
+        </button>
+      </div>
+      {status === "error" && (
+        <div style={{ marginTop: 8, fontSize: 12, color: "#ff4757", textAlign: "center" }}>{msg}</div>
+      )}
+      <div style={{ marginTop: 10, fontSize: 11, color: "#2a2a2a", textAlign: "center" }}>
+        Free forever · No spam · Unsubscribe anytime
+      </div>
+    </div>
+  );
+}
+
 function LandingPage({ navigate }) {
   return (
     <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif", margin: 0 }}>
@@ -493,6 +571,28 @@ function LandingPage({ navigate }) {
           ))}
         </div>
         <button onClick={() => navigate("/app")} className="cta-btn" style={{ width: "100%", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>START FREE — NO CARD NEEDED</button>
+      </div>
+
+      {/* ── EMAIL CAPTURE ── */}
+      <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 24px 80px" }}>
+        <div style={{ background: "rgba(0,212,255,.03)", border: "1px solid rgba(0,212,255,.08)", borderRadius: 16, padding: "40px 32px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+          {/* Background glow */}
+          <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 400, height: 200, background: "radial-gradient(ellipse, rgba(0,212,255,.05) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ fontSize: 11, color: "#00d4ff", letterSpacing: 2, fontWeight: 700, marginBottom: 14, opacity: 0.7 }}>FREE DAILY MACRO BRIEF</div>
+            <div style={{ fontSize: "clamp(20px, 3.5vw, 28px)", fontWeight: 900, color: "#fff", letterSpacing: -0.5, lineHeight: 1.25, marginBottom: 10 }}>
+              Get the macro context<br />
+              <span style={{ color: "#00d4ff" }}>delivered to your inbox.</span>
+            </div>
+            <p style={{ fontSize: 13, color: "#444", lineHeight: 1.75, maxWidth: 420, margin: "0 auto 24px" }}>
+              Daily macro brief before markets open. What's moving, what to watch, and why it matters for your trades. Free. No spam. Unsubscribe anytime.
+            </p>
+
+            {/* Email form */}
+            <EmailCapture />
+          </div>
+        </div>
       </div>
 
       {/* ── FINAL CTA ── */}
