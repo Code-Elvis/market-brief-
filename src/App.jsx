@@ -226,33 +226,39 @@ function EmailCapture() {
     );
   }
 
+  const inputStyle = {
+    display: "block", width: "100%", padding: "13px 16px",
+    borderRadius: 8, border: "1px solid rgba(0,212,255,.2)",
+    background: "rgba(0,0,0,.3)", color: "#e0e0e0", fontSize: 14,
+    fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+    marginBottom: 10,
+  };
+  const btnStyle = {
+    display: "block", width: "100%", padding: "14px 20px",
+    borderRadius: 8, border: "none",
+    cursor: status === "loading" ? "wait" : "pointer",
+    fontSize: 14, fontWeight: 800, fontFamily: "inherit",
+    letterSpacing: 0.3,
+    background: status === "loading" ? "rgba(0,212,255,.1)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
+    color: status === "loading" ? "#333" : "#000",
+  };
+
   return (
-    <div>
-      <div style={{ display: "flex", gap: 8, maxWidth: 460, margin: "0 auto" }}>
-        <input
-          type="email"
-          value={email}
-          onChange={e => { setEmail(e.target.value); setStatus("idle"); setMsg(""); }}
-          onKeyDown={e => e.key === "Enter" && handleSubmit()}
-          placeholder="your@email.com"
-          style={{
-            flex: 1, padding: "13px 16px", borderRadius: 8, border: "1px solid rgba(0,212,255,.2)",
-            background: "rgba(0,0,0,.3)", color: "#e0e0e0", fontSize: 14, fontFamily: "inherit",
-            outline: "none",
-          }}
-        />
-        <button
-          onClick={handleSubmit}
-          disabled={status === "loading"}
-          style={{
-            padding: "13px 20px", borderRadius: 8, border: "none", cursor: status === "loading" ? "wait" : "pointer",
-            background: status === "loading" ? "rgba(0,212,255,.1)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
-            color: status === "loading" ? "#333" : "#000", fontSize: 13, fontWeight: 800, fontFamily: "inherit",
-            whiteSpace: "nowrap",
-          }}>
-          {status === "loading" ? "..." : "Get Briefs Free"}
-        </button>
-      </div>
+    <div style={{ width: "100%", maxWidth: 420, margin: "0 auto", boxSizing: "border-box" }}>
+      <input
+        type="email"
+        value={email}
+        onChange={e => { setEmail(e.target.value); setStatus("idle"); setMsg(""); }}
+        onKeyDown={e => e.key === "Enter" && handleSubmit()}
+        placeholder="your@email.com"
+        style={inputStyle}
+      />
+      <button
+        onClick={handleSubmit}
+        disabled={status === "loading"}
+        style={btnStyle}>
+        {status === "loading" ? "Subscribing…" : "Get Daily Macro Briefs Free →"}
+      </button>
       {status === "error" && (
         <div style={{ marginTop: 8, fontSize: 12, color: "#ff4757", textAlign: "center" }}>{msg}</div>
       )}
