@@ -720,13 +720,13 @@ CRITICAL RULES — NEVER BREAK THESE:
 2. EVENTS must be STRICTLY UPCOMING — scheduled in the future from the current time. NEVER include events that have already occurred or already been released today. If an event has already happened, exclude it entirely.
 3. For events, only include the 2-3 most market-moving SCHEDULED releases coming up in the next 48 hours that directly affect this instrument. Include the exact scheduled time.
 4. Your job is macro context and forward-looking event risk — not technical analysis, not past events.`;
-  if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}. risk_level means: GREEN=macro conditions calm and no imminent events (CLEAR to trade), YELLOW=something is close on the calendar or in the news (proceed with CAUTION), RED=major event imminent or breaking news active (STAND DOWN — not the time to scalp). This is a RISK AWARENESS check, NOT a directional signal.';
+  if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","time_est":"string","due_in":"string","expected_impact":"string"}]}. CRITICAL: imminent array must include ALL high-impact events scheduled today — not just the next one. Include events up to 12 hours away. Each event must have its scheduled time in EST. risk_level: GREEN=no events in next 2hrs and conditions calm (CLEAR), YELLOW=event within 2hrs or active news (CAUTION), RED=event within 30min or major breaking news (STAND DOWN). This is a RISK AWARENESS check, NOT a directional signal.';
   return base + ' FULL BRIEF schema: {"instrument":"string","macro_theme":"string","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}. STRICT FIELD RULES — each field serves a DIFFERENT purpose, never repeat content across fields: macro_theme = 4-7 word neutral phrase ONLY e.g. "Central bank divergence vs safe haven demand". headline_summary = ONE sentence describing the SINGLE most important macro force acting on this instrument RIGHT NOW. macro_context = ONE sentence about what SPECIFIC EVENT OR DATA to watch for NEXT — must be forward-looking and completely different from headline_summary, e.g. "Watch Wednesday FOMC minutes for rate path signals." geopolitical_risks = only populate if an active geopolitical event is directly relevant, otherwise use empty string "". IF macro_context would repeat headline_summary, write something genuinely different or use "".';
 }
 
 function userPrompt(inst, mode) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  if (mode === "scalper") return "Current time: " + now + ". I am about to trade " + inst.label + ". What are the live macro risks RIGHT NOW? Is this a CLEAR, CAUTION or STAND DOWN moment? GREEN=clear macro conditions, YELLOW=caution something is close, RED=stand down major event imminent. No price levels. No directional signals. Risk awareness only.";
+  if (mode === "scalper") return "Current time: " + now + ". I am about to trade " + inst.label + ". I need a complete event awareness check. List ALL high-impact economic events scheduled for TODAY regardless of whether they have passed — include events coming up in the next 12 hours with their exact scheduled times in EST. Risk level: GREEN=no events in next 2 hours and conditions calm, YELLOW=event within 2 hours or significant news active, RED=event within 30 minutes or major breaking news. No price levels. No directional signals. Risk awareness only. Be thorough — do not miss scheduled events like PMI, Consumer Confidence, JOLTS, GDP, Fed speeches, oil inventory data.";
   return "Current time: " + now + ". Full macro briefing for " + inst.label + ". List only the most important UPCOMING scheduled events after this exact time that will move this instrument in the next 48 hours. Include their scheduled time. Do NOT include any events that have already happened today. Focus on CURRENT central bank stance and live geopolitical risks. No price levels.";
 }
 
@@ -1515,7 +1515,15 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
   } else if (isScalper) {
     line1      = truncate(data.risk_reason, 80);
     line2      = truncate(data.scalper_note, 80);
-    line3      = data.imminent?.[0] ? truncate(data.imminent[0].event + " — in " + data.imminent[0].due_in, 80) : "";
+    // Show up to 3 events on the card
+    const imminentCount = data.imminent?.length || 0;
+    if (imminentCount === 0) {
+      line3 = "";
+    } else if (imminentCount === 1) {
+      line3 = truncate(data.imminent[0].event + (data.imminent[0].time_est ? " · " + data.imminent[0].time_est + " ET" : " — in " + data.imminent[0].due_in), 80);
+    } else {
+      line3 = truncate(imminentCount + " events today — " + data.imminent.slice(0,2).map(e => e.event).join(", "), 80);
+    }
     biasReason = truncate(data.risk_reason, 70);
   } else {
     // line1 = primary macro driver (geopolitical if exists, else headline)
@@ -1699,8 +1707,8 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
                 {/* Coming up next */}
                 {data.imminent && data.imminent.length > 0 && (
                   <div>
-                    <div style={{ fontSize: 7, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>COMING UP NEXT</div>
-                    {data.imminent.slice(0, 1).map((ev, i) => (
+                    <div style={{ fontSize: 7, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>TODAY'S EVENTS</div>
+                    {data.imminent.slice(0, 3).map((ev, i) => (
                       <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 7px", border: "1px solid rgba(255,215,0,.15)", borderRadius: 4, background: "rgba(255,215,0,.04)" }}>
                         <span style={{ fontSize: 9, color: "#888", flex: 1 }}>{truncate(ev.event, 38)}</span>
                         <span style={{ fontSize: 9, color: "#ffd700", fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>in {ev.due_in}</span>
@@ -1858,7 +1866,25 @@ function ScalperView({ inst, data }) {
       </div>
       <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, padding: 13, marginBottom: 14 }}><div style={{ fontSize: 9, color: "#666", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>SCALPER NOTE</div><div style={{ fontSize: 14, color: "#e0e0e0", lineHeight: 1.6, fontWeight: 500 }}>{data.scalper_note}</div></div>
       {data.breaking && data.breaking.length > 0 && <div style={{ marginBottom: 14 }}><div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>JUST HIT THE WIRE</div>{data.breaking.map((b, i) => (<div key={i} style={{ background: DB[b.direction] || "rgba(255,255,255,.02)", borderLeft: "3px solid " + (DC[b.direction] || "#555"), borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}><div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, flex: 1 }}>{b.headline}</div><div style={{ textAlign: "right", flexShrink: 0 }}><div style={{ fontSize: 10, fontWeight: 800, color: DC[b.direction] || "#888" }}>{b.direction}</div><div style={{ fontSize: 10, color: "#444", marginTop: 2 }}>{b.age}</div></div></div></div>))}</div>}
-      {data.imminent && data.imminent.length > 0 && <div><div style={{ fontSize: 9, color: "#ffd700", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>COMING UP NEXT</div>{data.imminent.map((ev, i) => (<div key={i} style={{ background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 8, padding: "11px 13px", marginBottom: 7, display: "flex", justifyContent: "space-between", alignItems: "center" }}><div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600 }}>{ev.event}</div><div style={{ textAlign: "right", marginLeft: 12 }}><div style={{ fontSize: 11, color: "#ffd700", fontWeight: 700 }}>in {ev.due_in}</div><div style={{ fontSize: 11, color: "#777", marginTop: 2 }}>{ev.expected_impact}</div></div></div>))}</div>}
+      {data.imminent && data.imminent.length > 0 && (
+        <div>
+          <div style={{ fontSize: 9, color: "#ffd700", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>
+            TODAY'S HIGH-IMPACT EVENTS ({data.imminent.length})
+          </div>
+          {data.imminent.map((ev, i) => (
+            <div key={i} style={{ background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, flex: 1 }}>{ev.event}</div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  {ev.time_est && <div style={{ fontSize: 11, color: "#ffd700", fontWeight: 700 }}>{ev.time_est} ET</div>}
+                  <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>in {ev.due_in}</div>
+                </div>
+              </div>
+              {ev.expected_impact && <div style={{ fontSize: 11, color: "#555", marginTop: 5, lineHeight: 1.4 }}>{ev.expected_impact}</div>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
