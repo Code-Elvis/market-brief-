@@ -720,13 +720,14 @@ CRITICAL RULES — NEVER BREAK THESE:
 2. EVENTS must be STRICTLY UPCOMING — scheduled in the future from the current time. NEVER include events that have already occurred or already been released today. If an event has already happened, exclude it entirely.
 3. For events, only include the 2-3 most market-moving SCHEDULED releases coming up in the next 48 hours that directly affect this instrument. Include the exact scheduled time.
 4. Your job is macro context and forward-looking event risk — not technical analysis, not past events.`;
-  if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","time_est":"string","due_in":"string","expected_impact":"string"}]}. CRITICAL: imminent array must include ALL high-impact events scheduled today — not just the next one. Include events up to 12 hours away. Each event must have its scheduled time in EST. risk_level: GREEN=no events in next 2hrs and conditions calm (CLEAR), YELLOW=event within 2hrs or active news (CAUTION), RED=event within 30min or major breaking news (STAND DOWN). This is a RISK AWARENESS check, NOT a directional signal.';
+  if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","time_est":"string","due_in":"string","passed":false,"expected_impact":"string"}]}. CRITICAL RULES: (1) imminent must list ALL confirmed high-impact events today — use EXACT scheduled EST times only. (2) time_est = exact scheduled time e.g. "10:00 AM". (3) due_in = accurate time from NOW e.g. "in 45m" or "2h ago" if already passed. (4) passed = true if event has already occurred. (5) risk_level based on next UPCOMING event: GREEN=nothing in 2hrs (CLEAR), YELLOW=something in 2hrs (CAUTION), RED=something in 30min (STAND DOWN). NOT a directional signal.';
   return base + ' FULL BRIEF schema: {"instrument":"string","macro_theme":"string","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}. STRICT FIELD RULES — each field serves a DIFFERENT purpose, never repeat content across fields: macro_theme = 4-7 word neutral phrase ONLY e.g. "Central bank divergence vs safe haven demand". headline_summary = ONE sentence describing the SINGLE most important macro force acting on this instrument RIGHT NOW. macro_context = ONE sentence about what SPECIFIC EVENT OR DATA to watch for NEXT — must be forward-looking and completely different from headline_summary, e.g. "Watch Wednesday FOMC minutes for rate path signals." geopolitical_risks = only populate if an active geopolitical event is directly relevant, otherwise use empty string "". IF macro_context would repeat headline_summary, write something genuinely different or use "".';
 }
 
 function userPrompt(inst, mode) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  if (mode === "scalper") return "Current time: " + now + ". I am about to trade " + inst.label + ". I need a complete event awareness check. List ALL high-impact economic events scheduled for TODAY regardless of whether they have passed — include events coming up in the next 12 hours with their exact scheduled times in EST. Risk level: GREEN=no events in next 2 hours and conditions calm, YELLOW=event within 2 hours or significant news active, RED=event within 30 minutes or major breaking news. No price levels. No directional signals. Risk awareness only. Be thorough — do not miss scheduled events like PMI, Consumer Confidence, JOLTS, GDP, Fed speeches, oil inventory data.";
+  const nowEST = new Date().toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true });
+  if (mode === "scalper") return "EXACT CURRENT TIME IN EST: " + nowEST + ". I am about to trade " + inst.label + ". List ALL confirmed high-impact economic events scheduled for TODAY with their EXACT scheduled time in EST. CRITICAL RULES: (1) Use only the confirmed scheduled release times — do not estimate or approximate. (2) Calculate due_in accurately from the EXACT current time shown above. (3) If an event has already passed, still list it with due_in showing how long ago e.g. \'45m ago\'. (4) Include: Fed speeches, JOLTS, PMI, Consumer Confidence, GDP releases, CPI, NFP, oil inventory data, central bank decisions. (5) Do NOT invent times — if you are not certain of the exact time, omit that event. Risk level based on EXACT times: GREEN=no events in next 2 hours, YELLOW=event within 2 hours, RED=event within 30 minutes. No price levels. No directional signals.";
   return "Current time: " + now + ". Full macro briefing for " + inst.label + ". List only the most important UPCOMING scheduled events after this exact time that will move this instrument in the next 48 hours. Include their scheduled time. Do NOT include any events that have already happened today. Focus on CURRENT central bank stance and live geopolitical risks. No price levels.";
 }
 
@@ -1872,15 +1873,16 @@ function ScalperView({ inst, data }) {
             TODAY'S HIGH-IMPACT EVENTS ({data.imminent.length})
           </div>
           {data.imminent.map((ev, i) => (
-            <div key={i} style={{ background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}>
+            <div key={i} style={{ background: ev.passed ? "rgba(255,255,255,.02)" : "rgba(255,215,0,.05)", border: "1px solid " + (ev.passed ? "rgba(255,255,255,.06)" : "rgba(255,215,0,.15)"), borderRadius: 8, padding: "11px 13px", marginBottom: 7, opacity: ev.passed ? 0.5 : 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, flex: 1 }}>{ev.event}</div>
+                <div style={{ fontSize: 13, color: ev.passed ? "#555" : "#e0e0e0", fontWeight: 600, flex: 1 }}>{ev.event}</div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  {ev.time_est && <div style={{ fontSize: 11, color: "#ffd700", fontWeight: 700 }}>{ev.time_est} ET</div>}
-                  <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>in {ev.due_in}</div>
+                  {ev.time_est && <div style={{ fontSize: 11, color: ev.passed ? "#444" : "#ffd700", fontWeight: 700 }}>{ev.time_est} ET</div>}
+                  <div style={{ fontSize: 10, color: ev.passed ? "#333" : "#888", marginTop: 2 }}>{ev.due_in}</div>
                 </div>
               </div>
-              {ev.expected_impact && <div style={{ fontSize: 11, color: "#555", marginTop: 5, lineHeight: 1.4 }}>{ev.expected_impact}</div>}
+              {ev.expected_impact && !ev.passed && <div style={{ fontSize: 11, color: "#555", marginTop: 5, lineHeight: 1.4 }}>{ev.expected_impact}</div>}
+              {ev.passed && <div style={{ fontSize: 10, color: "#333", marginTop: 3 }}>Released</div>}
             </div>
           ))}
         </div>
