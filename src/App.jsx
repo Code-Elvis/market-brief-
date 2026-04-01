@@ -1616,8 +1616,10 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
 
         {/* CARD */}
         <div id="share-card-el" style={{
-          background: "#0a0c0f", borderRadius: 20, padding: (isPostSession || isPostSessionBrief) ? 18 : 22,
-          width: "100%", aspectRatio: "1 / 1",
+          background: "#0a0c0f", borderRadius: 20,
+          padding: (isPostSession || isPostSessionBrief) ? 18 : 22,
+          paddingBottom: 24,
+          width: "100%",
           display: "flex", flexDirection: "column", justifyContent: "space-between",
           position: "relative", overflow: "hidden",
           boxShadow: "0 12px 60px rgba(0,0,0,.6)",
