@@ -85,7 +85,7 @@ function HelpPage({ navigate }) {
     { id: "features", icon: "⚡", title: "Features", color: "rgba(0,212,170,.1)", items: [
       { q: "What is the Breaking Narratives tab?", a: "Breaking Narratives is two tools in one. First — a live macro learning tool. If you see a headline in Discord, on X, or in the news and don't understand how it affects your trade, paste it in and get a clear macro breakdown: which instruments are affected, what the flow is (DEMAND / PRESSURE / VOLATILE), and when the narrative fades. Second — an auto-updating wire feed. Real-time financial headlines are pulled and interpreted automatically every 15 minutes during market hours. If something breaks that invalidates your setup — a Fed comment, Trump tweet, OPEC announcement, geopolitical escalation — you see it here first, with a full macro interpretation and a shareable card. Pro feature." },
       { q: "How do I use Breaking Narratives as a learning tool?", a: "Open the Breaking tab → scroll past the live feed → paste any headline, tweet, or Discord message into the text box and tap INTERPRET NOW. You'll get: a one-sentence macro summary, which instruments are affected and how (using flow labels not directional signals), any conflicting forces (e.g. Dollar strength vs Gold safe haven demand), what to watch for next, and when the narrative is likely to fade. Examples you can try: 'Fed signals higher for longer', 'OPEC+ cuts 1M barrels', 'Trump announces Iran sanctions', 'CPI comes in hotter than expected'." },
-      { q: "What is Scalper Mode?", a: "Scalper Mode is an upcoming events awareness check for active traders. Before you enter a position, it shows you what high-impact events are scheduled on the calendar that could move your instrument — so you don't get caught on the wrong side of a data release. You get CLEAR / CAUTION / STAND DOWN in seconds. CLEAR — no imminent events, macro conditions calm. CAUTION — something is close on the calendar, be aware. STAND DOWN — a major event is imminent, stay out of the market until it passes. This is an event calendar awareness tool, not a directional signal. Pro feature." },
+      { q: "What is Scalper Mode?", a: "Scalper Mode is not just an economic calendar — it tells you what each event means for the specific instrument you're trading. Before you enter a position, you get a plain-English explanation of how each scheduled event is likely to impact your market, so you don't just know what's on the calendar, you know why it matters for your trade. You get CLEAR / CAUTION / STAND DOWN in seconds. CLEAR — no imminent events, macro conditions calm. CAUTION — something is close on the calendar, be aware. STAND DOWN — a major event is imminent, stay out of the market until it passes. This is an event calendar awareness tool, not a directional signal. Pro feature." },
       { q: "How do Equity (Stocks) Debriefs work?", a: "Go to the Stocks tab, type any stock name or ticker (Apple, NVDA, TSLA, MSFT, etc.) and get an instant debrief covering earnings context, macro tailwinds and headwinds, upcoming catalyst events, sector rotation signals, and institutional flow direction. Pro feature." },
       { q: "What is the Reflection tab?", a: "A daily trading journal built into the app. At the end of each trading day it presents 6 reflection prompts to build self-awareness around your trading decisions. Free for all users." },
       { q: "What is Learn to Fish?", a: "A free educational library of macro concepts — why high-impact news moves markets, the role of the US Dollar, risk-on vs risk-off, how interest rates affect currencies, and more. The goal is to help you understand why markets move." },
@@ -457,7 +457,7 @@ function LandingPage({ navigate }) {
               phaseColor: "#00d4ff",
               icon: "⚡",
               title: "Run the Scalper Mode risk check",
-              desc: "Get CLEAR / CAUTION / STAND DOWN in seconds. If something is imminent on the calendar — you'll know before you enter.",
+              desc: "Not just what's on the calendar — what it means for the instrument you're trading. Get CLEAR / CAUTION / STAND DOWN in seconds with a plain-English explanation of why each event matters for your trade.",
               detail: "Scalper Mode",
               detailColor: "#f59e0b",
             },
@@ -720,7 +720,7 @@ CRITICAL RULES — NEVER BREAK THESE:
 2. EVENTS must be STRICTLY UPCOMING — scheduled in the future from the current time. NEVER include events that have already occurred or already been released today. If an event has already happened, exclude it entirely.
 3. For events, only include the 2-3 most market-moving SCHEDULED releases coming up in the next 48 hours that directly affect this instrument. Include the exact scheduled time.
 4. Your job is macro context and forward-looking event risk — not technical analysis, not past events.`;
-  if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","time_est":"string","due_in":"string","passed":false,"expected_impact":"string"}]}. CRITICAL RULES: (1) imminent must list ALL confirmed high-impact events today — use EXACT scheduled EST times only. (2) time_est = exact scheduled time e.g. "10:00 AM". (3) due_in = accurate time from NOW WITHOUT the word "in" prefix e.g. "45m", "2h 8m", "2h ago" if already passed — the UI adds "in" automatically. (4) passed = true if event has already occurred. (5) risk_level based on next UPCOMING event: GREEN=nothing in 2hrs (CLEAR), YELLOW=something in 2hrs (CAUTION), RED=something in 30min (STAND DOWN). NOT a directional signal.';
+  if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","time_est":"string","due_in":"string","passed":false,"expected_impact":"string"}]}. CRITICAL RULES: (1) imminent must list ALL confirmed high-impact events today — use EXACT scheduled EST times only. (2) time_est = exact scheduled time e.g. "10:00 AM". (3) due_in = accurate time from NOW WITHOUT the word "in" prefix e.g. "45m", "2h 8m", "2h ago" if already passed — the UI adds "in" automatically. (4) passed = true if event has already occurred. (5) expected_impact = ONE sentence explaining specifically what this event means for the instrument being traded — not a generic description of the event but the macro mechanism e.g. "A strong reading would reinforce Fed hawkishness, strengthening the Dollar and creating headwinds for Gold" — this is the key differentiation, make it specific to the instrument. (6) risk_level based on next UPCOMING event: GREEN=nothing in 2hrs (CLEAR), YELLOW=something in 2hrs (CAUTION), RED=something in 30min (STAND DOWN). NOT a directional signal.';
   return base + ' FULL BRIEF schema: {"instrument":"string","macro_theme":"string","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}. STRICT FIELD RULES — each field serves a DIFFERENT purpose, never repeat content across fields: macro_theme = 4-7 word neutral phrase ONLY e.g. "Central bank divergence vs safe haven demand". headline_summary = ONE sentence describing the SINGLE most important macro force acting on this instrument RIGHT NOW. macro_context = ONE sentence about what SPECIFIC EVENT OR DATA to watch for NEXT — must be forward-looking and completely different from headline_summary, e.g. "Watch Wednesday FOMC minutes for rate path signals." geopolitical_risks = only populate if an active geopolitical event is directly relevant, otherwise use empty string "". IF macro_context would repeat headline_summary, write something genuinely different or use "".';
 }
 
@@ -1585,7 +1585,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
           text: (() => {
             const name = inst.label;
             if (isPostSession || isPostSessionBrief) return name + " — Post-Session Brief\n\nBrief First, Trade After. Get your full briefs @ marketdebriefs.com";
-            if (isScalper) return name + " — Event Awareness Check\n\nKnow what's on the calendar before you enter. Brief First, Trade After. @ marketdebriefs.com";
+            if (isScalper) return name + " — Event Impact Check\n\nEvery free calendar tells you what's on the schedule.\nMarketDebriefs tells you what each event means for the instrument you're trading — before you enter.\n\nBrief First, Trade After. marketdebriefs.com";
             if (isEquity) return name + " — Equity Debrief\n\nBrief First, Trade After. Get your full briefs @ marketdebriefs.com";
             return name + " — Daily Session Outlook\n\nDon't jump blindly into the charts. Know how the market is positioned from a macro context — what's driving price and what to watch going into your session.\n\nBrief First, Trade After. Start free @ marketdebriefs.com";
           })(),
@@ -1885,7 +1885,11 @@ function ScalperView({ inst, data }) {
                   </div>
                 </div>
               </div>
-              {ev.expected_impact && !ev.passed && <div style={{ fontSize: 11, color: "#555", marginTop: 5, lineHeight: 1.4 }}>{ev.expected_impact}</div>}
+              {ev.expected_impact && !ev.passed && (
+                <div style={{ fontSize: 11, color: "#555", marginTop: 6, lineHeight: 1.5, paddingTop: 6, borderTop: "1px solid rgba(255,215,0,.08)" }}>
+                  {ev.expected_impact}
+                </div>
+              )}
               {ev.passed && <div style={{ fontSize: 10, color: "#333", marginTop: 3 }}>Released</div>}
             </div>
           ))}
@@ -2089,7 +2093,7 @@ function AppInner({ navigate }) {
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
-              {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Scalper Mode", sub: isPro ? "Event awareness check" : "Pro only 🔒" }].map(m => (
+              {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Scalper Mode", sub: isPro ? "What events mean for your trade" : "Pro only 🔒" }].map(m => (
                 <button key={m.id} onClick={() => switchMode(m.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: mode === m.id ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.02)", border: mode === m.id ? "1px solid rgba(0,212,255,.25)" : "1px solid rgba(255,255,255,.05)", color: mode === m.id ? "#00d4ff" : (m.id === "scalper" && !isPro ? "#2a2a2a" : "#444") }}>
                   <div style={{ fontSize: 11, fontWeight: 700 }}>{m.label}</div>
                   <div style={{ fontSize: 9, marginTop: 2, opacity: 0.7 }}>{m.sub}</div>
