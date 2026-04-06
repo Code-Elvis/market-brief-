@@ -77,7 +77,7 @@ function HelpPage({ navigate }) {
       { q: "Can I install MarketDebriefs on my phone?", a: "Yes — MarketDebriefs is a Progressive Web App (PWA). iPhone Safari: tap Share → Add to Home Screen. Android Chrome: tap the three-dot menu → Add to Home Screen, or tap the ⊕ GET APP button in the app header. Works like a native app once installed." },
     ]},
     { id: "plans", icon: "💎", title: "Plans & Pricing", color: "rgba(245,158,11,.1)", items: [
-      { q: "What is the difference between Free and Pro?", a: "Free — 3 Full Briefs per day, Trade Journal, Learn to Fish. No credit card required. Pro (€49/month) — Unlimited briefs, Scalper Mode (event awareness check), Breaking Narratives (live macro feed + learning tool), Equity Debriefs, all instruments covered." },
+      { q: "What is the difference between Free and Pro?", a: "Free — 3 Full Briefs per day, Trade Journal, Learn to Fish. No credit card required. Pro (€49/month) — Unlimited briefs, Scalper Mode (what events mean for your trade), Breaking Narratives (live macro feed + learning tool), Equity Debriefs with automatic macro sector impact intelligence, all instruments covered. All four sections — Intelligence, Event Check, Breaking Narratives and Stocks — work in sync so the macro context flows through the entire app." },
       { q: "Can I cancel my Pro subscription anytime?", a: "Yes. No contracts, no cancellation fees. Cancel anytime. Your Pro access continues until the end of the current billing period and you won't be charged again after that." },
       { q: "Is there a refund policy?", a: "If you're not satisfied within the first 7 days of your Pro subscription, contact us for a full refund — no questions asked. After 7 days refunds are considered case-by-case. Email support@marketdebriefs.com." },
       { q: "Do you offer promo or discount codes?", a: "Promo codes are occasionally offered through our affiliate partners and creator collaborations. If you have a code, enter it at the Pro checkout screen." },
@@ -467,7 +467,7 @@ function LandingPage({ navigate }) {
               phaseColor: "#ffd700",
               icon: "📡",
               title: "Monitor Breaking Narratives",
-              desc: "Two uses: (1) Paste any headline or Discord narrative you don't understand — get an instant macro explanation for your instrument. (2) Live wire stories auto-interpreted every 15 minutes. If a narrative invalidates your setup — you see it here first.",
+              desc: "Monitor live macro wire stories every 15 minutes. Paste any headline you don't understand for an instant explanation. The Stocks tab automatically shows which sectors and tickers are affected by the current macro theme — no manual searching needed.",
               detail: "Breaking tab",
               detailColor: "#ff4757",
             },
@@ -477,7 +477,7 @@ function LandingPage({ navigate }) {
               phaseColor: "#ffd700",
               icon: "🔄",
               title: "Rebrief when narratives shift",
-              desc: "Markets don't stand still. If a major event fires — Trump tweet, Fed comment, geopolitical escalation — run a fresh brief. Adapt your bias. Never trade on stale context.",
+              desc: "Markets don't stand still. If a major event fires, run a fresh brief. The new macro context automatically updates the Stocks tab with the latest affected sectors and tickers. Every section stays in sync — Intelligence, Events, Breaking Narratives and Stocks all reflect the same macro reality.",
               detail: "Brief First, Trade After.",
               detailColor: "#00d4ff",
             },
@@ -755,6 +755,20 @@ async function callClaude(system, userMsg) {
 }
 
 async function getBriefing(inst, mode, calendarEvents = []) { return callClaude(sysPrompt(mode), userPrompt(inst, mode, calendarEvents)); }
+
+async function getSectorImpact(macroContext) {
+  const now = new Date().toLocaleString("en-GB", { weekday:"long", year:"numeric", month:"long", day:"numeric", hour:"2-digit", minute:"2-digit", timeZone:"America/New_York" });
+  const sys = `You are a macro market analyst identifying which stock sectors are affected by current macro themes.
+Respond ONLY with valid JSON. No markdown, no backticks. Start with { and end with }.
+RULES:
+1. Only include sectors DIRECTLY affected by the macro context — max 4 sectors.
+2. flow: DEMAND (sector benefits), PRESSURE (sector faces headwinds), VOLATILE (mixed), WATCH (monitor).
+3. reason: ONE sentence — the specific macro mechanism affecting this sector.
+4. tickers: 4-5 most relevant US-listed tickers for this sector in this context.
+SCHEMA: {"sectors":[{"name":"string","flow":"DEMAND|PRESSURE|VOLATILE|WATCH","reason":"string","tickers":["string"]}]}`;
+  const msg = `Current time: ${now}. Macro context: "${macroContext.macro_theme}". ${macroContext.geopolitical ? "Geopolitical: " + macroContext.geopolitical + "." : ""} ${macroContext.headline ? "Current driver: " + macroContext.headline : ""} Which stock sectors are directly affected? For each sector, list 4-5 relevant US tickers.`;
+  return callClaude(sys, msg);
+}
 
 async function getEquityBrief(label) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -1052,8 +1066,25 @@ function BreakingGate({ onUpgrade }) {
 }
 
 // ── STOCKS TAB (Pro) ──────────────────────────────────────────────────────────
-function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError, onShareCard }) {
+function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError, onShareCard, macroContext }) {
   const isScalper = mode === "scalper";
+  const [sectorData, setSectorData] = React.useState(null);
+  const [sectorLoading, setSectorLoading] = React.useState(false);
+  const [expandedSector, setExpandedSector] = React.useState(null);
+  const [selectedTicker, setSelectedTicker] = React.useState(null);
+
+  // Auto-load sector impacts when macroContext arrives or changes
+  React.useEffect(() => {
+    if (!macroContext || isScalper) return;
+    const age = Date.now() - (macroContext.timestamp || 0);
+    if (age > 30 * 60 * 1000) return; // ignore context older than 30 min
+    setSectorData(null);
+    setSectorLoading(true);
+    getSectorImpact(macroContext)
+      .then(d => setSectorData(d))
+      .catch(() => {})
+      .finally(() => setSectorLoading(false));
+  }, [macroContext?.timestamp, isScalper]);
 
   const runStock = async () => {
     const q = query.trim();
@@ -1079,8 +1110,64 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
   const activeLoading = isScalper ? scalperLoading : loading;
   const activeError   = isScalper ? scalperError   : error;
 
+  const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
+
   return (
     <div>
+      {/* ── MACRO SECTOR IMPACT ── */}
+      {!isScalper && macroContext && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <div style={{ fontSize: 10, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700 }}>⚡ MACRO SECTOR IMPACT</div>
+            <div style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "monospace" }}>from {macroContext.instrument} brief</div>
+          </div>
+          <div style={{ padding: "8px 12px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)", borderRadius: 8, marginBottom: 12 }}>
+            <div style={{ fontSize: 11, color: "#555", lineHeight: 1.5 }}>{macroContext.macro_theme}</div>
+          </div>
+
+          {sectorLoading && (
+            <div style={{ textAlign: "center", padding: "16px 0", fontSize: 12, color: "#2a2a2a" }}>Analysing sector impacts…</div>
+          )}
+
+          {sectorData?.sectors && sectorData.sectors.map((sector, i) => {
+            const c = FC[sector.flow] || "#555";
+            const isExp = expandedSector === i;
+            return (
+              <div key={i} style={{ marginBottom: 8 }}>
+                <div
+                  onClick={() => setExpandedSector(isExp ? null : i)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", background: isExp ? c + "10" : "rgba(255,255,255,.02)", border: "1px solid " + (isExp ? c + "30" : "rgba(255,255,255,.06)"), borderLeft: "3px solid " + c, borderRadius: "0 8px 8px 0", cursor: "pointer" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#e0e0e0" }}>{sector.name}</div>
+                    <div style={{ fontSize: 10, color: "#444", marginTop: 2, lineHeight: 1.4 }}>{sector.reason}</div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+                    <div style={{ fontSize: 9, fontWeight: 800, color: c, letterSpacing: 1 }}>{sector.flow}</div>
+                    <div style={{ fontSize: 9, color: "#333" }}>{isExp ? "▲" : "▼"}</div>
+                  </div>
+                </div>
+
+                {isExp && (
+                  <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderTop: "none", borderRadius: "0 0 8px 8px", padding: "12px 14px" }}>
+                    <div style={{ fontSize: 9, color: "#333", letterSpacing: 1.5, fontWeight: 700, marginBottom: 10 }}>AFFECTED TICKERS — tap to brief</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {(sector.tickers || []).map(ticker => (
+                        <button key={ticker}
+                          onClick={() => { setQuery(ticker); setExpandedSector(null); setTimeout(() => document.getElementById("stocks-brief-btn")?.click(), 50); }}
+                          style={{ padding: "6px 14px", borderRadius: 6, border: "1px solid " + c + "40", background: c + "08", color: c, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                          {ticker}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          <div style={{ height: 1, background: "rgba(255,255,255,.05)", margin: "16px 0" }} />
+        </div>
+      )}
+
       {/* Mode indicator */}
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 14, padding: "8px 12px", background: isScalper ? "rgba(245,158,11,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (isScalper ? "rgba(245,158,11,.2)" : "rgba(255,255,255,.06)"), borderRadius: 8 }}>
         <div style={{ width: 6, height: 6, borderRadius: "50%", background: isScalper ? "#f59e0b" : "#00d4ff", flexShrink: 0 }} />
@@ -1101,7 +1188,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
             placeholder={isScalper ? "NVDA, TSLA, AAPL — about to trade?" : "Tesla, MSFT, Apple, NVDA, any ticker…"}
             style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid " + (isScalper ? "rgba(245,158,11,.25)" : "rgba(245,158,11,.2)"), borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
           />
-          <button onClick={runStock} disabled={activeLoading} style={{ padding: "10px 16px", borderRadius: 8, cursor: activeLoading ? "not-allowed" : "pointer", background: activeLoading ? "rgba(255,255,255,.02)" : "rgba(245,158,11,.12)", color: activeLoading ? "#2a2a2a" : "#f59e0b", border: "1px solid rgba(245,158,11,.25)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+          <button id="stocks-brief-btn" onClick={runStock} disabled={activeLoading} style={{ padding: "10px 16px", borderRadius: 8, cursor: activeLoading ? "not-allowed" : "pointer", background: activeLoading ? "rgba(255,255,255,.02)" : "rgba(245,158,11,.12)", color: activeLoading ? "#2a2a2a" : "#f59e0b", border: "1px solid rgba(245,158,11,.25)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
             {activeLoading ? "…" : isScalper ? "CHECK NOW" : "BRIEF ME"}
           </button>
         </div>
@@ -1997,6 +2084,9 @@ function AppInner({ navigate }) {
   const [data, setData] = useState(null);
   const [inst, setInst] = useState(null);
   const [error, setError] = useState(null);
+  // Global macro context — set when any Full Brief is generated
+  // Passed to Stocks tab for sector impact intelligence
+  const [globalMacroContext, setGlobalMacroContext] = useState(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState("limit");
   const [stockQuery, setStockQuery] = useState("");
@@ -2080,6 +2170,16 @@ function AppInner({ navigate }) {
       }
       const result = await getBriefing(found, mm, calendarEvents);
       setData(result); increment();
+      // Store macro context globally for Stocks tab sector intelligence
+      if (mm === "full" && result) {
+        setGlobalMacroContext({
+          instrument: found.label,
+          macro_theme: result.macro_theme || result.headline_summary || "",
+          geopolitical: result.geopolitical_risks || "",
+          headline: result.headline_summary || "",
+          timestamp: Date.now(),
+        });
+      }
     } catch (e) { setError(e.message || "Fetch failed. Please try again."); }
     finally { setLoading(false); }
   };
@@ -2237,6 +2337,7 @@ function AppInner({ navigate }) {
                 ? <StocksTab
                     query={stockQuery} setQuery={setStockQuery}
                     data={stockData} setData={setStockData}
+                    macroContext={globalMacroContext}
                     loading={stockLoading} setLoading={setStockLoading}
                     error={stockError} setError={setStockError}
                     mode={mode}
