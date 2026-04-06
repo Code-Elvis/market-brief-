@@ -1701,7 +1701,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
             const name = inst.label;
             if (isPostSession || isPostSessionBrief) return name + " — Post-Session Brief\n\nBrief First, Trade After. Get your full briefs @ marketdebriefs.com";
             if (isScalper) return name + " — Event Impact Check\n\nEvery free calendar tells you what's on the schedule.\nMarketDebriefs tells you what each event means for the instrument you're trading — before you enter.\n\nBrief First, Trade After. marketdebriefs.com";
-            if (isEquity) return name + " — Equity Debrief\n\nBrief First, Trade After. Get your full briefs @ marketdebriefs.com";
+            if (isEquity) return name + " — Equity Debrief\n\nMarkets shift. Sectors rotate. Don't trade tickers that have stopped moving.\nKnow which sectors are being driven by the current macro theme — in real time.\n\nBrief First, Trade After. marketdebriefs.com";
             return name + " — Daily Session Outlook\n\nDon't jump blindly into the charts. Know how the market is positioned from a macro context — what's driving price and what to watch going into your session.\n\nBrief First, Trade After. Start free @ marketdebriefs.com";
           })(),
         });
