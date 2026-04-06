@@ -738,7 +738,7 @@ function userPrompt(inst, mode, calendarEvents = []) {
     } else {
       calendarContext = "\n\n(No live calendar data available — use your knowledge of today\'s scheduled releases but clearly note uncertainty)";
     }
-    return "EXACT CURRENT TIME IN EST: " + nowEST + ". I am about to trade " + inst.label + "." + calendarContext + "\n\nBased on the calendar above, determine the risk level for trading " + inst.label + " RIGHT NOW. For each event, explain in one sentence what it means specifically for " + inst.label + ". Risk level: GREEN=no events in next 2hrs (CLEAR), YELLOW=event within 2hrs (CAUTION), RED=event within 30min (STAND DOWN). Do not invent events not listed above. No price levels. No directional signals.";
+    return "EXACT CURRENT TIME IN EST: " + nowEST + ". I am about to trade " + inst.label + "." + calendarContext + "\n\nYour task: (1) Determine risk level for trading " + inst.label + " right now. (2) For EVERY event listed above, write expected_impact: ONE sentence explaining the macro mechanism — specifically how this event affects " + inst.label + " e.g. for Gold: \'Strong ISM Services PMI reinforces Fed hawkishness reducing gold appeal as a non-yielding safe haven asset.\' (3) Copy time_est and due_in EXACTLY from the calendar data. (4) Risk: GREEN=nothing in 2hrs, YELLOW=something in 2hrs, RED=something in 30min. NEVER leave expected_impact empty — it is the core value of this feature.";
   }
   return "Current time: " + now + ". Full macro briefing for " + inst.label + ". List only the most important UPCOMING scheduled events after this exact time that will move this instrument in the next 48 hours. Include their scheduled time. Do NOT include any events that have already happened today. Focus on CURRENT central bank stance and live geopolitical risks. No price levels.";
 }
@@ -1891,7 +1891,7 @@ function ScalperView({ inst, data }) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                 <div style={{ fontSize: 13, color: ev.passed ? "#555" : "#e0e0e0", fontWeight: 600, flex: 1 }}>{ev.event}</div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  {ev.time_est && <div style={{ fontSize: 11, color: ev.passed ? "#444" : "#ffd700", fontWeight: 700 }}>{ev.time_est} ET</div>}
+                  {ev.time_est && <div style={{ fontSize: 11, color: ev.passed ? "#444" : "#ffd700", fontWeight: 700 }}>{ev.time_est.replace(/ (EST|EDT|ET)$/i, "")} ET</div>}
                   <div style={{ fontSize: 10, color: ev.passed ? "#333" : "#888", marginTop: 2 }}>
                     {ev.due_in ? ev.due_in.replace(/^in\s+/i, "").replace(/^(\d)/, "in $1") : ""}
                   </div>
