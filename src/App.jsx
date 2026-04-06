@@ -1707,51 +1707,18 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
 
       const el = document.getElementById("share-card-el");
 
-      // Clone into an isolated off-screen container so html2canvas
-      // always starts from 0,0 with no scroll or offset interference
-      const CARD_W = 420;
-      const wrapper = document.createElement("div");
-      wrapper.style.cssText = [
-        "position:fixed",
-        "top:0", "left:0",
-        "width:" + CARD_W + "px",
-        "background:#0a0c0f",
-        "z-index:-99999",
-        "pointer-events:none",
-        "overflow:visible",
-        "padding:0", "margin:0",
-      ].join(";");
-      const clone = el.cloneNode(true);
-      clone.style.cssText = [
-        "position:relative",
-        "top:auto", "left:auto",
-        "width:" + CARD_W + "px",
-        "border-radius:20px",
-        "overflow:hidden",
-        "margin:0", "padding:22px",
-        "box-sizing:border-box",
-        "background:#0a0c0f",
-      ].join(";");
-      wrapper.appendChild(clone);
-      document.body.appendChild(wrapper);
+      // Scroll to top of card before capture to ensure no offset
+      el.scrollIntoView({ block: "start" });
+      await new Promise(r => setTimeout(r, 60));
 
-      // Let the DOM paint
-      await new Promise(r => setTimeout(r, 80));
-
-      const canvas = await window.html2canvas(clone, {
+      const canvas = await window.html2canvas(el, {
         backgroundColor: "#0a0c0f",
         scale: 2,
         useCORS: true,
         logging: false,
-        x: 0,
-        y: 0,
-        scrollX: 0,
-        scrollY: 0,
-        width: CARD_W,
-        windowWidth: CARD_W,
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
       });
-
-      document.body.removeChild(wrapper);
 
       const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
       const file = new File([blob], "marketdebriefs-" + inst.label.replace(/\//g,"-") + ".png", { type: "image/png" });
