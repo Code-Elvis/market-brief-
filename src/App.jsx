@@ -1580,11 +1580,19 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
       }
 
       const el = document.getElementById("share-card-el");
+      const rect = el.getBoundingClientRect();
       const canvas = await window.html2canvas(el, {
         backgroundColor: "#0a0c0f",
         scale: 2,
         useCORS: true,
         logging: false,
+        width: rect.width,
+        height: rect.height,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: rect.width,
       });
 
       const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
