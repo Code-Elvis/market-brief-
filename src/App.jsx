@@ -1667,16 +1667,39 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
       }
 
       const el = document.getElementById("share-card-el");
-      // Force the element into a clean capture context
-      const originalStyle = el.style.cssText;
-      el.style.position = "fixed";
-      el.style.top = "0";
-      el.style.left = "0";
-      el.style.zIndex = "-9999";
-      el.style.width = "400px";
-      // Wait for repaint
-      await new Promise(r => setTimeout(r, 50));
-      const canvas = await window.html2canvas(el, {
+
+      // Clone into an isolated off-screen container so html2canvas
+      // always starts from 0,0 with no scroll or offset interference
+      const CARD_W = 420;
+      const wrapper = document.createElement("div");
+      wrapper.style.cssText = [
+        "position:fixed",
+        "top:0", "left:0",
+        "width:" + CARD_W + "px",
+        "background:#0a0c0f",
+        "z-index:-99999",
+        "pointer-events:none",
+        "overflow:visible",
+        "padding:0", "margin:0",
+      ].join(";");
+      const clone = el.cloneNode(true);
+      clone.style.cssText = [
+        "position:relative",
+        "top:auto", "left:auto",
+        "width:" + CARD_W + "px",
+        "border-radius:20px",
+        "overflow:hidden",
+        "margin:0", "padding:22px",
+        "box-sizing:border-box",
+        "background:#0a0c0f",
+      ].join(";");
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+
+      // Let the DOM paint
+      await new Promise(r => setTimeout(r, 80));
+
+      const canvas = await window.html2canvas(clone, {
         backgroundColor: "#0a0c0f",
         scale: 2,
         useCORS: true,
@@ -1685,10 +1708,11 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
         y: 0,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: 400,
+        width: CARD_W,
+        windowWidth: CARD_W,
       });
-      // Restore original style
-      el.style.cssText = originalStyle;
+
+      document.body.removeChild(wrapper);
 
       const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
       const file = new File([blob], "marketdebriefs-" + inst.label.replace(/\//g,"-") + ".png", { type: "image/png" });
@@ -2200,8 +2224,40 @@ function AppInner({ navigate }) {
 
   return (
     <>
-      <style>{`*, *::before, *::after { box-sizing: border-box; } body { margin: 0; padding: 0; } textarea { box-sizing: border-box; } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } }`}</style>
+      <style>{`*, *::before, *::after { box-sizing: border-box; } body { margin: 0; padding: 0; } textarea { box-sizing: border-box; } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }`}</style>
       {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} />}
+
+      {/* ── BRIEF LOADING OVERLAY — keeps user in app during fetch ── */}
+      {loading && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(6,14,14,.94)",
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          gap: 24, padding: 32,
+        }}>
+          <div style={{ position: "relative", width: 72, height: 72 }}>
+            <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid rgba(0,212,255,.15)", animation: "md-ping 1.6s cubic-bezier(0,0,.2,1) infinite" }} />
+            <div style={{ position: "absolute", inset: 8, borderRadius: "50%", border: "2px solid rgba(0,212,255,.25)", animation: "md-ping 1.6s cubic-bezier(0,0,.2,1) infinite .4s" }} />
+            <div style={{ position: "absolute", inset: 18, borderRadius: "50%", background: "rgba(0,212,255,.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⚡</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 11, color: "#00d4ff", letterSpacing: 2, fontWeight: 700, fontFamily: "monospace", marginBottom: 8 }}>MARKETDEBRIEFS</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 6 }}>Generating brief…</div>
+            <div style={{ fontSize: 12, color: "#555", marginBottom: 20 }}>{inst?.label || "Loading macro context"}</div>
+            <div style={{
+              padding: "12px 20px",
+              background: "rgba(255,165,0,.06)",
+              border: "1px solid rgba(255,165,0,.18)",
+              borderRadius: 10,
+              maxWidth: 260, margin: "0 auto",
+            }}>
+              <div style={{ fontSize: 12, color: "#ffa500", fontWeight: 700, marginBottom: 4 }}>⚠️ Stay in this tab</div>
+              <div style={{ fontSize: 11, color: "#444", lineHeight: 1.6 }}>Leaving the app will interrupt the brief and cause it to fail</div>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
         <div className="header-inner" style={{ background: "linear-gradient(180deg,#0d1117,#0a0c0f)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "16px 20px 0", position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ maxWidth: 860, margin: "0 auto", width: "100%" }}>
