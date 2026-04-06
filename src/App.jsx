@@ -1580,20 +1580,28 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
       }
 
       const el = document.getElementById("share-card-el");
-      const rect = el.getBoundingClientRect();
+      // Force the element into a clean capture context
+      const originalStyle = el.style.cssText;
+      el.style.position = "fixed";
+      el.style.top = "0";
+      el.style.left = "0";
+      el.style.zIndex = "-9999";
+      el.style.width = "400px";
+      // Wait for repaint
+      await new Promise(r => setTimeout(r, 50));
       const canvas = await window.html2canvas(el, {
         backgroundColor: "#0a0c0f",
         scale: 2,
         useCORS: true,
         logging: false,
-        width: rect.width,
-        height: rect.height,
         x: 0,
         y: 0,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: rect.width,
+        windowWidth: 400,
       });
+      // Restore original style
+      el.style.cssText = originalStyle;
 
       const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
       const file = new File([blob], "marketdebriefs-" + inst.label.replace(/\//g,"-") + ".png", { type: "image/png" });
