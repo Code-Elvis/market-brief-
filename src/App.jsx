@@ -114,7 +114,20 @@ function HelpPage({ navigate }) {
     <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
       <style>{`@keyframes helpFade{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}} @keyframes helpPulse{0%,100%{opacity:1}50%{opacity:.3}} .help-ans{animation:helpFade .18s ease} .help-item:hover{border-color:rgba(255,255,255,.1)!important} .help-open{border-color:rgba(0,212,255,.25)!important}`}</style>
       <nav style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 24px", borderBottom:"1px solid rgba(255,255,255,.06)", position:"sticky", top:0, background:"rgba(10,12,15,.96)", backdropFilter:"blur(10px)", zIndex:100 }}>
-        <div onClick={() => navigate("/")} style={{ fontSize:15, fontWeight:800, letterSpacing:"-0.5px", cursor:"pointer", color:"#fff" }}>MARKET<span style={{ color:"#00d4ff" }}>DEBRIEFS</span></div>
+        <div onClick={() => navigate("/")} style={{ cursor:"pointer", display:"flex", alignItems:"center" }}>
+  <svg width="148" height="26" viewBox="0 0 460 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="0,36 16,36 23,14 32,58 40,20 49,52 56,36 70,36" stroke="#00e5ff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    <circle cx="70" cy="36" r="3" fill="#00e5ff"/>
+    <rect x="78"  y="28" width="8" height="28" rx="2" fill="#00e5ff" opacity="0.28"/>
+    <rect x="91"  y="18" width="8" height="38" rx="2" fill="#00e5ff" opacity="0.58"/>
+    <rect x="104" y="22" width="8" height="34" rx="2" fill="#00e5ff"/>
+    <line x1="78" y1="34" x2="112" y2="34" stroke="#00e5ff" strokeWidth="1" opacity="0.3"/>
+    <line x1="130" y1="10" x2="130" y2="62" stroke="#1a2626" strokeWidth="1"/>
+    <text x="144" y="30" fontFamily="'Courier New', monospace" fontSize="17" fontWeight="700" fill="#ffffff" letterSpacing="2.5">MARKET</text>
+    <text x="144" y="52" fontFamily="'Courier New', monospace" fontSize="17" fontWeight="700" fill="#00e5ff" letterSpacing="2.5">DEBRIEFS</text>
+    <text x="145" y="66" fontFamily="'Courier New', monospace" fontSize="7.5" fill="#4d8f8f" letterSpacing="3.5">BRIEF FIRST · TRADE AFTER</text>
+  </svg>
+</div>
         <div style={{ display:"flex", gap:10 }}>
           <button onClick={() => navigate("/")} style={{ fontSize:11, fontFamily:"monospace", color:"#444", padding:"4px 10px", border:"1px solid #1a1a1a", borderRadius:5, background:"none", cursor:"pointer" }}>← HOME</button>
           <button onClick={() => navigate("/app")} style={{ fontSize:11, fontFamily:"monospace", color:"#00d4ff", padding:"4px 10px", border:"1px solid rgba(0,212,255,.2)", borderRadius:5, background:"rgba(0,212,255,.06)", cursor:"pointer" }}>LAUNCH APP</button>
@@ -274,7 +287,20 @@ function LandingPage({ navigate }) {
     <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif", margin: 0 }}>
       <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } body { background: #0a0c0f; } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } } @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } } .fade-up { animation: fadeUp 0.7s ease forwards; } .cta-btn:hover { opacity: 0.85; transform: translateY(-1px); } .cta-btn { transition: all 0.15s; } .chip:hover { border-color: rgba(0,212,255,.4) !important; color: #00d4ff !important; } .chip { transition: all 0.15s; cursor: default; }`}</style>
       <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 32px", borderBottom: "1px solid rgba(255,255,255,.05)", position: "sticky", top: 0, background: "rgba(10,12,15,.95)", backdropFilter: "blur(10px)", zIndex: 100 }}>
-        <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.5px" }}>MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span></div>
+        <div style={{ display:"flex", alignItems:"center" }}>
+  <svg width="148" height="26" viewBox="0 0 460 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="0,36 16,36 23,14 32,58 40,20 49,52 56,36 70,36" stroke="#00e5ff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    <circle cx="70" cy="36" r="3" fill="#00e5ff"/>
+    <rect x="78"  y="28" width="8" height="28" rx="2" fill="#00e5ff" opacity="0.28"/>
+    <rect x="91"  y="18" width="8" height="38" rx="2" fill="#00e5ff" opacity="0.58"/>
+    <rect x="104" y="22" width="8" height="34" rx="2" fill="#00e5ff"/>
+    <line x1="78" y1="34" x2="112" y2="34" stroke="#00e5ff" strokeWidth="1" opacity="0.3"/>
+    <line x1="130" y1="10" x2="130" y2="62" stroke="#1a2626" strokeWidth="1"/>
+    <text x="144" y="30" fontFamily="'Courier New', monospace" fontSize="17" fontWeight="700" fill="#ffffff" letterSpacing="2.5">MARKET</text>
+    <text x="144" y="52" fontFamily="'Courier New', monospace" fontSize="17" fontWeight="700" fill="#00e5ff" letterSpacing="2.5">DEBRIEFS</text>
+    <text x="145" y="66" fontFamily="'Courier New', monospace" fontSize="7.5" fill="#4d8f8f" letterSpacing="3.5">BRIEF FIRST · TRADE AFTER</text>
+  </svg>
+</div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={() => navigate("/help")} style={{ fontSize: 11, fontWeight: 600, color: "#333", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>HELP</button><button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button></div>
       </nav>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "80px 32px 60px", textAlign: "center" }} className="fade-up">
@@ -876,7 +902,20 @@ function AuthScreen() {
 
       {/* Logo */}
       <div style={{ marginBottom: 24, textAlign: "center" }}>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px" }}>MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span></div>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
+  <svg width="148" height="26" viewBox="0 0 460 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="0,36 16,36 23,14 32,58 40,20 49,52 56,36 70,36" stroke="#00e5ff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    <circle cx="70" cy="36" r="3" fill="#00e5ff"/>
+    <rect x="78"  y="28" width="8" height="28" rx="2" fill="#00e5ff" opacity="0.28"/>
+    <rect x="91"  y="18" width="8" height="38" rx="2" fill="#00e5ff" opacity="0.58"/>
+    <rect x="104" y="22" width="8" height="34" rx="2" fill="#00e5ff"/>
+    <line x1="78" y1="34" x2="112" y2="34" stroke="#00e5ff" strokeWidth="1" opacity="0.3"/>
+    <line x1="130" y1="10" x2="130" y2="62" stroke="#1a2626" strokeWidth="1"/>
+    <text x="144" y="30" fontFamily="'Courier New', monospace" fontSize="17" fontWeight="700" fill="#ffffff" letterSpacing="2.5">MARKET</text>
+    <text x="144" y="52" fontFamily="'Courier New', monospace" fontSize="17" fontWeight="700" fill="#00e5ff" letterSpacing="2.5">DEBRIEFS</text>
+    <text x="145" y="66" fontFamily="'Courier New', monospace" fontSize="7.5" fill="#4d8f8f" letterSpacing="3.5">BRIEF FIRST · TRADE AFTER</text>
+  </svg>
+</div>
         <div style={{ fontSize: 12, color: "#444", marginTop: 4 }}>Know the macro before you trade</div>
       </div>
 
