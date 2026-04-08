@@ -2134,13 +2134,13 @@ function AppInner({ navigate }) {
   const [breakingLoading, setBreakingLoading] = useState(false);
   const [breakingError, setBreakingError] = useState(null);
   const [narrativeFeed, setNarrativeFeed] = useState(() => {
-    // Load today's feed from localStorage on mount
     try {
       const stored = localStorage.getItem("md_narrative_feed");
       if (stored) {
         const { date, feed } = JSON.parse(stored);
         const today = new Date().toISOString().slice(0, 10);
-        if (date === today && Array.isArray(feed)) return feed;
+        // Only use cache if it has actual content (not empty from error period)
+        if (date === today && Array.isArray(feed) && feed.length > 0) return feed;
       }
     } catch(e) {}
     return [];
@@ -2433,8 +2433,12 @@ function AppInner({ navigate }) {
                           setNarrativeFeed(prev => {
                             const existingIds = new Set(prev.map(n => n.id));
                             const newOnes = d.narratives.filter(n => !existingIds.has(n.id));
-                            const updated = [...newOnes, ...prev].slice(0, 40);
-                            // Persist to localStorage with today's date
+                            // Political alerts always float to top in the UI too
+                            const merged = [...newOnes, ...prev].slice(0, 40);
+                            const updated = [
+                              ...merged.filter(n => n.political_alert),
+                              ...merged.filter(n => !n.political_alert),
+                            ];
                             const today = new Date().toISOString().slice(0, 10);
                             try {
                               localStorage.setItem("md_narrative_feed", JSON.stringify({ date: today, feed: updated }));
