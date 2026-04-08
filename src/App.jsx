@@ -828,7 +828,7 @@ async function getEquityPostSession(ticker) {
 
 async function getEquityScalper(label) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  const sys = `You are a professional equity trader's risk assistant. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
+  const sys = `You are a professional equity risk assistant for traders. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
 RULES: Never mention specific price levels. Focus only on CURRENT and IMMINENT risks for this specific stock.
 EQUITY SCALPER schema: {"ticker":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","earnings_proximity":"SAFE|NEAR|IMMINENT","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}`;
   const msg = "Time: " + now + ". I am about to trade " + label + ". Give me a GREEN / YELLOW / RED equity scalper check. Flag: earnings proximity, any breaking company-specific news, analyst events, sector pressure, or macro events that directly affect this stock right now. No price levels.";
@@ -846,7 +846,7 @@ CRITICAL RULES:
 2. NEVER mention specific price levels, targets, stops or support/resistance numbers.
 3. Be specific about WHICH macro events or news actually fired in the last session and how the market reacted.
 4. The watch_tomorrow field should name ONE specific upcoming event or theme to prepare for in the next trading session.
-5. session_summary must be ONE short sentence max — like a trader's journal entry. Under 120 characters.
+5. session_summary must be ONE short sentence max — like a trading journal entry. Under 120 characters.
 6. primary_driver and what_it_revealed must each be ONE sentence, under 100 characters each.
 7. ${priceNote}
 POST-SESSION schema: {"instrument":"string","session_summary":"string","primary_driver":"string","secondary_driver":"string","what_it_revealed":"string","watch_tomorrow":"string","next_event":{"title":"string","time":"string"}}`;
