@@ -740,7 +740,7 @@ function detect(query) {
 }
 
 function sysPrompt(mode) {
-  const base = `You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
+  const base = `You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
 CRITICAL RULES — NEVER BREAK THESE:
 1. NEVER mention specific price levels, support/resistance numbers, targets, stops, or historical price ranges.
 2. EVENTS must be STRICTLY UPCOMING — scheduled in the future from the current time. NEVER include events that have already occurred or already been released today. If an event has already happened, exclude it entirely.
@@ -785,7 +785,7 @@ async function getBriefing(inst, mode, calendarEvents = []) { return callClaude(
 async function getSectorImpact(macroContext) {
   const now = new Date().toLocaleString("en-GB", { weekday:"long", year:"numeric", month:"long", day:"numeric", hour:"2-digit", minute:"2-digit", timeZone:"America/New_York" });
   const sys = `You are a macro market analyst identifying which stock sectors are affected by current macro themes.
-Respond ONLY with valid JSON. No markdown, no backticks. Start with { and end with }.
+Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
 RULES:
 1. Only include sectors DIRECTLY affected by the macro context — max 4 sectors.
 2. flow: DEMAND (sector benefits), PRESSURE (sector faces headwinds), VOLATILE (mixed), WATCH (monitor).
@@ -798,7 +798,7 @@ SCHEMA: {"sectors":[{"name":"string","flow":"DEMAND|PRESSURE|VOLATILE|WATCH","re
 
 async function getEquityBrief(label) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  const sys = `You are a professional equity analyst. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
+  const sys = `You are a professional equity analyst. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
 RULES: Never mention specific price levels. Focus on macro, fundamental, and sector context only — current and upcoming only.
 + "EQUITY BRIEF schema: {\"instrument\":\"string\",\"ticker\":\"string\",\"sector\":\"string\",\"sentiment\":\"bullish|bearish|neutral|mixed\",\"headline_summary\":\"string\",\"earnings_context\":\"string\",\"macro_tailwinds\":\"string\",\"macro_headwinds\":\"string\",\"sector_rotation\":\"string\",\"catalyst_events\":[{\"title\":\"string\",\"time\":\"string\",\"impact\":\"HIGH|MEDIUM\",\"direction\":\"BULLISH|BEARISH|NEUTRAL\",\"summary\":\"string\",\"why_it_moves_price\":\"string\"}],\"institutional_flow\":\"string\",\"teaching_moment\":\"string\"}. IMPORTANT: why_it_moves_price is MANDATORY — never empty. ONE sentence explaining the macro mechanism e.g. Strong earnings growth reduces Fed rate cut expectations, pressuring growth stocks. No price levels.";
   const msg = "Today: " + now + ". Equity debrief for " + label + ". Cover: latest earnings context, current macro tailwinds and headwinds for this stock and its sector, upcoming catalyst events, sector rotation dynamics, and institutional flow signals. No price levels.";
@@ -828,9 +828,9 @@ async function getEquityPostSession(ticker) {
 
 async function getEquityScalper(label) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  const sys = `You are a professional equity risk assistant for traders. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
-RULES: Never mention specific price levels. Focus only on CURRENT and IMMINENT risks for this specific stock.
-EQUITY SCALPER schema: {"ticker":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","earnings_proximity":"SAFE|NEAR|IMMINENT","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}`;
+  const sys = "You are a professional equity risk assistant for traders. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
+    " RULES: Never mention specific price levels. Focus only on CURRENT and IMMINENT risks for this specific stock." +
+    " EQUITY SCALPER schema: {"ticker":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","earnings_proximity":"SAFE|NEAR|IMMINENT","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}";
   const msg = "Time: " + now + ". I am about to trade " + label + ". Give me a GREEN / YELLOW / RED equity scalper check. Flag: earnings proximity, any breaking company-specific news, analyst events, sector pressure, or macro events that directly affect this stock right now. No price levels.";
   return callClaude(sys, msg);
 }
@@ -840,7 +840,7 @@ async function getPostSessionBrief(inst, priceContext) {
   const priceNote = priceContext
     ? `IMPORTANT: The actual last trading session move was ${priceContext.direction} ${priceContext.pct}. Your narrative MUST be consistent with this — if the move was positive/bullish write accordingly, if negative/bearish write accordingly.`
     : "";
-  const sys = `You are a professional market intelligence analyst writing an end-of-day session debrief. Respond ONLY with valid JSON. No markdown, no backticks, no preamble. Start with { and end with }.
+  const sys = `You are a professional market intelligence analyst writing an end-of-day session debrief. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
 CRITICAL RULES:
 1. You are looking BACKWARDS at the most recent completed TRADING SESSION (Monday-Friday only — ignore weekends).
 2. NEVER mention specific price levels, targets, stops or support/resistance numbers.
@@ -856,7 +856,7 @@ POST-SESSION schema: {"instrument":"string","session_summary":"string","primary_
 
 async function getBreakingNarrative(headline) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  const sys = `You are a professional macro market interpreter. A breaking news headline has just hit. Your job is to explain what it means for markets — no fluff, no directional signals, just clear macro cause-and-effect. Respond ONLY with valid JSON. No markdown, no backticks. Start with { and end with }.
+  const sys = `You are a professional macro market interpreter. A breaking news headline has just hit. Your job is to explain what it means for markets — no fluff, no directional signals, just clear macro cause-and-effect. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
 RULES:
 1. NEVER mention specific price levels, targets or stops.
 2. NEVER label instruments as BULLISH or BEARISH — instead describe the MECHANISM: what force is acting on this instrument and why.
