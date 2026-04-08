@@ -152,7 +152,6 @@ export default async function handler(req, res) {
       filtered.map(async a => {
         try {
           const interp = await interpretHeadline(a.headline, AN_KEY);
-          return {
           const political = isPoliticalAlert(a.headline);
           return {
             id: String(a.id || `fh-${Date.now()}-${Math.random().toString(36).slice(2,6)}`),
