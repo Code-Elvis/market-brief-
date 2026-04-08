@@ -2469,15 +2469,30 @@ function AppInner({ navigate }) {
                     {narrativeFeed.map((n, i) => (
                       <div key={n.id || i}
                         onClick={() => setSelectedNarrative(selectedNarrative?.id === n.id ? null : n)}
-                        style={{ background: selectedNarrative?.id === n.id ? "rgba(255,71,87,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (selectedNarrative?.id === n.id ? "rgba(255,71,87,.2)" : "rgba(255,255,255,.06)"), borderLeft: "3px solid " + (n.urgency === "CRITICAL" ? "#ff4757" : n.urgency === "HIGH" ? "#ffa500" : "#ffd700"), borderRadius: "0 8px 8px 0", padding: "11px 13px", cursor: "pointer" }}>
+                        style={{
+                          background: n.political_alert
+                            ? (selectedNarrative?.id === n.id ? "rgba(255,71,87,.1)" : "rgba(255,71,87,.05)")
+                            : (selectedNarrative?.id === n.id ? "rgba(255,71,87,.06)" : "rgba(255,255,255,.02)"),
+                          border: "1px solid " + (n.political_alert ? "rgba(255,71,87,.3)" : selectedNarrative?.id === n.id ? "rgba(255,71,87,.2)" : "rgba(255,255,255,.06)"),
+                          borderLeft: "3px solid " + (n.political_alert ? "#ff4757" : n.urgency === "CRITICAL" ? "#ff4757" : n.urgency === "HIGH" ? "#ffa500" : "#ffd700"),
+                          borderRadius: "0 8px 8px 0", padding: "11px 13px", cursor: "pointer",
+                        }}>
+                        {/* Political Alert banner */}
+                        {n.political_alert && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7, padding: "4px 8px", background: "rgba(255,71,87,.12)", borderRadius: 4, width: "fit-content" }}>
+                            <span style={{ fontSize: 9, color: "#ff4757", fontWeight: 800, letterSpacing: 1.5, fontFamily: "monospace" }}>🔴 POLITICAL MARKET ALERT</span>
+                          </div>
+                        )}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span style={{ fontSize: 9, fontWeight: 700, color: n.tag === "BREAKING" ? "#ff4757" : "#555", fontFamily: "monospace" }}>{n.tag === "BREAKING" ? "⚡" : "📰"} {n.tag}</span>
+                            <span style={{ fontSize: 9, fontWeight: 700, color: n.political_alert ? "#ff4757" : n.tag === "BREAKING" ? "#ff4757" : "#555", fontFamily: "monospace" }}>
+                              {n.political_alert ? "🔴" : n.tag === "BREAKING" ? "⚡" : "📰"} {n.political_alert ? "POLITICAL" : n.tag}
+                            </span>
                             <span style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "monospace" }}>{n.age || n.published_at?.slice(11,16)}</span>
                           </div>
                           <span style={{ fontSize: 9, fontWeight: 700, color: n.urgency === "CRITICAL" ? "#ff4757" : n.urgency === "HIGH" ? "#ffa500" : "#ffd700", flexShrink: 0 }}>{n.urgency}</span>
                         </div>
-                        <div style={{ fontSize: 12, color: "#e0e0e0", fontWeight: 600, lineHeight: 1.4, marginBottom: selectedNarrative?.id === n.id ? 10 : 0 }}>{n.headline}</div>
+                        <div style={{ fontSize: 12, color: n.political_alert ? "#ffb3b3" : "#e0e0e0", fontWeight: n.political_alert ? 700 : 600, lineHeight: 1.4, marginBottom: selectedNarrative?.id === n.id ? 10 : 0 }}>{n.headline}</div>
 
                         {/* Expanded view */}
                         {selectedNarrative?.id === n.id && (
