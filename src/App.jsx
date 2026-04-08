@@ -807,17 +807,17 @@ RULES: Never mention specific price levels. Focus on macro, fundamental, and sec
 
 async function getEquityPostSession(ticker) {
   const now = new Date().toLocaleString("en-GB", { weekday:"long", year:"numeric", month:"long", day:"numeric", hour:"2-digit", minute:"2-digit", timeZone:"America/New_York" });
-  const sys = `You are a professional equity macro analyst writing an end-of-day debrief for a stock. Respond ONLY with valid JSON. No markdown, no backticks. Start with { and end with }.
-RULES:
-1. Look BACKWARDS at the most recent completed trading session.
-2. Explain what actually moved the stock today — earnings? macro? sector rotation? Fed news?
-3. NEVER mention specific price levels, targets or stops.
-4. session_summary: ONE sentence — what happened today with this stock. Under 120 chars.
-5. primary_driver: the main catalyst — was it earnings, macro, sector move, news event?
-6. macro_connection: how today's move connects to the broader macro environment.
-7. what_it_signals: what does today's move tell us about this stock/sector going forward?
-8. watch_next: ONE specific upcoming catalyst — earnings date, macro event, sector data.
-SCHEMA: {"ticker":"string","sector":"string","session_summary":"string","primary_driver":"string","macro_connection":"string","what_it_signals":"string","watch_next":"string","next_event":{"title":"string","time":"string"}}`;
+  const sys = "You are a professional equity macro analyst writing an end-of-day debrief for a stock. Respond ONLY with valid JSON. No markdown. Start with { and end with }.\n" +
+    "RULES:\n" +
+    "1. Look BACKWARDS at the most recent completed trading session.\n" +
+    "2. Explain what actually moved the stock today — earnings? macro? sector rotation? Fed news?\n" +
+    "3. NEVER mention specific price levels, targets or stops.\n" +
+    "4. session_summary: ONE sentence — what happened today with this stock. Under 120 chars.\n" +
+    "5. primary_driver: the main catalyst — earnings, macro, sector move, news event.\n" +
+    "6. macro_connection: how today's move connects to the broader macro environment.\n" +
+    "7. what_it_signals: what does today's move tell us about this stock/sector going forward?\n" +
+    "8. watch_next: ONE specific upcoming catalyst — earnings date, macro event, sector data.\n" +
+    'SCHEMA: {"ticker":"string","sector":"string","session_summary":"string","primary_driver":"string","macro_connection":"string","what_it_signals":"string","watch_next":"string","next_event":{"title":"string","time":"string"}}';
   const msg = `Current time: ${now} EST. Post-session debrief for ${ticker}. What drove this stock today? Explain the macro mechanism behind the move — earnings beat/miss, sector rotation, Fed impact, geopolitical, institutional flow. What does it signal going forward? No price levels.`;
   return callClaude(sys, msg);
 }
