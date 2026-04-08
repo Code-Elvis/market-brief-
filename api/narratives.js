@@ -34,6 +34,22 @@ const EQUITY_NOISE = [
   "annual report","10-k","10-q",
 ];
 
+// Political/Trump market alerts — highest priority tier
+const POLITICAL_ALERT_KEYWORDS = [
+  "trump", "tariff", "trade war", "trade deal", "executive order",
+  "truth social", "trump post", "trump says", "trump threatens",
+  "white house", "oval office", "president trump",
+  "sanctions", "trade policy", "import tax", "export ban",
+  "nato", "ukraine aid", "israel strike", "iran strike",
+  "market tariff", "reciprocal tariff", "trump tariff",
+];
+
+function isPoliticalAlert(title) {
+  if (!title) return false;
+  const l = title.toLowerCase();
+  return POLITICAL_ALERT_KEYWORDS.some(kw => l.includes(kw));
+}
+
 function isMacroRelevant(title) {
   if (!title) return false;
   const l = title.toLowerCase();
@@ -137,14 +153,18 @@ export default async function handler(req, res) {
         try {
           const interp = await interpretHeadline(a.headline, AN_KEY);
           return {
+          const political = isPoliticalAlert(a.headline);
+          return {
             id: String(a.id || `fh-${Date.now()}-${Math.random().toString(36).slice(2,6)}`),
             headline: a.headline,
             source: a.source || "Finnhub",
             url: a.url,
-            published_at: a.datetime, // Unix timestamp
+            published_at: a.datetime,
             age: getAge(a.datetime),
-            tag: "WIRE",
+            tag: political ? "POLITICAL_ALERT" : "WIRE",
+            political_alert: political,
             ...interp,
+            urgency: political && interp.urgency !== "CRITICAL" ? "CRITICAL" : interp.urgency,
           };
         } catch(e) {
           console.error("interpret failed:", e.message);
@@ -156,7 +176,12 @@ export default async function handler(req, res) {
     const narratives = settled
       .filter(r => r.status === "fulfilled" && r.value)
       .map(r => r.value)
-      .sort((a, b) => b.published_at - a.published_at);
+      .sort((a, b) => {
+        // Political alerts always float to top
+        if (a.political_alert && !b.political_alert) return -1;
+        if (!a.political_alert && b.political_alert) return 1;
+        return b.published_at - a.published_at;
+      });
 
     cache = { narratives, fetched_at: Date.now(), ttl_ms: cache.ttl_ms };
 
