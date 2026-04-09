@@ -788,7 +788,7 @@ async function getEquityBrief(label) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const sys = "You are a professional equity analyst. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }." +
     " RULES: Never mention specific price levels. Focus on macro, fundamental, and sector context only." +
-    " EQUITY BRIEF schema: {"instrument":"string","ticker":"string","sector":"string","sentiment":"bullish|bearish|neutral|mixed","headline_summary":"string","earnings_context":"string","macro_tailwinds":"string","macro_headwinds":"string","sector_rotation":"string","catalyst_events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string"}],"institutional_flow":"string","teaching_moment":"string"}." +
+    " EQUITY BRIEF schema: {\"instrument\":\"string\",\"ticker\":\"string\",\"sector\":\"string\",\"sentiment\":\"bullish|bearish|neutral|mixed\",\"headline_summary\":\"string\",\"earnings_context\":\"string\",\"macro_tailwinds\":\"string\",\"macro_headwinds\":\"string\",\"sector_rotation\":\"string\",\"catalyst_events\":[{\"title\":\"string\",\"time\":\"string\",\"impact\":\"HIGH|MEDIUM\",\"direction\":\"BULLISH|BEARISH|NEUTRAL\",\"summary\":\"string\",\"why_it_moves_price\":\"string\"}],\"institutional_flow\":\"string\",\"teaching_moment\":\"string\"}." +
     " IMPORTANT: why_it_moves_price is MANDATORY - never empty. ONE sentence explaining the macro mechanism. No price levels.";
   const msg = "Today: " + now + ". Equity debrief for " + label + ". Cover: latest earnings context, current macro tailwinds and headwinds for this stock and its sector, upcoming catalyst events, sector rotation dynamics, and institutional flow signals. No price levels.";
   return callClaude(sys, msg);
@@ -806,7 +806,7 @@ async function getEquityPostSession(ticker) {
     " 6. macro_connection: how this move connects to the broader macro environment." +
     " 7. what_it_signals: what does this move tell us about the stock/sector going forward." +
     " 8. watch_next: ONE specific upcoming catalyst - earnings date, macro event, sector data." +
-    " SCHEMA: {"ticker":"string","sector":"string","session_summary":"string","primary_driver":"string","macro_connection":"string","what_it_signals":"string","watch_next":"string","next_event":{"title":"string","time":"string"}}";
+    " SCHEMA: {\"ticker\":\"string\",\"sector\":\"string\",\"session_summary\":\"string\",\"primary_driver\":\"string\",\"macro_connection\":\"string\",\"what_it_signals\":\"string\",\"watch_next\":\"string\",\"next_event\":{\"title\":\"string\",\"time\":\"string\"}}";
   const msg = "Current time: " + now + " EST. Post-session debrief for " + ticker + ". What drove this stock today? Explain the macro mechanism behind the move - earnings beat/miss, sector rotation, Fed impact, geopolitical, institutional flow. What does it signal going forward? No price levels.";
   return callClaude(sys, msg);
 }
@@ -815,7 +815,7 @@ async function getEquityScalper(label) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const sys = "You are a professional equity risk assistant for traders. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
     " RULES: Never mention specific price levels. Focus only on CURRENT and IMMINENT risks for this specific stock." +
-    " EQUITY SCALPER schema: {"ticker":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","earnings_proximity":"SAFE|NEAR|IMMINENT","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}";
+    " EQUITY SCALPER schema: {\"ticker\":\"string\",\"risk_level\":\"GREEN|YELLOW|RED\",\"risk_reason\":\"string\",\"scalper_note\":\"string\",\"earnings_proximity\":\"SAFE|NEAR|IMMINENT\",\"breaking\":[{\"headline\":\"string\",\"direction\":\"BULLISH|BEARISH|NEUTRAL\",\"age\":\"string\"}],\"imminent\":[{\"event\":\"string\",\"due_in\":\"string\",\"expected_impact\":\"string\"}]}";
   const msg = "Time: " + now + ". I am about to trade " + label + ". Give me a GREEN / YELLOW / RED equity scalper check. Flag: earnings proximity, any breaking company-specific news, analyst events, sector pressure, or macro events that directly affect this stock right now. No price levels.";
   return callClaude(sys, msg);
 }
@@ -833,7 +833,7 @@ async function getPostSessionBrief(inst, priceContext) {
     " 5. session_summary = ONE short sentence max. Under 120 chars." +
     " 6. primary_driver and what_it_revealed = ONE sentence each, under 100 chars." +
     " 7. " + priceNote +
-    " POST-SESSION schema: {"instrument":"string","session_summary":"string","primary_driver":"string","secondary_driver":"string","what_it_revealed":"string","watch_tomorrow":"string","next_event":{"title":"string","time":"string"}}";
+    " POST-SESSION schema: {\"instrument\":\"string\",\"session_summary\":\"string\",\"primary_driver\":\"string\",\"secondary_driver\":\"string\",\"what_it_revealed\":\"string\",\"watch_tomorrow\":\"string\",\"next_event\":{\"title\":\"string\",\"time\":\"string\"}}";
   const msg = "Current time: " + now + ". Write a post-session debrief for the most recent TRADING DAY (Mon-Fri) for " + inst.label + ". " + priceNote + " Cover: (1) how the last trading session played out in one sentence, (2) the primary macro driver, (3) any secondary factor, (4) what it revealed about the macro picture, (5) what to watch in the next trading session, (6) the next scheduled high-impact event. No price levels.";
   return callClaude(sys, msg);
 }
@@ -847,7 +847,7 @@ async function getBreakingNarrative(headline) {
     " 4. narrative_summary must be 1-2 punchy sentences - the macro cause-and-effect a trader needs in 10 seconds." +
     " 5. Each instrument impact must be ONE sentence describing what macro force is acting on it and why." +
     " 6. urgency: CRITICAL (market moving now), HIGH (significant impact expected), MEDIUM (watch closely)." +
-    " BREAKING NARRATIVE schema: {"headline":"string","narrative_summary":"string","urgency":"CRITICAL|HIGH|MEDIUM","instruments":[{"name":"string","flow":"DEMAND|PRESSURE|VOLATILE|WATCH","impact":"string"}],"tensions":"string","watch_for":"string","fades_when":"string"}." +
+    " BREAKING NARRATIVE schema: {\"headline\":\"string\",\"narrative_summary\":\"string\",\"urgency\":\"CRITICAL|HIGH|MEDIUM\",\"instruments\":[{\"name\":\"string\",\"flow\":\"DEMAND|PRESSURE|VOLATILE|WATCH\",\"impact\":\"string\"}],\"tensions\":\"string\",\"watch_for\":\"string\",\"fades_when\":\"string\"}." +
     " tensions field: if any instruments have conflicting forces describe the conflict here in one sentence. Leave empty string if no conflicts.";
   const msg = "Current time: " + now + ". Breaking headline: \"" + headline + "\". Interpret this for macro traders. For each affected instrument explain the MACRO MECHANISM - what force is acting on it and why. Check for cross-instrument conflicts. Never use bullish/bearish labels - describe the flow instead.";
   return callClaude(sys, msg);
