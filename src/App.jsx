@@ -69,26 +69,26 @@ function HelpPage({ navigate }) {
   const [openItem, setOpenItem] = useState(null);
   const sections = [
     { id: "getting-started", icon: "🚀", title: "Getting Started", color: "rgba(0,212,255,.1)", items: [
-      { q: "How do I get started with MarketDebriefs?", a: "Getting started takes under 60 seconds. Type any instrument into the search bar — ES, Gold, EUR/USD, BTC, Oil — and hit BRIEF ME. Your first brief is ready in under 30 seconds. No credit card needed." },
-      { q: "What is the recommended workflow before and during trading?", a: "Step 1 — Type your instrument and run a Full Brief. Read the macro theme, high-impact events and geopolitical risks. Step 2 — Run Events Brief for a CLEAR / CAUTION / STAND DOWN check — see exactly what each scheduled event means for your specific instrument. Step 3 — Check Breaking Narratives every 15 minutes. If a political alert or macro headline fires that invalidates your setup you see it here first. Step 4 — For stocks, check the Stocks tab — macro sector impacts auto-populate from your brief. Step 5 — End of day, run a Post-Session Brief on any stock to understand what drove the move. Brief First, Trade After." },
-      { q: "What exactly does MarketDebriefs do?", a: "MarketDebriefs is a macro intelligence tool for active traders. Before you enter a trade, type in your instrument and receive an instant AI-powered briefing covering the current central bank stance, live geopolitical risks, upcoming high-impact events (CPI, NFP, Fed decisions), and why they move price. Think of it as having an institutional macro analyst on call — in seconds, before every trade." },
+      { q: "How do I get started with MarketDebriefs?", a: "Getting started takes under 60 seconds. Type any instrument into the search bar  -  ES, Gold, EUR/USD, BTC, Oil  -  and hit BRIEF ME. Your first brief is ready in under 30 seconds. No credit card needed." },
+      { q: "What is the recommended workflow before and during trading?", a: "Step 1  -  Type your instrument and run a Full Brief. Read the macro theme, high-impact events and geopolitical risks. Step 2  -  Run Events Brief for a CLEAR / CAUTION / STAND DOWN check  -  see exactly what each scheduled event means for your specific instrument. Step 3  -  Check Breaking Narratives every 15 minutes. If a political alert or macro headline fires that invalidates your setup you see it here first. Step 4  -  For stocks, check the Stocks tab  -  macro sector impacts auto-populate from your brief. Step 5  -  End of day, run a Post-Session Brief on any stock to understand what drove the move. Brief First, Trade After." },
+      { q: "What exactly does MarketDebriefs do?", a: "MarketDebriefs is a macro intelligence tool for active traders. Before you enter a trade, type in your instrument and receive an instant AI-powered briefing covering the current central bank stance, live geopolitical risks, upcoming high-impact events (CPI, NFP, Fed decisions), and why they move price. Think of it as having an institutional macro analyst on call  -  in seconds, before every trade." },
       { q: "Which instruments are supported?", a: "25+ instruments across all major asset classes. Equity Indices: ES S&P 500, NQ NASDAQ, RTY Russell 2000, YM Dow Jones, DAX, Nikkei, FTSE, CAC. Metals: Gold, Silver, Copper. Energy: WTI Crude, Brent, Natural Gas. FX: EUR/USD, GBP/USD, USD/JPY, AUD/USD, USD/CAD, USD/CHF, DXY. Crypto: Bitcoin, Ethereum. Rates: 10Y Treasury. Volatility: VIX. You can also type any custom instrument or stock ticker." },
       { q: "How many free briefs do I get?", a: "On the Free plan you get 3 Full Briefs per day. The limit resets every 24 hours. Upgrade to Pro (€49/month) for unlimited briefs plus Scalper Mode and Equity Debriefs." },
-      { q: "Can I install MarketDebriefs on my phone?", a: "Yes — MarketDebriefs is a Progressive Web App (PWA). iPhone Safari: tap Share → Add to Home Screen. Android Chrome: tap the three-dot menu → Add to Home Screen, or tap the ⊕ GET APP button in the app header. Works like a native app once installed." },
+      { q: "Can I install MarketDebriefs on my phone?", a: "Yes  -  MarketDebriefs is a Progressive Web App (PWA). iPhone Safari: tap Share → Add to Home Screen. Android Chrome: tap the three-dot menu → Add to Home Screen, or tap the ⊕ GET APP button in the app header. Works like a native app once installed." },
     ]},
     { id: "plans", icon: "💎", title: "Plans & Pricing", color: "rgba(245,158,11,.1)", items: [
-      { q: "What is the difference between Free and Pro?", a: "Free — 3 Full Briefs per day, Learn section. No credit card required. Pro (€49/month) — Unlimited briefs, Events Brief (what each scheduled event means for your instrument), Breaking Narratives (live macro feed + political alerts), Equity Debriefs with Pre and Post-Session cards, macro sector impact intelligence in Stocks, all 25+ instruments covered. All sections work in sync — macro context flows from Intelligence through Events, Breaking Narratives and Stocks." },
+      { q: "What is the difference between Free and Pro?", a: "Free  -  3 Full Briefs per day, Learn section. No credit card required. Pro (€49/month)  -  Unlimited briefs, Events Brief (what each scheduled event means for your instrument), Breaking Narratives (live macro feed + political alerts), Equity Debriefs with Pre and Post-Session cards, macro sector impact intelligence in Stocks, all 25+ instruments covered. All sections work in sync  -  macro context flows from Intelligence through Events, Breaking Narratives and Stocks." },
       { q: "Can I cancel my Pro subscription anytime?", a: "Yes. No contracts, no cancellation fees. Cancel anytime. Your Pro access continues until the end of the current billing period and you won't be charged again after that." },
-      { q: "Is there a refund policy?", a: "If you're not satisfied within the first 7 days of your Pro subscription, contact us for a full refund — no questions asked. After 7 days refunds are considered case-by-case. Email support@marketdebriefs.com." },
+      { q: "Is there a refund policy?", a: "If you're not satisfied within the first 7 days of your Pro subscription, contact us for a full refund  -  no questions asked. After 7 days refunds are considered case-by-case. Email support@marketdebriefs.com." },
       { q: "Do you offer promo or discount codes?", a: "Promo codes are occasionally offered through our affiliate partners and creator collaborations. If you have a code, enter it at the Pro checkout screen." },
     ]},
     { id: "features", icon: "⚡", title: "Features", color: "rgba(0,212,170,.1)", items: [
-      { q: "What is the Breaking Narratives tab?", a: "Breaking Narratives is two tools in one. First — a live macro learning tool. If you see a headline in Discord, on X, or in the news and don't understand how it affects your trade, paste it in and get a clear macro breakdown: which instruments are affected, what the flow is (DEMAND / PRESSURE / VOLATILE), and when the narrative fades. Second — an auto-updating wire feed. Real-time financial headlines are pulled and interpreted automatically every 15 minutes during market hours. If something breaks that invalidates your setup — a Fed comment, Trump tweet, OPEC announcement, geopolitical escalation — you see it here first, with a full macro interpretation and a shareable card. Pro feature." },
+      { q: "What is the Breaking Narratives tab?", a: "Breaking Narratives is two tools in one. First  -  a live macro learning tool. If you see a headline in Discord, on X, or in the news and don't understand how it affects your trade, paste it in and get a clear macro breakdown: which instruments are affected, what the flow is (DEMAND / PRESSURE / VOLATILE), and when the narrative fades. Second  -  an auto-updating wire feed. Real-time financial headlines are pulled and interpreted automatically every 15 minutes during market hours. If something breaks that invalidates your setup  -  a Fed comment, Trump tweet, OPEC announcement, geopolitical escalation  -  you see it here first, with a full macro interpretation and a shareable card. Pro feature." },
       { q: "How do I use Breaking Narratives as a learning tool?", a: "Open the Breaking tab → scroll past the live feed → paste any headline, tweet, or Discord message into the text box and tap INTERPRET NOW. You'll get: a one-sentence macro summary, which instruments are affected and how (using flow labels not directional signals), any conflicting forces (e.g. Dollar strength vs Gold safe haven demand), what to watch for next, and when the narrative is likely to fade. Examples you can try: 'Fed signals higher for longer', 'OPEC+ cuts 1M barrels', 'Trump announces Iran sanctions', 'CPI comes in hotter than expected'." },
-      { q: "What is Events Brief?", a: "Events Brief is not just an economic calendar — it tells you what each event means for the specific instrument you're trading. Before you enter a position, you get a plain-English explanation of how each scheduled event is likely to impact your market, so you don't just know what's on the calendar, you know why it matters for your trade. You get CLEAR / CAUTION / STAND DOWN in seconds. CLEAR — no imminent events, macro conditions calm. CAUTION — something is close on the calendar, be aware. STAND DOWN — a major event is imminent, stay out of the market until it passes. This is an event calendar awareness tool, not a directional signal. Pro feature." },
+      { q: "What is Events Brief?", a: "Events Brief is not just an economic calendar  -  it tells you what each event means for the specific instrument you're trading. Before you enter a position, you get a plain-English explanation of how each scheduled event is likely to impact your market, so you don't just know what's on the calendar, you know why it matters for your trade. You get CLEAR / CAUTION / STAND DOWN in seconds. CLEAR  -  no imminent events, macro conditions calm. CAUTION  -  something is close on the calendar, be aware. STAND DOWN  -  a major event is imminent, stay out of the market until it passes. This is an event calendar awareness tool, not a directional signal. Pro feature." },
       { q: "How do Equity (Stocks) Debriefs work?", a: "Go to the Stocks tab, type any stock name or ticker (Apple, NVDA, TSLA, MSFT, etc.) and get an instant debrief covering earnings context, macro tailwinds and headwinds, upcoming catalyst events, sector rotation signals, and institutional flow direction. Pro feature." },
 
-      { q: "What is Learn to Fish?", a: "A free educational library of macro concepts — why high-impact news moves markets, the role of the US Dollar, risk-on vs risk-off, how interest rates affect currencies, and more. The goal is to help you understand why markets move." },
+      { q: "What is Learn to Fish?", a: "A free educational library of macro concepts  -  why high-impact news moves markets, the role of the US Dollar, risk-on vs risk-off, how interest rates affect currencies, and more. The goal is to help you understand why markets move." },
       { q: "How current is the data in my briefs?", a: "Each brief is generated fresh on demand focusing on current macro themes, central bank stances, and upcoming scheduled events. For best results run a fresh brief before each trading session. MarketDebriefs is an intelligence tool and does not constitute financial advice." },
     ]},
     { id: "billing", icon: "💳", title: "Billing", color: "rgba(0,212,255,.08)", items: [
@@ -99,13 +99,13 @@ function HelpPage({ navigate }) {
     ]},
     { id: "account", icon: "👤", title: "Account", color: "rgba(255,71,87,.08)", items: [
       { q: "How do I change my email or password?", a: "On the sign-in screen, click 'Forgot password' to reset your password by email. To change your email address, contact support@marketdebriefs.com from your current registered email." },
-      { q: "I upgraded to Pro but my account still shows Free — what do I do?", a: "Try signing out and back in to refresh your account status. If the issue persists, contact support@marketdebriefs.com with your account email and Stripe payment confirmation and we will activate Pro access manually within the hour." },
+      { q: "I upgraded to Pro but my account still shows Free  -  what do I do?", a: "Try signing out and back in to refresh your account status. If the issue persists, contact support@marketdebriefs.com with your account email and Stripe payment confirmation and we will activate Pro access manually within the hour." },
       { q: "How do I delete my account?", a: "Email support@marketdebriefs.com with the subject 'Delete my account' from your registered email. We will process the deletion within 5 business days. Any active Pro subscription will be cancelled as part of the process." },
     ]},
     { id: "technical", icon: "🔧", title: "Technical", color: "rgba(255,215,0,.06)", items: [
-      { q: "Which browsers and devices are supported?", a: "All modern browsers — Chrome, Safari, Firefox, and Edge — on desktop and mobile. For the best mobile experience install it as a PWA. Internet Explorer is not supported." },
+      { q: "Which browsers and devices are supported?", a: "All modern browsers  -  Chrome, Safari, Firefox, and Edge  -  on desktop and mobile. For the best mobile experience install it as a PWA. Internet Explorer is not supported." },
       { q: "Does MarketDebriefs work offline?", a: "The app shell loads offline but generating briefs requires an internet connection since they are generated live on each request. The Learn to Fish section works fully offline once the app has loaded at least once." },
-      { q: "The app feels slow — how can I improve performance?", a: "Brief generation typically takes 5 to 15 seconds. If slower: check your internet connection, try installing as a PWA, or clear your browser cache and reload. If consistently slow contact support@marketdebriefs.com with your device and browser details." },
+      { q: "The app feels slow  -  how can I improve performance?", a: "Brief generation typically takes 5 to 15 seconds. If slower: check your internet connection, try installing as a PWA, or clear your browser cache and reload. If consistently slow contact support@marketdebriefs.com with your device and browser details." },
     ]},
   ];
   const filtered = sections.map(s => ({ ...s, items: s.items.filter(item => !search || item.q.toLowerCase().includes(search.toLowerCase()) || item.a.toLowerCase().includes(search.toLowerCase())) })).filter(s => s.items.length > 0);
@@ -146,7 +146,7 @@ function HelpPage({ navigate }) {
         </div>
       </div>
       <div style={{ maxWidth:680, margin:"0 auto", padding:"0 24px 80px" }}>
-        {filtered.length === 0 && <div style={{ textAlign:"center", padding:"48px 0", color:"#444", fontSize:13 }}>No results for "{search}" — <button onClick={() => setSearch("")} style={{ background:"none", border:"none", color:"#00d4ff", cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>clear search</button></div>}
+        {filtered.length === 0 && <div style={{ textAlign:"center", padding:"48px 0", color:"#444", fontSize:13 }}>No results for "{search}"  -  <button onClick={() => setSearch("")} style={{ background:"none", border:"none", color:"#00d4ff", cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>clear search</button></div>}
         {filtered.map(section => (
           <div key={section.id} style={{ marginBottom:40 }}>
             <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, paddingBottom:11, borderBottom:"1px solid rgba(255,255,255,.05)" }}>
@@ -350,10 +350,10 @@ function LandingPage({ navigate }) {
 
         {/* Bloomberg context */}
         <p style={{ textAlign: "center", maxWidth: 640, margin: "0 auto 56px", fontSize: 15, color: "#555", lineHeight: 1.85, fontFamily: "Georgia, serif" }}>
-          When NFP drops, Bloomberg gives you the number. What you actually need to know is: does this change the Fed's next move — and how does that hit the Dollar, Gold, and yields in the <span style={{ color: "#00e5ff", fontWeight: 700 }}>next 4 hours</span>?
+          When NFP drops, Bloomberg gives you the number. What you actually need to know is: does this change the Fed's next move  -  and how does that hit the Dollar, Gold, and yields in the <span style={{ color: "#00e5ff", fontWeight: 700 }}>next 4 hours</span>?
         </p>
 
-        {/* Data vs Answers cards — stacked on mobile, side by side on desktop */}
+        {/* Data vs Answers cards  -  stacked on mobile, side by side on desktop */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 64, maxWidth: 680, margin: "0 auto 64px" }}>
           <div style={{ display: "flex", gap: 12, alignItems: "stretch" }}>
 
@@ -362,7 +362,7 @@ function LandingPage({ navigate }) {
               <div style={{ fontSize: 20, marginBottom: 6 }}>📊</div>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#ff4757", marginBottom: 6, letterSpacing: -0.5 }}>Data</div>
               <div style={{ fontSize: 11, color: "#444", marginBottom: 12, lineHeight: 1.5 }}>The number. The release. The headline.</div>
-              {[["NFP:", "+180k"], ["CPI:", "+3.2% YoY"], ["Fed Rate:", "5.25–5.50%"]].map(([k, v]) => (
+              {[["NFP:", "+180k"], ["CPI:", "+3.2% YoY"], ["Fed Rate:", "5.25 - 5.50%"]].map(([k, v]) => (
                 <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#555", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
                   <span style={{ color: "#333" }}>{k}</span><span>{v}</span>
                 </div>
@@ -382,7 +382,7 @@ function LandingPage({ navigate }) {
               <div style={{ fontSize: 20, marginBottom: 6 }}>⚡</div>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#00e5ff", marginBottom: 6, letterSpacing: -0.5 }}>Answers</div>
               <div style={{ fontSize: 11, color: "#444", marginBottom: 12, lineHeight: 1.5 }}>The interpretation. The implication. The edge.</div>
-              {["Fed pivot pushed back — Dollar bullish", "Gold faces headwinds next 48hrs", "Yields pricing in higher-for-longer"].map(a => (
+              {["Fed pivot pushed back  -  Dollar bullish", "Gold faces headwinds next 48hrs", "Yields pricing in higher-for-longer"].map(a => (
                 <div key={a} style={{ fontSize: 11, color: "#666", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,.04)", lineHeight: 1.4 }}>{a}</div>
               ))}
               <div style={{ marginTop: 12, display: "inline-block", padding: "3px 9px", borderRadius: 4, fontSize: 9, fontWeight: 700, letterSpacing: 1, background: "rgba(0,229,255,.1)", color: "#00e5ff", border: "1px solid rgba(0,229,255,.2)" }}>ACTIONABLE. IMMEDIATE.</div>
@@ -399,7 +399,7 @@ function LandingPage({ navigate }) {
               ["01", "Know what it means in context"],
               ["02", "Cross-reference it with macro trends"],
               ["03", "Form a view under pressure"],
-              ["04", "Decide — while the market is already moving"],
+              ["04", "Decide  -  while the market is already moving"],
             ].map(([n, t]) => (
               <div key={n} style={{ display: "flex", gap: 12, padding: "14px 16px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 8, alignItems: "flex-start" }}>
                 <span style={{ fontSize: 10, color: "#00e5ff", opacity: 0.4, fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{n}</span>
@@ -463,7 +463,7 @@ function LandingPage({ navigate }) {
               phaseColor: "#00d4ff",
               icon: "🎯",
               title: "Pick your instrument",
-              desc: "Type any market — EUR/USD, ES, Gold, Oil, BTC. Whatever you're about to trade.",
+              desc: "Type any market  -  EUR/USD, ES, Gold, Oil, BTC. Whatever you're about to trade.",
               detail: "Full Brief tab",
               detailColor: "#00d4ff",
             },
@@ -483,7 +483,7 @@ function LandingPage({ navigate }) {
               phaseColor: "#00d4ff",
               icon: "⚡",
               title: "Run the Events Brief",
-              desc: "Not just what's on the calendar — what it means for the instrument you're trading. Get CLEAR / CAUTION / STAND DOWN in seconds with a plain-English explanation of why each event matters for your trade.",
+              desc: "Not just what's on the calendar  -  what it means for the instrument you're trading. Get CLEAR / CAUTION / STAND DOWN in seconds with a plain-English explanation of why each event matters for your trade.",
               detail: "Events Brief",
               detailColor: "#f59e0b",
             },
@@ -493,7 +493,7 @@ function LandingPage({ navigate }) {
               phaseColor: "#ffd700",
               icon: "📡",
               title: "Monitor Breaking Narratives",
-              desc: "Monitor live macro wire stories every 15 minutes. Paste any headline you don't understand for an instant explanation. The Stocks tab automatically shows which sectors and tickers are affected by the current macro theme — no manual searching needed.",
+              desc: "Monitor live macro wire stories every 15 minutes. Paste any headline you don't understand for an instant explanation. The Stocks tab automatically shows which sectors and tickers are affected by the current macro theme  -  no manual searching needed.",
               detail: "Breaking tab",
               detailColor: "#ff4757",
             },
@@ -503,7 +503,7 @@ function LandingPage({ navigate }) {
               phaseColor: "#ffd700",
               icon: "🔄",
               title: "Rebrief when narratives shift",
-              desc: "Markets don't stand still. If a major event fires, run a fresh brief. The new macro context automatically updates the Stocks tab with the latest affected sectors and tickers. Every section stays in sync — Intelligence, Events, Breaking Narratives and Stocks all reflect the same macro reality.",
+              desc: "Markets don't stand still. If a major event fires, run a fresh brief. The new macro context automatically updates the Stocks tab with the latest affected sectors and tickers. Every section stays in sync  -  Intelligence, Events, Breaking Narratives and Stocks all reflect the same macro reality.",
               detail: "Brief First, Trade After.",
               detailColor: "#00d4ff",
             },
@@ -536,8 +536,8 @@ function LandingPage({ navigate }) {
         {/* Bottom CTA */}
         <div style={{ marginTop: 8, padding: "20px 24px", background: "rgba(0,212,255,.03)", border: "1px solid rgba(0,212,255,.08)", borderRadius: 12 }}>
           <p style={{ fontSize: 13, color: "#555", lineHeight: 1.8, margin: 0, textAlign: "center" }}>
-            Most retail traders lose not because of bad entries — but because they trade <em style={{ color: "#888" }}>against</em> the macro tide.<br/>
-            A hawkish Fed comment, a geopolitical escalation, a surprise CPI print — any of these can invalidate a perfect technical setup instantly.<br/>
+            Most retail traders lose not because of bad entries  -  but because they trade <em style={{ color: "#888" }}>against</em> the macro tide.<br/>
+            A hawkish Fed comment, a geopolitical escalation, a surprise CPI print  -  any of these can invalidate a perfect technical setup instantly.<br/>
             <span style={{ color: "#888" }}>MarketDebriefs makes sure you always know which way the macro tide is running.</span>
           </p>
         </div>
@@ -552,8 +552,8 @@ function LandingPage({ navigate }) {
             <div style={{ fontSize: 11, color: "#333", fontWeight: 700, letterSpacing: 2, marginBottom: 20 }}>OLD WAY</div>
             {[
               ["Bloomberg Terminal", "$30,000 / year"],
-              ["Manually scan news", "30–60 min / day"],
-              ["Multiple paid services", "$200–500 / mo"],
+              ["Manually scan news", "30 - 60 min / day"],
+              ["Multiple paid services", "$200 - 500 / mo"],
               ["Still miss macro context", "Before key trades"],
               ["Institutional access only", "Not for retail"],
             ].map(([what, cost]) => (
@@ -566,7 +566,7 @@ function LandingPage({ navigate }) {
           <div className="md-col" style={{ background: "rgba(0,212,255,.04)", padding: "24px 20px", borderLeft: "1px solid rgba(0,212,255,.1)" }}>
             <div style={{ fontSize: 11, color: "#00d4ff", fontWeight: 700, letterSpacing: 2, marginBottom: 20 }}>MARKET DEBRIEFS</div>
             {[
-              ["Full macro briefing", "€0 — Free"],
+              ["Full macro briefing", "€0  -  Free"],
               ["AI reads it for you", "< 30 seconds"],
               ["All-in-one platform", "€49 / mo Pro"],
               ["Macro context built-in", "Every brief"],
@@ -602,7 +602,7 @@ function LandingPage({ navigate }) {
             </div>
           ))}
         </div>
-        <button onClick={() => navigate("/app")} className="cta-btn" style={{ width: "100%", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>START FREE — NO CARD NEEDED</button>
+        <button onClick={() => navigate("/app")} className="cta-btn" style={{ width: "100%", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>START FREE  -  NO CARD NEEDED</button>
       </div>
 
       {/* ── EMAIL CAPTURE ── */}
@@ -634,7 +634,7 @@ function LandingPage({ navigate }) {
             Stop trading blind.<br /><span style={{ color: "#00d4ff" }}>Know the macro.</span>
           </div>
           <p style={{ fontSize: 13, color: "#555", lineHeight: 1.75, marginBottom: 28, maxWidth: 420, margin: "0 auto 28px" }}>
-            Every major move in markets is driven by macro forces — central bank policy, geopolitical risk,
+            Every major move in markets is driven by macro forces  -  central bank policy, geopolitical risk,
             inflation data, liquidity cycles. Trading without this context is like sailing without knowing the weather.
             The institutions know. Now you can too.
           </p>
@@ -703,7 +703,7 @@ const CHIPS = [
   { label: "GBP", key: "gbp" }, { label: "BTC", key: "btc" }, { label: "VIX", key: "vix" },
 ];
 
-// Known stock/equity keywords — anything matching these routes to the Stocks tab
+// Known stock/equity keywords  -  anything matching these routes to the Stocks tab
 const STOCK_HINTS = [
   "apple","aapl","nvidia","nvda","tesla","tsla","microsoft","msft","amazon","amzn",
   "meta","google","googl","goog","netflix","nflx","amd","palantir","pltr","spotify",
@@ -719,7 +719,7 @@ const STOCK_HINTS = [
 function isLikelyStock(q) {
   // Matches known stock names/tickers OR looks like a short ticker (2-5 uppercase-ish chars)
   if (STOCK_HINTS.some(h => q === h || q.includes(h))) return true;
-  // Pure alphabetic query 2-5 chars that isn't a known instrument alias — likely a ticker
+  // Pure alphabetic query 2-5 chars that isn't a known instrument alias  -  likely a ticker
   if (/^[a-z]{2,5}$/.test(q)) return true;
   return false;
 }
@@ -731,7 +731,7 @@ function detect(query) {
     if (val.aliases.some(a => a === q)) return { key, ...val };
   }
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
-    // For short aliases (1-2 chars), only match if they are the ENTIRE query — no substring matching
+    // For short aliases (1-2 chars), only match if they are the ENTIRE query  -  no substring matching
     if (val.aliases.some(a => a.length <= 2 ? a === q : (q.includes(a) || a.includes(q)))) return { key, ...val };
   }
   // Flag as equity so the run() function can redirect instead of running a broken brief
@@ -741,13 +741,13 @@ function detect(query) {
 
 function sysPrompt(mode) {
   const base = `You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
-CRITICAL RULES — NEVER BREAK THESE:
+CRITICAL RULES  -  NEVER BREAK THESE:
 1. NEVER mention specific price levels, support/resistance numbers, targets, stops, or historical price ranges.
-2. EVENTS must be STRICTLY UPCOMING — scheduled in the future from the current time. NEVER include events that have already occurred or already been released today. If an event has already happened, exclude it entirely.
+2. EVENTS must be STRICTLY UPCOMING  -  scheduled in the future from the current time. NEVER include events that have already occurred or already been released today. If an event has already happened, exclude it entirely.
 3. For events, only include the 2-3 most market-moving SCHEDULED releases coming up in the next 48 hours that directly affect this instrument. Include the exact scheduled time.
-4. Your job is macro context and forward-looking event risk — not technical analysis, not past events.`;
-  if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","time_est":"string","due_in":"string","passed":false,"expected_impact":"string"}]}. CRITICAL RULES: (1) Only include events from the REAL CALENDAR DATA provided in the prompt — do not add events from memory. (2) Copy time_est and due_in exactly from the calendar data provided. (3) passed = true if event time has already passed. (4) expected_impact = ONE sentence explaining what this event means specifically for THIS instrument — the macro mechanism, not a generic description. (5) risk_level based on next UPCOMING event time: GREEN=nothing in 2hrs (CLEAR), YELLOW=something in 2hrs (CAUTION), RED=something in 30min (STAND DOWN). NOT a directional signal.';
-  return base + ' FULL BRIEF schema: {"instrument":"string","macro_theme":"string","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}. STRICT FIELD RULES — each field serves a DIFFERENT purpose, never repeat content across fields: macro_theme = 4-7 word neutral phrase ONLY e.g. "Central bank divergence vs safe haven demand". headline_summary = ONE sentence describing the SINGLE most important macro force acting on this instrument RIGHT NOW. macro_context = ONE sentence about what SPECIFIC EVENT OR DATA to watch for NEXT — must be forward-looking and completely different from headline_summary, e.g. "Watch Wednesday FOMC minutes for rate path signals." geopolitical_risks = only populate if an active geopolitical event is directly relevant, otherwise use empty string "". IF macro_context would repeat headline_summary, write something genuinely different or use "".';
+4. Your job is macro context and forward-looking event risk  -  not technical analysis, not past events.`;
+  if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","time_est":"string","due_in":"string","passed":false,"expected_impact":"string"}]}. CRITICAL RULES: (1) Only include events from the REAL CALENDAR DATA provided in the prompt  -  do not add events from memory. (2) Copy time_est and due_in exactly from the calendar data provided. (3) passed = true if event time has already passed. (4) expected_impact = ONE sentence explaining what this event means specifically for THIS instrument  -  the macro mechanism, not a generic description. (5) risk_level based on next UPCOMING event time: GREEN=nothing in 2hrs (CLEAR), YELLOW=something in 2hrs (CAUTION), RED=something in 30min (STAND DOWN). NOT a directional signal.';
+  return base + ' FULL BRIEF schema: {"instrument":"string","macro_theme":"string","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}. STRICT FIELD RULES  -  each field serves a DIFFERENT purpose, never repeat content across fields: macro_theme = 4-7 word neutral phrase ONLY e.g. "Central bank divergence vs safe haven demand". headline_summary = ONE sentence describing the SINGLE most important macro force acting on this instrument RIGHT NOW. macro_context = ONE sentence about what SPECIFIC EVENT OR DATA to watch for NEXT  -  must be forward-looking and completely different from headline_summary, e.g. "Watch Wednesday FOMC minutes for rate path signals." geopolitical_risks = only populate if an active geopolitical event is directly relevant, otherwise use empty string "". IF macro_context would repeat headline_summary, write something genuinely different or use "".';
 }
 
 function userPrompt(inst, mode, calendarEvents = []) {
@@ -758,13 +758,13 @@ function userPrompt(inst, mode, calendarEvents = []) {
     let calendarContext = "";
     if (calendarEvents && calendarEvents.length > 0) {
       const eventLines = calendarEvents.map(ev =>
-        `- ${ev.event} at ${ev.time_est} EST (${ev.due_in}${ev.passed ? " — already released" : ""})${ev.estimate ? ", estimate: " + ev.estimate : ""}${ev.prev ? ", prev: " + ev.prev : ""}`
+        `- ${ev.event} at ${ev.time_est} EST (${ev.due_in}${ev.passed ? "  -  already released" : ""})${ev.estimate ? ", estimate: " + ev.estimate : ""}${ev.prev ? ", prev: " + ev.prev : ""}`
       ).join("\n");
-      calendarContext = `\n\nREAL ECONOMIC CALENDAR FOR TODAY (from live data — use these exact times):\n${eventLines}`;
+      calendarContext = `\n\nREAL ECONOMIC CALENDAR FOR TODAY (from live data  -  use these exact times):\n${eventLines}`;
     } else {
-      calendarContext = "\n\n(No live calendar data available — use your knowledge of today\'s scheduled releases but clearly note uncertainty)";
+      calendarContext = "\n\n(No live calendar data available  -  use your knowledge of today\'s scheduled releases but clearly note uncertainty)";
     }
-    return "EXACT CURRENT TIME IN EST: " + nowEST + ". I am about to trade " + inst.label + "." + calendarContext + "\n\nYour task: (1) Determine risk level for trading " + inst.label + " right now. (2) For EVERY event listed above, write expected_impact: ONE sentence explaining the macro mechanism — specifically how this event affects " + inst.label + " e.g. for Gold: \'Strong ISM Services PMI reinforces Fed hawkishness reducing gold appeal as a non-yielding safe haven asset.\' (3) Copy time_est and due_in EXACTLY from the calendar data. (4) Risk: GREEN=nothing in 2hrs, YELLOW=something in 2hrs, RED=something in 30min. NEVER leave expected_impact empty — it is the core value of this feature.";
+    return "EXACT CURRENT TIME IN EST: " + nowEST + ". I am about to trade " + inst.label + "." + calendarContext + "\n\nYour task: (1) Determine risk level for trading " + inst.label + " right now. (2) For EVERY event listed above, write expected_impact: ONE sentence explaining the macro mechanism  -  specifically how this event affects " + inst.label + " e.g. for Gold: \'Strong ISM Services PMI reinforces Fed hawkishness reducing gold appeal as a non-yielding safe haven asset.\' (3) Copy time_est and due_in EXACTLY from the calendar data. (4) Risk: GREEN=nothing in 2hrs, YELLOW=something in 2hrs, RED=something in 30min. NEVER leave expected_impact empty  -  it is the core value of this feature.";
   }
   return "Current time: " + now + ". Full macro briefing for " + inst.label + ". List only the most important UPCOMING scheduled events after this exact time that will move this instrument in the next 48 hours. Include their scheduled time. Do NOT include any events that have already happened today. Focus on CURRENT central bank stance and live geopolitical risks. No price levels.";
 }
@@ -787,9 +787,9 @@ async function getSectorImpact(macroContext) {
   const sys = `You are a macro market analyst identifying which stock sectors are affected by current macro themes.
 Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
 RULES:
-1. Only include sectors DIRECTLY affected by the macro context — max 4 sectors.
+1. Only include sectors DIRECTLY affected by the macro context  -  max 4 sectors.
 2. flow: DEMAND (sector benefits), PRESSURE (sector faces headwinds), VOLATILE (mixed), WATCH (monitor).
-3. reason: ONE sentence — the specific macro mechanism affecting this sector.
+3. reason: ONE sentence  -  the specific macro mechanism affecting this sector.
 4. tickers: 4-5 most relevant US-listed tickers for this sector in this context.
 SCHEMA: {"sectors":[{"name":"string","flow":"DEMAND|PRESSURE|VOLATILE|WATCH","reason":"string","tickers":["string"]}]}`;
   const msg = `Current time: ${now}. Macro context: "${macroContext.macro_theme}". ${macroContext.geopolitical ? "Geopolitical: " + macroContext.geopolitical + "." : ""} ${macroContext.headline ? "Current driver: " + macroContext.headline : ""} Which stock sectors are directly affected? For each sector, list 4-5 relevant US tickers.`;
@@ -799,8 +799,8 @@ SCHEMA: {"sectors":[{"name":"string","flow":"DEMAND|PRESSURE|VOLATILE|WATCH","re
 async function getEquityBrief(label) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const sys = `You are a professional equity analyst. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
-RULES: Never mention specific price levels. Focus on macro, fundamental, and sector context only — current and upcoming only.
-+ "EQUITY BRIEF schema: {\"instrument\":\"string\",\"ticker\":\"string\",\"sector\":\"string\",\"sentiment\":\"bullish|bearish|neutral|mixed\",\"headline_summary\":\"string\",\"earnings_context\":\"string\",\"macro_tailwinds\":\"string\",\"macro_headwinds\":\"string\",\"sector_rotation\":\"string\",\"catalyst_events\":[{\"title\":\"string\",\"time\":\"string\",\"impact\":\"HIGH|MEDIUM\",\"direction\":\"BULLISH|BEARISH|NEUTRAL\",\"summary\":\"string\",\"why_it_moves_price\":\"string\"}],\"institutional_flow\":\"string\",\"teaching_moment\":\"string\"}. IMPORTANT: why_it_moves_price is MANDATORY — never empty. ONE sentence explaining the macro mechanism e.g. Strong earnings growth reduces Fed rate cut expectations, pressuring growth stocks. No price levels.";
+RULES: Never mention specific price levels. Focus on macro, fundamental, and sector context only  -  current and upcoming only.
++ "EQUITY BRIEF schema: {\"instrument\":\"string\",\"ticker\":\"string\",\"sector\":\"string\",\"sentiment\":\"bullish|bearish|neutral|mixed\",\"headline_summary\":\"string\",\"earnings_context\":\"string\",\"macro_tailwinds\":\"string\",\"macro_headwinds\":\"string\",\"sector_rotation\":\"string\",\"catalyst_events\":[{\"title\":\"string\",\"time\":\"string\",\"impact\":\"HIGH|MEDIUM\",\"direction\":\"BULLISH|BEARISH|NEUTRAL\",\"summary\":\"string\",\"why_it_moves_price\":\"string\"}],\"institutional_flow\":\"string\",\"teaching_moment\":\"string\"}. IMPORTANT: why_it_moves_price is MANDATORY  -  never empty. ONE sentence explaining the macro mechanism e.g. Strong earnings growth reduces Fed rate cut expectations, pressuring growth stocks. No price levels.";
   const msg = "Today: " + now + ". Equity debrief for " + label + ". Cover: latest earnings context, current macro tailwinds and headwinds for this stock and its sector, upcoming catalyst events, sector rotation dynamics, and institutional flow signals. No price levels.";
   return callClaude(sys, msg);
 }
@@ -838,15 +838,15 @@ async function getEquityScalper(label) {
 async function getPostSessionBrief(inst, priceContext) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const priceNote = priceContext
-    ? `IMPORTANT: The actual last trading session move was ${priceContext.direction} ${priceContext.pct}. Your narrative MUST be consistent with this — if the move was positive/bullish write accordingly, if negative/bearish write accordingly.`
+    ? "IMPORTANT: The actual last trading session move was " + priceContext.direction + " " + priceContext.pct + ". Your narrative MUST be consistent with this - if the move was positive write bullish accordingly, if negative write bearish accordingly."
     : "";
   const sys = `You are a professional market intelligence analyst writing an end-of-day session debrief. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
 CRITICAL RULES:
-1. You are looking BACKWARDS at the most recent completed TRADING SESSION (Monday-Friday only — ignore weekends).
+1. You are looking BACKWARDS at the most recent completed TRADING SESSION (Monday-Friday only  -  ignore weekends).
 2. NEVER mention specific price levels, targets, stops or support/resistance numbers.
 3. Be specific about WHICH macro events or news actually fired in the last session and how the market reacted.
 4. The watch_tomorrow field should name ONE specific upcoming event or theme to prepare for in the next trading session.
-5. session_summary must be ONE short sentence max — like a trading journal entry. Under 120 characters.
+5. session_summary must be ONE short sentence max  -  like a trading journal entry. Under 120 characters.
 6. primary_driver and what_it_revealed must each be ONE sentence, under 100 characters each.
 7. ${priceNote}
 POST-SESSION schema: {"instrument":"string","session_summary":"string","primary_driver":"string","secondary_driver":"string","what_it_revealed":"string","watch_tomorrow":"string","next_event":{"title":"string","time":"string"}}`;
@@ -856,17 +856,17 @@ POST-SESSION schema: {"instrument":"string","session_summary":"string","primary_
 
 async function getBreakingNarrative(headline) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  const sys = `You are a professional macro market interpreter. A breaking news headline has just hit. Your job is to explain what it means for markets — no fluff, no directional signals, just clear macro cause-and-effect. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
+  const sys = `You are a professional macro market interpreter. A breaking news headline has just hit. Your job is to explain what it means for markets  -  no fluff, no directional signals, just clear macro cause-and-effect. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.
 RULES:
 1. NEVER mention specific price levels, targets or stops.
-2. NEVER label instruments as BULLISH or BEARISH — instead describe the MECHANISM: what force is acting on this instrument and why.
+2. NEVER label instruments as BULLISH or BEARISH  -  instead describe the MECHANISM: what force is acting on this instrument and why.
 3. CRITICAL: Always check for cross-instrument tensions. For example if Dollar strengthens, that typically creates headwinds for Gold. If you list both, explicitly note the conflict in the impact text.
-4. narrative_summary must be 1-2 punchy sentences — the macro cause-and-effect a trader needs in 10 seconds.
+4. narrative_summary must be 1-2 punchy sentences  -  the macro cause-and-effect a trader needs in 10 seconds.
 5. Each instrument impact must be ONE sentence describing what macro force is acting on it and why.
 6. urgency: CRITICAL (market moving now), HIGH (significant impact expected), MEDIUM (watch closely).
 BREAKING NARRATIVE schema: {"headline":"string","narrative_summary":"string","urgency":"CRITICAL|HIGH|MEDIUM","instruments":[{"name":"string","flow":"DEMAND|PRESSURE|VOLATILE|WATCH","impact":"string"}],"tensions":"string","watch_for":"string","fades_when":"string"}
-tensions field: if any instruments have conflicting forces (e.g. safe haven demand for Gold vs Dollar strength weighing on Gold) — describe the conflict here in one sentence. Leave empty string if no conflicts.`;
-  const msg = `Current time: ${now}. Breaking headline: "${headline}". Interpret this for macro traders. For each affected instrument explain the MACRO MECHANISM — what force is acting on it and why. Check for cross-instrument conflicts (e.g. Dollar vs Gold, Risk-off vs Oil). Never use bullish/bearish labels — describe the flow instead.`;
+tensions field: if any instruments have conflicting forces (e.g. safe haven demand for Gold vs Dollar strength weighing on Gold)  -  describe the conflict here in one sentence. Leave empty string if no conflicts.`;
+  const msg = `Current time: ${now}. Breaking headline: "${headline}". Interpret this for macro traders. For each affected instrument explain the MACRO MECHANISM  -  what force is acting on it and why. Check for cross-instrument conflicts (e.g. Dollar vs Gold, Risk-off vs Oil). Never use bullish/bearish labels  -  describe the flow instead.`;
   return callClaude(sys, msg);
 }
 
@@ -889,17 +889,17 @@ function UpgradeModal({ reason, onClose, userId, email }) {
       <div style={{ background: "#0d1117", border: "1px solid rgba(0,212,255,.2)", borderRadius: 16, padding: 32, maxWidth: 380, width: "100%", textAlign: "center" }}>
         <div style={{ fontSize: 32, marginBottom: 16 }}>📊</div>
         <div style={{ fontSize: 20, fontWeight: 800, color: "#f0f0f0", marginBottom: 10 }}>
-          {reason === "limit" ? "Daily Limit Reached" : reason === "stocks" ? "Equity Debriefs — Pro" : "Pro Feature"}
+          {reason === "limit" ? "Daily Limit Reached" : reason === "stocks" ? "Equity Debriefs  -  Pro" : "Pro Feature"}
         </div>
         <div style={{ fontSize: 13, color: "#666", lineHeight: 1.7, marginBottom: 24 }}>
           {reason === "limit"
             ? "You've used your 3 free briefs today. Upgrade to Pro for unlimited briefs, Scalper Mode, and Equity Debriefs."
             : reason === "stocks"
-            ? "Stock debriefs are a Pro feature. Get earnings context, macro tailwinds & headwinds, sector rotation, and institutional flow for any stock — instantly."
+            ? "Stock debriefs are a Pro feature. Get earnings context, macro tailwinds & headwinds, sector rotation, and institutional flow for any stock  -  instantly."
             : "Events Brief and Equity Debriefs are Pro features."}
         </div>
         <div style={{ background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.12)", borderRadius: 10, padding: 16, marginBottom: 24, textAlign: "left" }}>
-          {["Unlimited briefs every day", "Events Brief — what events mean for your trade", "Equity Debriefs — any stock", "All instruments covered"].map((f, i) => (
+          {["Unlimited briefs every day", "Events Brief  -  what events mean for your trade", "Equity Debriefs  -  any stock", "All instruments covered"].map((f, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: i < 3 ? 10 : 0 }}>
               <span style={{ color: "#00d4ff", fontSize: 14 }}>✓</span>
               <span style={{ fontSize: 13, color: "#c0d0e0" }}>{f}</span>
@@ -907,7 +907,7 @@ function UpgradeModal({ reason, onClose, userId, email }) {
           ))}
         </div>
         <button onClick={checkout} disabled={loading} style={{ width: "100%", padding: "14px 20px", borderRadius: 10, border: "none", cursor: loading ? "wait" : "pointer", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", fontSize: 15, fontWeight: 800, fontFamily: "inherit", marginBottom: 12 }}>
-          {loading ? "Redirecting…" : "Upgrade to Pro — €49/mo"}
+          {loading ? "Redirecting…" : "Upgrade to Pro  -  €49/mo"}
         </button>
         <button onClick={onClose} style={{ background: "none", border: "none", color: "#333", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Maybe later</button>
       </div>
@@ -940,7 +940,7 @@ function AuthScreen() {
         <div style={{ fontSize: 12, color: "#444", marginTop: 4 }}>Know the macro before you trade</div>
       </div>
 
-      {/* Tab toggle — prominent, above the form */}
+      {/* Tab toggle  -  prominent, above the form */}
       <div style={{ display: "flex", width: "100%", maxWidth: 400, marginBottom: 0, background: "#0d1117", borderRadius: "10px 10px 0 0", border: "1px solid rgba(255,255,255,.07)", borderBottom: "none", overflow: "hidden" }}>
         <button
           onClick={() => setView("sign-up")}
@@ -1030,7 +1030,7 @@ function StockGate({ onUpgrade }) {
       <div style={{ fontSize: 36, marginBottom: 16 }}>📈</div>
       <div style={{ fontSize: 16, fontWeight: 800, color: "#f59e0b", marginBottom: 8 }}>Equity Debriefs</div>
       <div style={{ fontSize: 13, color: "#555", lineHeight: 1.7, maxWidth: 340, margin: "0 auto 24px" }}>
-        Search any stock or ticker and get a full macro debrief —
+        Search any stock or ticker and get a full macro debrief  - 
         earnings context, tailwinds, headwinds, sector rotation and institutional flow.
         <br /><br />
         This is a <span style={{ color: "#00d4ff", fontWeight: 700 }}>Pro feature</span>.
@@ -1044,7 +1044,7 @@ function StockGate({ onUpgrade }) {
         ))}
       </div>
       <button onClick={onUpgrade} style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "#000", border: "none", padding: "13px 32px", borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-        UPGRADE TO PRO — €49/mo
+        UPGRADE TO PRO  -  €49/mo
       </button>
       <div style={{ marginTop: 10, fontSize: 11, color: "#2a2a2a" }}>Includes Scalper Mode & all instruments</div>
     </div>
@@ -1079,7 +1079,7 @@ function BreakingGate({ onUpgrade }) {
           <div style={{ fontSize: 10, color: "#00d4ff", fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>🧠 MACRO LEARNING TOOL</div>
           <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6 }}>
             Paste any headline, tweet or Discord narrative you don't understand.
-            Get a clear explanation of what it means macro-wise and how it affects your instrument — so you trade informed, not confused.
+            Get a clear explanation of what it means macro-wise and how it affects your instrument  -  so you trade informed, not confused.
           </div>
         </div>
       </div>
@@ -1102,9 +1102,9 @@ function BreakingGate({ onUpgrade }) {
       {/* Feature list */}
       <div style={{ maxWidth: 360, margin: "0 auto 24px" }}>
         {[
-          "Live interpreted macro wire feed — every 15 minutes",
+          "Live interpreted macro wire feed  -  every 15 minutes",
           "Paste any headline for instant macro breakdown",
-          "Instrument-level impact — DEMAND / PRESSURE / VOLATILE",
+          "Instrument-level impact  -  DEMAND / PRESSURE / VOLATILE",
           "Conflicting forces flagged automatically",
           "Watch For and Fades When guidance",
           "Shareable narrative cards for X",
@@ -1117,7 +1117,7 @@ function BreakingGate({ onUpgrade }) {
 
       <div style={{ textAlign: "center" }}>
         <button onClick={onUpgrade} style={{ background: "linear-gradient(135deg,#ff4757,#cc0011)", color: "#fff", border: "none", padding: "13px 36px", borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}>
-          UPGRADE TO PRO — €49/mo
+          UPGRADE TO PRO  -  €49/mo
         </button>
         <div style={{ fontSize: 11, color: "#2a2a2a" }}>Includes Equity Debriefs, Scalper Mode & all instruments</div>
       </div>
@@ -1228,7 +1228,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
 
                 {isExp && (
                   <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderTop: "none", borderRadius: "0 0 8px 8px", padding: "12px 14px" }}>
-                    <div style={{ fontSize: 9, color: "#333", letterSpacing: 1.5, fontWeight: 700, marginBottom: 10 }}>AFFECTED TICKERS — tap to brief</div>
+                    <div style={{ fontSize: 9, color: "#333", letterSpacing: 1.5, fontWeight: 700, marginBottom: 10 }}>AFFECTED TICKERS  -  tap to brief</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                       {(sector.tickers || []).map(ticker => (
                         <button key={ticker}
@@ -1238,7 +1238,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
                             // 2. Collapse sector panel so it's out of the way
                             setExpandedSector(null);
                             setSectorData(null);
-                            // 3. Scroll to the brief result area — user sees the loading state
+                            // 3. Scroll to the brief result area  -  user sees the loading state
                             setTimeout(() => {
                               const anchor = document.getElementById("stocks-brief-result");
                               if (anchor) anchor.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1260,14 +1260,14 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
         </div>
       )}
 
-      {/* ── BRIEF RESULT ANCHOR — ticker taps scroll here ── */}
+      {/* ── BRIEF RESULT ANCHOR  -  ticker taps scroll here ── */}
       <div id="stocks-brief-result" style={{ height: 0 }} />
 
       {/* Mode indicator */}
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 14, padding: "8px 12px", background: isScalper ? "rgba(245,158,11,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (isScalper ? "rgba(245,158,11,.2)" : "rgba(255,255,255,.06)"), borderRadius: 8 }}>
         <div style={{ width: 6, height: 6, borderRadius: "50%", background: isScalper ? "#f59e0b" : "#00d4ff", flexShrink: 0 }} />
         <div style={{ fontSize: 10, fontWeight: 700, color: isScalper ? "#f59e0b" : "#00d4ff", letterSpacing: 1.5 }}>
-          {isScalper ? "EQUITY SCALPER — PRO" : "EQUITY DEBRIEF — PRO"}
+          {isScalper ? "EQUITY SCALPER  -  PRO" : "EQUITY DEBRIEF  -  PRO"}
         </div>
         <div style={{ fontSize: 10, color: "#333", marginLeft: "auto" }}>
           {isScalper ? "CLEAR / CAUTION / STAND DOWN" : "Full macro & fundamental analysis"}
@@ -1280,7 +1280,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === "Enter" && runStock()}
-            placeholder={isScalper ? "NVDA, TSLA, AAPL — about to trade?" : "Tesla, MSFT, Apple, NVDA, any ticker…"}
+            placeholder={isScalper ? "NVDA, TSLA, AAPL  -  about to trade?" : "Tesla, MSFT, Apple, NVDA, any ticker…"}
             style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid " + (isScalper ? "rgba(245,158,11,.25)" : "rgba(245,158,11,.2)"), borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
           />
           <button id="stocks-brief-btn" onClick={runStock} disabled={activeLoading} style={{ padding: "10px 16px", borderRadius: 8, cursor: activeLoading ? "not-allowed" : "pointer", background: activeLoading ? "rgba(255,255,255,.02)" : "rgba(245,158,11,.12)", color: activeLoading ? "#2a2a2a" : "#f59e0b", border: "1px solid rgba(245,158,11,.25)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
@@ -1322,7 +1322,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
       {!isScalper && !loading && data && (
         <EquityView inst={{ label: data.instrument || query, color: "#f59e0b", flag: "STOCK" }} data={data} />
       )}
-      {/* Session cards — Pre and Post — shown after equity brief loads */}
+      {/* Session cards  -  Pre and Post  -  shown after equity brief loads */}
       {!isScalper && !loading && data && (
         <div style={{ marginTop: 20 }}>
           {/* Pre-session share */}
@@ -1331,7 +1331,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
             ☀️ Share Pre-Session Brief
           </button>
 
-          {/* Post-session — generate on demand */}
+          {/* Post-session  -  generate on demand */}
           {!equityPostData ? (
             <button onClick={runEquityPost} disabled={equityPostLoading}
               style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 8, border: "1px solid rgba(255,165,0,.25)", background: equityPostLoading ? "rgba(255,255,255,.02)" : "rgba(255,165,0,.06)", color: equityPostLoading ? "#333" : "#ffa500", fontSize: 12, fontWeight: 700, cursor: equityPostLoading ? "wait" : "pointer", fontFamily: "inherit" }}>
@@ -1469,8 +1469,8 @@ function EquityScalperView({ ticker, data, loading, error }) {
 
   const RL = {
     GREEN:  { label: "CLEAR",      sub: "Macro conditions calm",         color: "#00d4ff", bg: "rgba(0,212,255,.08)",  border: "rgba(0,212,255,.2)"  },
-    YELLOW: { label: "CAUTION",    sub: "Something is close — be aware", color: "#f59e0b", bg: "rgba(245,158,11,.08)", border: "rgba(245,158,11,.2)" },
-    RED:    { label: "STAND DOWN", sub: "Major event imminent — wait",   color: "#ff4757", bg: "rgba(255,71,87,.08)",  border: "rgba(255,71,87,.2)"  },
+    YELLOW: { label: "CAUTION",    sub: "Something is close  -  be aware", color: "#f59e0b", bg: "rgba(245,158,11,.08)", border: "rgba(245,158,11,.2)" },
+    RED:    { label: "STAND DOWN", sub: "Major event imminent  -  wait",   color: "#ff4757", bg: "rgba(255,71,87,.08)",  border: "rgba(255,71,87,.2)"  },
   };
   const rl = RL[data.risk_level] || RL.YELLOW;
   const EC = { SAFE: { color: "#00d4aa", label: "EARNINGS SAFE", bg: "rgba(0,212,170,.08)" }, NEAR: { color: "#ffd700", label: "EARNINGS NEAR", bg: "rgba(255,215,0,.06)" }, IMMINENT: { color: "#ff4757", label: "EARNINGS IMMINENT", bg: "rgba(255,71,87,.08)" } };
@@ -1481,7 +1481,7 @@ function EquityScalperView({ ticker, data, loading, error }) {
       {/* Risk signal */}
       <div style={{ background: rl.bg, border: "1px solid " + rl.border, borderRadius: 12, padding: "22px 20px", marginBottom: 14, textAlign: "center" }}>
         <div style={{ fontSize: 10, color: "#444", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>
-          {(data.ticker || ticker).toUpperCase()} — MACRO RISK CHECK
+          {(data.ticker || ticker).toUpperCase()}  -  MACRO RISK CHECK
         </div>
         <div style={{ fontSize: 32, fontWeight: 900, color: rl.color, marginBottom: 4, letterSpacing: -1 }}>{rl.label}</div>
         <div style={{ fontSize: 10, color: rl.color, opacity: 0.6, fontFamily: "monospace", letterSpacing: 1, marginBottom: 10 }}>{rl.sub}</div>
@@ -1504,7 +1504,7 @@ function EquityScalperView({ ticker, data, loading, error }) {
       {/* Breaking news */}
       {data.breaking && data.breaking.length > 0 && (
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>BREAKING — {(data.ticker || ticker).toUpperCase()}</div>
+          <div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>BREAKING  -  {(data.ticker || ticker).toUpperCase()}</div>
           {data.breaking.map((b, i) => (
             <div key={i} style={{ background: DB[b.direction] || "rgba(255,255,255,.02)", borderLeft: "3px solid " + (DC[b.direction] || "#555"), borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
@@ -1522,7 +1522,7 @@ function EquityScalperView({ ticker, data, loading, error }) {
       {/* Imminent events */}
       {data.imminent && data.imminent.length > 0 && (
         <div>
-          <div style={{ fontSize: 9, color: "#f59e0b", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>COMING UP — {(data.ticker || ticker).toUpperCase()}</div>
+          <div style={{ fontSize: 9, color: "#f59e0b", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>COMING UP  -  {(data.ticker || ticker).toUpperCase()}</div>
           {data.imminent.map((ev, i) => (
             <div key={i} style={{ background: "rgba(245,158,11,.05)", border: "1px solid rgba(245,158,11,.15)", borderRadius: 8, padding: "11px 13px", marginBottom: 7, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600 }}>{ev.event}</div>
@@ -1680,7 +1680,7 @@ function BreakingShareCard({ data, onClose }) {
           </button>
           <button onClick={onClose} style={{ padding: "12px 20px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#555", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Done</button>
         </div>
-        <div style={{ fontSize: 11, color: "#2a2a2a", textAlign: "center" }}>Mobile — shares to any app · Desktop — downloads as PNG</div>
+        <div style={{ fontSize: 11, color: "#2a2a2a", textAlign: "center" }}>Mobile  -  shares to any app · Desktop  -  downloads as PNG</div>
       </div>
     </div>
   );
@@ -1709,7 +1709,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
       .then(r => r.json())
       .then(data => {
         if (data.error || !data.candles?.length) return;
-        // Filter to weekdays only — ignore weekend thin trading
+        // Filter to weekdays only  -  ignore weekend thin trading
         const candles = data.candles.filter(c => {
           const day = new Date(c.t * 1000).getDay();
           return day >= 1 && day <= 5;
@@ -1746,7 +1746,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
   };
   const bc = biasConfig[bias] || biasConfig.NEUTRAL;
 
-  // Accent colour — cyan for macro/scalper, amber for equity
+  // Accent colour  -  cyan for macro/scalper, amber for equity
   const accent = isEquity ? "#f59e0b" : "#00d4ff";
   const accentDim = isEquity ? "rgba(245,158,11,.1)" : "rgba(0,212,255,.035)";
 
@@ -1755,7 +1755,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
 
   // Content lines
   const truncate = (str, max) => str && str.length > max ? str.slice(0, max - 1) + "…" : (str || "");
-  // Extract first complete sentence — no mid-word cuts
+  // Extract first complete sentence  -  no mid-word cuts
   const firstSentence = (str) => {
     if (!str) return "";
     const match = str.match(/^.*?[.!?](?:\s|$)/);
@@ -1778,9 +1778,9 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
     if (imminentCount === 0) {
       line3 = "";
     } else if (imminentCount === 1) {
-      line3 = truncate(data.imminent[0].event + (data.imminent[0].time_est ? " · " + data.imminent[0].time_est + " ET" : " — in " + data.imminent[0].due_in), 80);
+      line3 = truncate(data.imminent[0].event + (data.imminent[0].time_est ? " · " + data.imminent[0].time_est + " ET" : "  -  in " + data.imminent[0].due_in), 80);
     } else {
-      line3 = truncate(imminentCount + " events today — " + data.imminent.slice(0,2).map(e => e.event).join(", "), 80);
+      line3 = truncate(imminentCount + " events today  -  " + data.imminent.slice(0,2).map(e => e.event).join(", "), 80);
     }
     biasReason = truncate(data.risk_reason, 70);
   } else {
@@ -1792,7 +1792,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
     const mc  = data.macro_context || "";
     const ev0 = data.events?.[0];
     line1      = truncate(geo || hs, 80);
-    // Use first event's why_it_moves_price as line2 — always distinct from line1
+    // Use first event's why_it_moves_price as line2  -  always distinct from line1
     // Fall back to macro_context only if it differs meaningfully from line1
     const why  = ev0?.why_it_moves_price || "";
     const mcDistinct = mc && mc.slice(0,35) !== (geo || hs).slice(0,35);
@@ -1843,21 +1843,21 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
       const file = new File([blob], "marketdebriefs-" + inst.label.replace(/\//g,"-") + ".png", { type: "image/png" });
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        // Native share sheet — works on mobile (iOS/Android)
+        // Native share sheet  -  works on mobile (iOS/Android)
         await navigator.share({
           files: [file],
           text: (() => {
             const name = inst.label;
-            if (isPostSession || isPostSessionBrief) return name + " — Post-Session Brief\n\nBrief First, Trade After. Get your full briefs @ marketdebriefs.com";
-            if (isScalper) return name + " — Event Impact Check\n\nEvery free calendar tells you what's on the schedule.\nMarketDebriefs tells you what each event means for the instrument you're trading — before you enter.\n\nBrief First, Trade After. marketdebriefs.com";
-            if (isEquity) return name + " — Equity Debrief\n\nMarkets shift. Sectors rotate. Don't trade tickers that have stopped moving.\nKnow which sectors are being driven by the current macro theme — in real time.\n\nBrief First, Trade After. marketdebriefs.com";
-            return name + " — Pre-Session Brief\n\nMarkets shift. Sectors rotate. Don't trade tickers that have stopped moving.\nKnow which sectors are being driven by the current macro theme — in real time.\n\nBrief First, Trade After. marketdebriefs.com";
+            if (isPostSession || isPostSessionBrief) return name + "  -  Post-Session Brief\n\nBrief First, Trade After. Get your full briefs @ marketdebriefs.com";
+            if (isScalper) return name + "  -  Event Impact Check\n\nEvery free calendar tells you what's on the schedule.\nMarketDebriefs tells you what each event means for the instrument you're trading  -  before you enter.\n\nBrief First, Trade After. marketdebriefs.com";
+            if (isEquity) return name + "  -  Equity Debrief\n\nMarkets shift. Sectors rotate. Don't trade tickers that have stopped moving.\nKnow which sectors are being driven by the current macro theme  -  in real time.\n\nBrief First, Trade After. marketdebriefs.com";
+            return name + "  -  Pre-Session Brief\n\nMarkets shift. Sectors rotate. Don't trade tickers that have stopped moving.\nKnow which sectors are being driven by the current macro theme  -  in real time.\n\nBrief First, Trade After. marketdebriefs.com";
           })(),
         });
         setShared(true);
         setTimeout(() => setShared(false), 3000);
       } else {
-        // Desktop fallback — download the image
+        // Desktop fallback  -  download the image
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -1917,7 +1917,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
             )}
             <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: (isPostSession || isPostSessionBrief) ? 8 : 14 }}>{date}</div>
 
-            {/* Theme pill — scalper keeps GREEN/YELLOW/RED, others show macro theme */}
+            {/* Theme pill  -  scalper keeps GREEN/YELLOW/RED, others show macro theme */}
             <div style={{ marginBottom: isScalper || isPostSession ? 8 : 12 }}>
               {isScalper ? (
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 16px", borderRadius: 20, background: bc.bg, border: "1px solid " + bc.border }}>
@@ -1933,7 +1933,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
               )}
             </div>
 
-            {/* Price move — post-session only */}
+            {/* Price move  -  post-session only */}
             {isPostSession && priceMove && (
               <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: priceMove.up ? "rgba(0,212,170,.08)" : "rgba(255,71,87,.08)", border: "1px solid " + (priceMove.up ? "rgba(0,212,170,.25)" : "rgba(255,71,87,.25)"), marginBottom: 8 }}>
                 <span style={{ fontSize: 13 }}>{priceMove.up ? "↑" : "↓"}</span>
@@ -1945,7 +1945,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
               <div style={{ height: 4 }} />
             )}
 
-            {/* Lines — scalper gets live desk layout, others get standard layout */}
+            {/* Lines  -  scalper gets live desk layout, others get standard layout */}
             {isScalper ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {/* Risk reason */}
@@ -1985,7 +1985,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
                 )}
               </div>
             ) : isPostSession ? (
-              // POST-SESSION — fresh AI brief looking backwards at the day
+              // POST-SESSION  -  fresh AI brief looking backwards at the day
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 {data.session_summary && (
                   <div style={{ fontSize: 8, color: "#888", lineHeight: 1.4, fontStyle: "italic", marginBottom: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
@@ -2015,7 +2015,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
                 )}
               </div>
             ) : (
-              // PRE-SESSION — standard macro context
+              // PRE-SESSION  -  standard macro context
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {line1 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
                   {lineIcons[0] === "CAL" ? <DynamicCalendar size={15} /> : <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[0]}</span>}
@@ -2087,7 +2087,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
         </div>
 
         <div style={{ fontSize: 11, color: "#2a2a2a", textAlign: "center" }}>
-          Mobile — shares to any app · Desktop — downloads as PNG
+          Mobile  -  shares to any app · Desktop  -  downloads as PNG
         </div>
       </div>
     </div>
@@ -2118,14 +2118,14 @@ function FullView({ inst, data }) {
 function ScalperView({ inst, data }) {
   const RL = {
     GREEN:  { label: "CLEAR",       sub: "Macro conditions calm",         color: "#00d4ff", bg: "rgba(0,212,255,.08)",  border: "rgba(0,212,255,.2)"  },
-    YELLOW: { label: "CAUTION",     sub: "Something is close — be aware", color: "#f59e0b", bg: "rgba(245,158,11,.08)", border: "rgba(245,158,11,.2)" },
-    RED:    { label: "STAND DOWN",  sub: "Major event imminent — wait",   color: "#ff4757", bg: "rgba(255,71,87,.08)",  border: "rgba(255,71,87,.2)"  },
+    YELLOW: { label: "CAUTION",     sub: "Something is close  -  be aware", color: "#f59e0b", bg: "rgba(245,158,11,.08)", border: "rgba(245,158,11,.2)" },
+    RED:    { label: "STAND DOWN",  sub: "Major event imminent  -  wait",   color: "#ff4757", bg: "rgba(255,71,87,.08)",  border: "rgba(255,71,87,.2)"  },
   };
   const rl = RL[data.risk_level] || RL.YELLOW;
   return (
     <div>
       <div style={{ background: rl.bg, border: "1px solid " + rl.border, borderRadius: 12, padding: "22px 20px", marginBottom: 18, textAlign: "center" }}>
-        <div style={{ fontSize: 10, color: "#444", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>{inst.flag} {inst.label} — MACRO RISK CHECK</div>
+        <div style={{ fontSize: 10, color: "#444", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>{inst.flag} {inst.label}  -  MACRO RISK CHECK</div>
         <div style={{ fontSize: 32, fontWeight: 900, color: rl.color, marginBottom: 4, letterSpacing: -1 }}>{rl.label}</div>
         <div style={{ fontSize: 10, color: rl.color, opacity: 0.6, fontFamily: "monospace", letterSpacing: 1, marginBottom: 10 }}>{rl.sub}</div>
         <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 10 }} />
@@ -2233,7 +2233,7 @@ function AppInner({ navigate }) {
   const [data, setData] = useState(null);
   const [inst, setInst] = useState(null);
   const [error, setError] = useState(null);
-  // Global macro context — set when any Full Brief is generated
+  // Global macro context  -  set when any Full Brief is generated
   // Passed to Stocks tab for sector impact intelligence
   const [globalMacroContext, setGlobalMacroContext] = useState(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -2339,7 +2339,7 @@ function AppInner({ navigate }) {
     setMode(m); if (inst && data) run(inst.label, m);
   };
 
-  // Tabs — Options Flow removed until API is ready
+  // Tabs  -  Options Flow removed until API is ready
   const TABS = [
     { id: "intel",    label: "Intelligence" },
     { id: "stocks",   label: "Stocks" },
@@ -2352,7 +2352,7 @@ function AppInner({ navigate }) {
       <style>{`*, *::before, *::after { box-sizing: border-box; } body { margin: 0; padding: 0; } textarea { box-sizing: border-box; } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }`}</style>
       {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} />}
 
-      {/* ── BRIEF LOADING OVERLAY — keeps user in app during fetch ── */}
+      {/* ── BRIEF LOADING OVERLAY  -  keeps user in app during fetch ── */}
       {loading && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
@@ -2389,7 +2389,7 @@ function AppInner({ navigate }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 13 }}>
               <div onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
                 <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff" }}>MARKET BRIEF</div>
-                <div style={{ fontSize: 9, color: "#2a2a2a", letterSpacing: 2, fontFamily: "monospace" }}>INTELLIGENCE — EVENTS — BREAKING — STOCKS</div>
+                <div style={{ fontSize: 9, color: "#2a2a2a", letterSpacing: 2, fontFamily: "monospace" }}>INTELLIGENCE  -  EVENTS  -  BREAKING  -  STOCKS</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {!isPro && <button onClick={() => triggerUpgrade("limit")} style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: remaining <= 1 ? "rgba(255,71,87,.1)" : "rgba(255,255,255,.03)", border: "1px solid " + (remaining <= 1 ? "rgba(255,71,87,.3)" : "rgba(255,255,255,.07)"), color: remaining <= 1 ? "#ff4757" : "#333", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>{remaining} left</button>}
@@ -2723,7 +2723,7 @@ function AppInner({ navigate }) {
                         <div style={{ fontSize: 22, marginBottom: 10 }}>📭</div>
                         <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, marginBottom: 6 }}>No breaking narratives right now</div>
                         <div style={{ fontSize: 11, color: "#333", lineHeight: 1.7 }}>
-                          Markets are quiet — no macro-moving headlines in the current news cycle.<br/>
+                          Markets are quiet  -  no macro-moving headlines in the current news cycle.<br/>
                           <span style={{ color: "#2a2a2a" }}>Last checked {feedLastFetched.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
                         </div>
                       </>
@@ -2745,7 +2745,7 @@ function AppInner({ navigate }) {
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 11, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 6 }}>⚡ BREAKING NARRATIVE</div>
                 <div style={{ fontSize: 13, color: "#444", lineHeight: 1.6 }}>
-                  See a headline you don't understand? Paste it in — get a clear macro explanation and how it affects your instruments.
+                  See a headline you don't understand? Paste it in  -  get a clear macro explanation and how it affects your instruments.
                   Also monitors the live wire for market-moving events every 15 minutes.
                 </div>
               </div>
@@ -2755,7 +2755,7 @@ function AppInner({ navigate }) {
                 <textarea
                   value={breakingHeadline}
                   onChange={e => setBreakingHeadline(e.target.value)}
-                  placeholder={"Paste any headline, tweet or Discord narrative you don't understand...\n\ne.g. \"Fed signals higher for longer\" — what does this mean for my EUR/USD trade?\n\nor: \"OPEC+ cuts 1M barrels\" — how does this hit Oil and the Dollar?"}
+                  placeholder={"Paste any headline, tweet or Discord narrative you don't understand...\n\ne.g. \"Fed signals higher for longer\"  -  what does this mean for my EUR/USD trade?\n\nor: \"OPEC+ cuts 1M barrels\"  -  how does this hit Oil and the Dollar?"}
                   rows={4}
                   style={{ width: "100%", background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.15)", borderRadius: 10, color: "#e0e0e0", fontSize: 13, padding: "12px 14px", outline: "none", fontFamily: "inherit", lineHeight: 1.6, resize: "none" }}
                 />
@@ -2885,7 +2885,7 @@ function AppInner({ navigate }) {
             />
           )}
           {tab === "learn" && <Learn />}
-          {/* Breaking narrative share card — rendered outside tab conditions */}
+          {/* Breaking narrative share card  -  rendered outside tab conditions */}
           {showShareCard && breakingData && tab === "breaking" && (
             <BreakingShareCard
               data={breakingData}
