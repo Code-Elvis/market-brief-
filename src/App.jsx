@@ -830,7 +830,7 @@ async function getEquityScalper(label) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const sys = "You are a professional equity risk assistant for traders. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
     " RULES: Never mention specific price levels. Focus only on CURRENT and IMMINENT risks for this specific stock." +
-    " EQUITY SCALPER schema: {"ticker":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","earnings_proximity":"SAFE|NEAR|IMMINENT","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","due_in":"string","expected_impact":"string"}]}";
+    " EQUITY SCALPER schema: {ticker:string,risk_level:GREEN|YELLOW|RED,risk_reason:string,scalper_note:string,earnings_proximity:SAFE|NEAR|IMMINENT,breaking:[{headline:string,direction:BULLISH|BEARISH|NEUTRAL,age:string}],imminent:[{event:string,due_in:string,expected_impact:string}]}";
   const msg = "Time: " + now + ". I am about to trade " + label + ". Give me a GREEN / YELLOW / RED equity scalper check. Flag: earnings proximity, any breaking company-specific news, analyst events, sector pressure, or macro events that directly affect this stock right now. No price levels.";
   return callClaude(sys, msg);
 }
