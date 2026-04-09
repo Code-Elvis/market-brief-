@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"; // v2
+import { useState, useEffect, useCallback } from "react";
 import { useUser, useClerk, useAuth, SignIn, SignUp } from "@clerk/clerk-react";
 import { useUsage } from "./useUsage.js";
 
