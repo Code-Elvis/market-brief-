@@ -950,8 +950,8 @@ function AuthScreen() {
       {/* Clerk form */}
       <div style={{ width: "100%", maxWidth: 400 }}>
         {view === "sign-up"
-          ? <SignUp forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" }, elements: { card: { borderRadius: "0 0 10px 10px", borderTop: "none" } } }} />
-          : <SignIn forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" }, elements: { card: { borderRadius: "0 0 10px 10px", borderTop: "none" } } }} />
+          ? <SignUp forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" }, elements: { card: { borderRadius: "0 0 10px 10px", borderTop: "none" }, footer: { display: "none" }, footerAction: { display: "none" }, footerActionLink: { display: "none" }, footerPages: { display: "none" } } }} />
+          : <SignIn forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" }, elements: { card: { borderRadius: "0 0 10px 10px", borderTop: "none" }, footer: { display: "none" }, footerAction: { display: "none" }, footerActionLink: { display: "none" }, footerPages: { display: "none" } } }} />
         }
       </div>
 
@@ -1008,7 +1008,11 @@ function EventCard({ ev }) {
           <div style={{ fontSize: 13, color: "#c8d6e5", lineHeight: 1.75, background: "rgba(0,0,0,.25)", padding: 11, borderRadius: 6 }}>{ev.why_it_moves_price}</div>
         </div>
       )}
-      <div style={{ fontSize: 10, color: open ? "#2a2a2a" : "#00d4ff", marginTop: 6, textAlign: "right", opacity: open ? 0.5 : 0.7 }}>{open ? "▲ Hide explanation" : "▼ Why does this move price?"}</div>
+      <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: open ? "#555" : "#ffd700", background: open ? "transparent" : "rgba(255,215,0,.08)", border: open ? "none" : "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: open ? 0 : "2px 8px" }}>
+          {open ? "▲ Close" : "▼ Why does this move price?"}
+        </span>
+      </div>
     </div>
   );
 }
