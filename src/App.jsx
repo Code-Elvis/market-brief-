@@ -88,7 +88,7 @@ function HelpPage({ navigate }) {
       { q: "What is Events Brief?", a: "Events Brief is not just an economic calendar  -  it tells you what each event means for the specific instrument you're trading. Before you enter a position, you get a plain-English explanation of how each scheduled event is likely to impact your market, so you don't just know what's on the calendar, you know why it matters for your trade. You get CLEAR / CAUTION / STAND DOWN in seconds. CLEAR  -  no imminent events, macro conditions calm. CAUTION  -  something is close on the calendar, be aware. STAND DOWN  -  a major event is imminent, stay out of the market until it passes. This is an event calendar awareness tool, not a directional signal. Pro feature." },
       { q: "How do Equity (Stocks) Debriefs work?", a: "Go to the Stocks tab, type any stock name or ticker (Apple, NVDA, TSLA, MSFT, etc.) and get an instant debrief covering earnings context, macro tailwinds and headwinds, upcoming catalyst events, sector rotation signals, and institutional flow direction. Pro feature." },
 
-      { q: "What is Learn to Fish?", a: "A free educational library of macro concepts  -  why high-impact news moves markets, the role of the US Dollar, risk-on vs risk-off, how interest rates affect currencies, and more. The goal is to help you understand why markets move." },
+      { q: "What is Learn to Fish?", a: "A free educational library of macro concepts plus an AI-powered Ask section. Tap any concept to read a plain-English explanation of why markets move. Or type any term you don't understand  -  hawkish, yield curve inversion, risk-off  -  and get an instant explanation written for retail traders. No jargon, no finance degree required." },
       { q: "How current is the data in my briefs?", a: "Each brief is generated fresh on demand focusing on current macro themes, central bank stances, and upcoming scheduled events. For best results run a fresh brief before each trading session. MarketDebriefs is an intelligence tool and does not constitute financial advice." },
     ]},
     { id: "billing", icon: "💳", title: "Billing", color: "rgba(0,212,255,.08)", items: [
@@ -955,8 +955,15 @@ function AuthScreen() {
         }
       </div>
 
+      {/* Manual toggle fallback - in case Clerk's internal links don't work */}
+      <div style={{ marginTop: 12, fontSize: 12, color: "#444", textAlign: "center" }}>
+        {view === "sign-up"
+          ? <>Already have an account?{" "}<button onClick={() => setView("sign-in")} style={{ background: "none", border: "none", color: "#00d4ff", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: 0, textDecoration: "underline" }}>Sign in</button></>
+          : <>Don't have an account?{" "}<button onClick={() => setView("sign-up")} style={{ background: "none", border: "none", color: "#00d4ff", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: 0, textDecoration: "underline" }}>Sign up free</button></>
+        }
+      </div>
       {/* Free tier reminder */}
-      <div style={{ marginTop: 16, fontSize: 11, color: "#2a2a2a", textAlign: "center", fontFamily: "monospace", letterSpacing: 0.5 }}>
+      <div style={{ marginTop: 10, fontSize: 11, color: "#2a2a2a", textAlign: "center", fontFamily: "monospace", letterSpacing: 0.5 }}>
         Free · 3 briefs/day · No credit card needed
       </div>
 
@@ -1001,7 +1008,7 @@ function EventCard({ ev }) {
           <div style={{ fontSize: 13, color: "#c8d6e5", lineHeight: 1.75, background: "rgba(0,0,0,.25)", padding: 11, borderRadius: 6 }}>{ev.why_it_moves_price}</div>
         </div>
       )}
-      <div style={{ fontSize: 10, color: open ? "#2a2a2a" : "#00d4ff", marginTop: 6, textAlign: "right", opacity: open ? 0.5 : 0.7 }}>{open ? "▲ collapse" : "▼ tap to understand why"}</div>
+      <div style={{ fontSize: 10, color: open ? "#2a2a2a" : "#00d4ff", marginTop: 6, textAlign: "right", opacity: open ? 0.5 : 0.7 }}>{open ? "▲ Hide explanation" : "▼ Why does this move price?"}</div>
     </div>
   );
 }
@@ -2195,6 +2202,73 @@ function Learn() {
     <div>
       <div style={{ marginBottom: 22 }}><div style={{ fontSize: 19, fontWeight: 700, color: "#f0f0f0", marginBottom: 3 }}>Learn to Fish</div><div style={{ fontSize: 13, color: "#444" }}>The macro concepts behind every market move</div></div>
       {CONCEPTS.map((c, i) => (<div key={i} onClick={() => setOpen(open === i ? null : i)} style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 10, padding: 15, marginBottom: 9, cursor: "pointer" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><div style={{ fontSize: 13, fontWeight: 600, color: "#d0d0d0", flex: 1, marginRight: 8 }}>{c.title}</div><span style={{ color: "#333", flexShrink: 0 }}>{open === i ? "^" : "v"}</span></div>{open === i && <div style={{ marginTop: 13, fontSize: 13, color: "#999", lineHeight: 1.8, paddingTop: 13, borderTop: "1px solid rgba(255,255,255,.06)" }}>{c.body}</div>}</div>))}
+      {/* ── ASK A QUESTION ── */}
+      <div style={{ marginTop: 28, borderTop: "1px solid rgba(255,255,255,.06)", paddingTop: 24 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f0f0", marginBottom: 4 }}>Ask a Macro Question</div>
+        <div style={{ fontSize: 12, color: "#444", marginBottom: 14 }}>Don't understand a term or concept? Ask and get a plain-English explanation.</div>
+        <LearnAsk />
+      </div>
+    </div>
+  );
+}
+
+function LearnAsk() {
+  const [question, setQuestion] = React.useState("");
+  const [answer, setAnswer] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState(null);
+  const EXAMPLES = ["What does hawkish mean?", "What is yield curve inversion?", "Why does the dollar affect Gold?", "What is risk-off sentiment?", "What is quantitative tightening?"];
+  const ask = async () => {
+    const q = question.trim();
+    if (!q) return;
+    setLoading(true); setError(null); setAnswer(null);
+    try {
+      const res = await fetch("/api/brief", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 400,
+          system: "You are a macro trading educator. Answer the question in plain English as if explaining to a retail trader with no finance background. Be concise - 3 to 5 sentences max. No jargon without explanation. No bullet points - write in flowing sentences. Never give financial advice or price predictions.",
+          messages: [{ role: "user", content: "Explain this macro trading concept in plain English: " + q }]
+        })
+      });
+      const data = await res.json();
+      const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+      if (text) setAnswer(text);
+      else throw new Error("No response");
+    } catch(e) {
+      setError("Could not get an answer. Please try again.");
+    }
+    setLoading(false);
+  };
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+        <input
+          value={question}
+          onChange={e => { setQuestion(e.target.value); setAnswer(null); setError(null); }}
+          onKeyDown={e => e.key === "Enter" && ask()}
+          placeholder="e.g. What does hawkish mean?"
+          style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 8, color: "#e0e0e0", fontSize: 13, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
+        />
+        <button onClick={ask} disabled={loading || !question.trim()} style={{ padding: "10px 16px", borderRadius: 8, border: "none", cursor: loading || !question.trim() ? "not-allowed" : "pointer", background: loading || !question.trim() ? "rgba(192,132,252,.08)" : "rgba(192,132,252,.15)", color: loading || !question.trim() ? "#555" : "#c084fc", fontSize: 12, fontWeight: 700, fontFamily: "inherit", whiteSpace: "nowrap" }}>
+          {loading ? "…" : "Ask"}
+        </button>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+        {EXAMPLES.map(ex => (
+          <button key={ex} onClick={() => { setQuestion(ex); setAnswer(null); }} style={{ fontSize: 10, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(192,132,252,.05)", border: "1px solid rgba(192,132,252,.15)", color: "#666" }}>{ex}</button>
+        ))}
+      </div>
+      {loading && <div style={{ padding: "14px 0", fontSize: 12, color: "#555" }}>Thinking…</div>}
+      {error && <div style={{ fontSize: 12, color: "#ff4757" }}>{error}</div>}
+      {answer && (
+        <div style={{ background: "rgba(192,132,252,.06)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 10, padding: "14px 16px" }}>
+          <div style={{ fontSize: 9, color: "#c084fc", letterSpacing: 1.5, fontWeight: 700, marginBottom: 8 }}>EXPLANATION</div>
+          <div style={{ fontSize: 13, color: "#d4b8f7", lineHeight: 1.8 }}>{answer}</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2428,7 +2502,36 @@ function AppInner({ navigate }) {
             </div>
             <div style={{ display: "flex", overflowX: "auto" }}>
               {TABS.map(t => (
-                <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, minWidth: 60, padding: "9px 4px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent"), whiteSpace: "nowrap" }}>
+                <button key={t.id} onClick={() => {
+                  setTab(t.id);
+                  if (t.id === "breaking" && isPro) {
+                    const isStale = !feedLastFetched || (Date.now() - new Date(feedLastFetched).getTime()) > 14 * 60 * 1000;
+                    if (narrativeFeed.length === 0 || isStale) {
+                      setFeedLoading(true);
+                      fetch("/api/narratives")
+                        .then(r => r.json())
+                        .then(d => {
+                          if (d.narratives?.length > 0) {
+                            setNarrativeFeed(prev => {
+                              const existingIds = new Set(prev.map(n => n.id));
+                              const newOnes = d.narratives.filter(n => !existingIds.has(n.id));
+                              setLastFetchCount(newOnes.length);
+                              const merged = [...newOnes, ...prev].slice(0, 40);
+                              const updated = [...merged.filter(n => n.political_alert), ...merged.filter(n => !n.political_alert)];
+                              const today = new Date().toISOString().slice(0, 10);
+                              try { localStorage.setItem("md_narrative_feed", JSON.stringify({ date: today, feed: updated })); } catch(e) {}
+                              return updated;
+                            });
+                            const now = new Date();
+                            setFeedLastFetched(now);
+                            try { localStorage.setItem("md_narrative_feed_ts", JSON.stringify({ date: new Date().toISOString().slice(0,10), ts: now.toISOString() })); } catch(e) {}
+                          }
+                        })
+                        .catch(() => {})
+                        .finally(() => setFeedLoading(false));
+                    }
+                  }
+                }} style={{ flex: 1, minWidth: 60, padding: "9px 4px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent"), whiteSpace: "nowrap" }}>
                   {t.label}
                   {t.id === "stocks" && !isPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}
                   {t.id === "stocks" && isPro && <span style={{ marginLeft: 4, fontSize: 8, color: "#f59e0b", opacity: 0.6 }}>●</span>}
