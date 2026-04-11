@@ -1218,9 +1218,8 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
                           onClick={() => {
                             // 1. Set the query
                             setQuery(ticker);
-                            // 2. Collapse sector panel so it's out of the way
+                            // 2. Collapse sector panel but KEEP sector data so user can go back
                             setExpandedSector(null);
-                            setSectorData(null);
                             // 3. Scroll to the brief result area  -  user sees the loading state
                             setTimeout(() => {
                               const anchor = document.getElementById("stocks-brief-result");
@@ -1243,6 +1242,23 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
         </div>
       )}
 
+      {/* ── BACK TO SECTORS ── */}
+      {!isScalper && sectorData?.sectors && (data || loading) && (
+        <div style={{ marginBottom: 12 }}>
+          <button
+            onClick={() => {
+              setData(null); setError(null);
+              setEquityPostData(null); setEquityPostError(null);
+              setTimeout(() => {
+                const top = document.getElementById("stocks-top");
+                if (top) top.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 60);
+            }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 7, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.05)", color: "#00d4ff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+            ← Back to Sectors
+          </button>
+        </div>
+      )}
       {/* ── BRIEF RESULT ANCHOR  -  ticker taps scroll here ── */}
       <div id="stocks-brief-result" style={{ height: 0 }} />
 
