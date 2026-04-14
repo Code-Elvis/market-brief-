@@ -1722,7 +1722,7 @@ function BreakingShareCard({ data, onClose }) {
 }
 
 // ── SHARE CARD ───────────────────────────────────────────────────────────────
-function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) {
+function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSummary, onClose }) {
   const [sharing, setSharing] = useState(false);
   const [shared, setShared] = useState(false);
   const [isPostSession, setIsPostSession] = useState(!!isPostSessionBrief);
@@ -1786,7 +1786,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
   const accentDim = isEquity ? "rgba(245,158,11,.1)" : "rgba(0,212,255,.035)";
 
   // Card label
-  const cardLabel = (isPostSession || isPostSessionBrief) ? "POST-SESSION BRIEF" : isEquity ? "EQUITY DEBRIEF" : isScalper ? "EVENTS BRIEF" : "MACRO BRIEF";
+  const cardLabel = isEventSummary ? "SESSION SUMMARY" : (isPostSession || isPostSessionBrief) ? "POST-SESSION BRIEF" : isEquity ? "EQUITY DEBRIEF" : isScalper ? "EVENTS BRIEF" : "MACRO BRIEF";
 
   // Content lines
   const truncate = (str, max) => str && str.length > max ? str.slice(0, max - 1) + "…" : (str || "");
@@ -2019,6 +2019,36 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
                   </div>
                 )}
               </div>
+            ) : isEventSummary ? (
+              // EVENT SUMMARY  -  what fired today and what it meant
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {data.session_headline && (
+                  <div style={{ fontSize: 12, color: "#c8d6e5", lineHeight: 1.5, fontStyle: "italic", marginBottom: 4 }}>
+                    "{data.session_headline}"
+                  </div>
+                )}
+                {data.events_summary && data.events_summary.slice(0, 3).map((ev, i) => {
+                  const vc = { HAWKISH: "#ff4757", DOVISH: "#00d4aa", BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
+                  const c = vc[ev.verdict] || "#888";
+                  return (
+                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                      <span style={{ fontSize: 9, fontWeight: 800, color: c, flexShrink: 0, marginTop: 2, minWidth: 52 }}>{ev.verdict}</span>
+                      <span style={{ fontSize: 10, color: "#666", lineHeight: 1.4 }}>{truncate(ev.event + (ev.impact ? "  -  " + ev.impact : ""), 70)}</span>
+                    </div>
+                  );
+                })}
+                {data.net_bias && (
+                  <div style={{ marginTop: 4, padding: "6px 9px", borderRadius: 5, background: "rgba(0,212,255,.05)", border: "1px solid rgba(0,212,255,.15)" }}>
+                    <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1, fontWeight: 700, marginBottom: 2 }}>NET SESSION BIAS</div>
+                    <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4 }}>{truncate(data.net_bias, 80)}</div>
+                  </div>
+                )}
+                {data.watch_next && (
+                  <div style={{ fontSize: 9, color: "#555" }}>
+                    <span style={{ color: "#ffd700", fontWeight: 700 }}>Watch: </span>{truncate(data.watch_next, 60)}
+                  </div>
+                )}
+              </div>
             ) : isPostSession ? (
               // POST-SESSION  -  fresh AI brief looking backwards at the day
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
@@ -2093,14 +2123,16 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
         </div>
 
         {/* Pre / Post session toggle */}
-        <div style={{ display: "flex", width: "100%", background: "#0d1117", borderRadius: 8, border: "1px solid rgba(255,255,255,.07)", overflow: "hidden" }}>
-          <button onClick={() => setIsPostSession(false)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: !isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: !isPostSession ? "#00d4ff" : "#333", borderBottom: !isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
-            ☀️ Pre-Session
-          </button>
-          <button onClick={() => setIsPostSession(true)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: isPostSession ? "#00d4ff" : "#333", borderBottom: isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
-            🌙 Post-Session
-          </button>
-        </div>
+        {!isEventSummary && (
+          <div style={{ display: "flex", width: "100%", background: "#0d1117", borderRadius: 8, border: "1px solid rgba(255,255,255,.07)", overflow: "hidden" }}>
+            <button onClick={() => setIsPostSession(false)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: !isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: !isPostSession ? "#00d4ff" : "#333", borderBottom: !isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
+              ☀️ Pre-Session
+            </button>
+            <button onClick={() => setIsPostSession(true)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: isPostSession ? "#00d4ff" : "#333", borderBottom: isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
+              🌙 Post-Session
+            </button>
+          </div>
+        )}
 
         {/* Action buttons */}
         <div style={{ display: "flex", gap: 10, width: "100%", marginTop: 4 }}>
@@ -2112,7 +2144,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, onClose }) 
             fontSize: 13, fontWeight: 800, fontFamily: "inherit",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
           }}>
-            {sharing ? "Preparing…" : shared ? "✓ Shared!" : isPostSession ? "↗ Share Post-Session" : "↗ Share Pre-Session"}
+            {sharing ? "Preparing…" : shared ? "✓ Shared!" : isEventSummary ? "↗ Share Session Summary" : isPostSession ? "↗ Share Post-Session" : "↗ Share Pre-Session"}
           </button>
           <button onClick={onClose} style={{
             padding: "12px 20px", borderRadius: 8,
@@ -2765,7 +2797,17 @@ function AppInner({ navigate }) {
                     try {
                       // Events Brief mode: generate session summary of what fired
                       if (mode === "scalper") {
-                        const releasedUS = rawCalendarEvents.filter(ev =>
+                        // Fetch calendar inline if rawCalendarEvents is empty
+                        let calEvents = rawCalendarEvents;
+                        if (!calEvents || calEvents.length === 0) {
+                          try {
+                            const cr = await fetch("/api/calendar");
+                            const cd = await cr.json();
+                            calEvents = cd.events || [];
+                            setRawCalendarEvents(calEvents);
+                          } catch(e) { calEvents = []; }
+                        }
+                        const releasedUS = calEvents.filter(ev =>
                           ev.passed && ev.country === "US" && (ev.impact === "high" || ev.impact === "medium")
                         );
                         const result = await getEventSessionSummary(inst, releasedUS);
@@ -2817,8 +2859,9 @@ function AppInner({ navigate }) {
                 inst={inst}
                 data={postSessionData || data}
                 mode={mode}
-                cardType={mode === "scalper" ? "scalper" : "macro"}
-                isPostSessionBrief={!!postSessionData}
+                cardType={postSessionData?._isEventSummary ? "event-summary" : mode === "scalper" ? "scalper" : "macro"}
+                isPostSessionBrief={!!postSessionData && !postSessionData._isEventSummary}
+                isEventSummary={!!postSessionData?._isEventSummary}
                 onClose={() => { setShowShareCard(false); }}
               />
             )}
