@@ -860,7 +860,7 @@ async function getEventSessionSummary(inst, releasedEvents) {
   ).join(", ");
   const sys = "You are a professional macro market analyst. Write a concise mid/end-of-session summary of what high-impact events fired today and what they meant for a specific instrument. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
     " RULES: Never mention specific price levels. Be direct about macro mechanisms." +
-    " SCHEMA: {"session_headline":"string","events_summary":[{"event":"string","verdict":"HAWKISH|DOVISH|BULLISH|BEARISH|NEUTRAL","impact":"string"}],"net_bias":"string","watch_next":"string"}." +
+    " SCHEMA: {\"session_headline\":\"string\",\"events_summary\":[{\"event\":\"string\",\"verdict\":\"HAWKISH|DOVISH|BULLISH|BEARISH|NEUTRAL\",\"impact\":\"string\"}],\"net_bias\":\"string\",\"watch_next\":\"string\"}." +
     " session_headline: ONE sentence describing the overall macro tone of the session based on releases." +
     " events_summary: each released event and what it meant for this instrument." +
     " net_bias: overall net effect of today's releases on this instrument in ONE sentence." +
