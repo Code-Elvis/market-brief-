@@ -2134,7 +2134,7 @@ function FullView({ inst, data }) {
   );
 }
 
-function ScalperView({ inst, data }) {
+function ScalperView({ inst, data, rawCalendar = [] }) {
   const [postReads, setPostReads] = React.useState({}); // keyed by event index
   const [postLoading, setPostLoading] = React.useState({});
   const [postErrors, setPostErrors] = React.useState({});
@@ -2176,6 +2176,77 @@ function ScalperView({ inst, data }) {
       </div>
       <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, padding: 13, marginBottom: 14 }}><div style={{ fontSize: 9, color: "#666", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>SCALPER NOTE</div><div style={{ fontSize: 14, color: "#e0e0e0", lineHeight: 1.6, fontWeight: 500 }}>{data.scalper_note}</div></div>
       {data.breaking && data.breaking.length > 0 && <div style={{ marginBottom: 14 }}><div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>JUST HIT THE WIRE</div>{data.breaking.map((b, i) => (<div key={i} style={{ background: "rgba(255,255,255,.02)", borderLeft: "3px solid rgba(0,212,255,.3)", borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}><div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, flex: 1 }}>{b.headline}</div><div style={{ textAlign: "right", flexShrink: 0 }}><div style={{ fontSize: 10, color: "#444", marginTop: 2 }}>{b.age}</div></div></div></div>))}</div>}
+      {/* Released events from live calendar  -  high-impact US events that have passed */}
+      {(() => {
+        const released = rawCalendar.filter(ev =>
+          ev.passed &&
+          ev.country === "US" &&
+          (ev.impact === "high" || ev.impact === "medium")
+        );
+        if (!released.length) return null;
+        return (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 9, color: "#00d4ff", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>
+              RELEASED TODAY ({released.length})
+            </div>
+            {released.map((ev, i) => (
+              <div key={i} style={{ background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 8, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 3 }}>
+                      RELEASED {ev.time_est} ET {ev.impact === "high" ? " · HIGH IMPACT" : ""}
+                    </div>
+                    <div style={{ fontSize: 13, color: "#c0d0e0", fontWeight: 600 }}>{ev.event}</div>
+                    {(ev.estimate || ev.prev) && (
+                      <div style={{ fontSize: 10, color: "#555", marginTop: 3 }}>
+                        {ev.estimate ? "Est: " + ev.estimate : ""}
+                        {ev.estimate && ev.prev ? " · " : ""}
+                        {ev.prev ? "Prev: " + ev.prev : ""}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Post-release read button / result */}
+                {!postReads[`cal_${i}`] ? (
+                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(0,212,255,.1)" }}>
+                    {!postLoading[`cal_${i}`] ? (
+                      <button onClick={() => fetchPostRead(ev, `cal_${i}`)}
+                        style={{ width: "100%", padding: "8px 0", borderRadius: 6, border: "1px solid rgba(0,212,255,.25)", background: "rgba(0,212,255,.06)", color: "#00d4ff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                        What does this mean for my session? →
+                      </button>
+                    ) : (
+                      <div style={{ fontSize: 11, color: "#555", textAlign: "center", padding: "6px 0" }}>Analysing release…</div>
+                    )}
+                    {postErrors[`cal_${i}`] && <div style={{ fontSize: 10, color: "#ff4757", marginTop: 4 }}>{postErrors[`cal_${i}`]}</div>}
+                  </div>
+                ) : (
+                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(0,212,255,.12)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                      {(() => {
+                        const vs = VERDICT_STYLE[postReads[`cal_${i}`].verdict] || VERDICT_STYLE.NEUTRAL;
+                        return <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: vs.color, background: vs.bg, border: "1px solid " + vs.border, borderRadius: 4, padding: "3px 9px" }}>{postReads[`cal_${i}`].verdict}</span>;
+                      })()}
+                      <span style={{ fontSize: 10, color: "#555", flex: 1 }}>{postReads[`cal_${i}`].headline}</span>
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>SESSION IMPACT</div>
+                      <div style={{ fontSize: 12, color: "#a8d8ea", lineHeight: 1.6 }}>{postReads[`cal_${i}`].session_impact}</div>
+                    </div>
+                    <div style={{ padding: "8px 10px", background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 6 }}>
+                      <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH NOW</div>
+                      <div style={{ fontSize: 11, color: "#c8a84b", lineHeight: 1.5 }}>{postReads[`cal_${i}`].watch_now}</div>
+                    </div>
+                    <button onClick={() => setPostReads(p => ({ ...p, [`cal_${i}`]: null }))}
+                      style={{ marginTop: 8, background: "none", border: "none", color: "#333", fontSize: 10, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                      ↻ refresh read
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
       {data.imminent && data.imminent.length > 0 && (
         <div>
           <div style={{ fontSize: 9, color: "#ffd700", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>
@@ -2410,6 +2481,7 @@ function AppInner({ navigate }) {
   const [showShareCard, setShowShareCard] = useState(false);
   const [equityShareData, setEquityShareData] = useState(null);
   const [postSessionData, setPostSessionData] = useState(null);
+  const [rawCalendarEvents, setRawCalendarEvents] = useState([]);
   const [postSessionLoading, setPostSessionLoading] = useState(false);
   const [postSessionError, setPostSessionError] = useState(null);
   const [breakingHeadline, setBreakingHeadline] = useState("");
@@ -2478,6 +2550,7 @@ function AppInner({ navigate }) {
           const calRes = await fetch("/api/calendar");
           const calData = await calRes.json();
           calendarEvents = calData.events || [];
+          setRawCalendarEvents(calendarEvents);
         } catch(e) {
           console.warn("Calendar fetch failed, falling back to Claude knowledge:", e.message);
         }
@@ -2644,7 +2717,7 @@ function AppInner({ navigate }) {
               </div>
             )}
             {!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}
-            {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} />}
+            {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} rawCalendar={rawCalendarEvents} />}
             {!loading && data && inst && (
               <div style={{ marginTop: 20, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                 <button onClick={() => { setPostSessionData(null); setShowShareCard(true); }} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 8, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.06)", color: "#00d4ff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
