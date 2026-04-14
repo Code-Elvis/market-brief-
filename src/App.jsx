@@ -869,12 +869,15 @@ async function getEventSessionSummary(inst, releasedEvents) {
   return callClaude(sys, msg);
 }
 
-async function getPostReleaseRead(eventName, instLabel) {
+async function getPostReleaseRead(ev, instLabel) {
   const now = new Date().toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true });
   const sys = "You are a professional macro market analyst. An economic event or data release has just occurred. Your job is to explain what the actual result means for traders right now  -  not what was expected, but what it signals for the current session. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
     " RULES: 1. NEVER mention specific price levels. 2. Be direct about the macro mechanism  -  what does this result actually mean for this instrument RIGHT NOW. 3. verdict: one word  -  HAWKISH, DOVISH, BULLISH, BEARISH, or NEUTRAL  -  whichever best describes the impact on the instrument. 4. session_impact: ONE sentence  -  what this means for the rest of the current trading session. 5. watch_now: what to watch for in the next 1-2 hours as a direct result." +
     " SCHEMA: {\"event\":\"string\",\"verdict\":\"HAWKISH|DOVISH|BULLISH|BEARISH|NEUTRAL\",\"headline\":\"string\",\"session_impact\":\"string\",\"watch_now\":\"string\",\"fades_when\":\"string\"}";
-  const msg = "Current time: " + now + " EST. Event just released: " + eventName + ". Instrument I am trading: " + instLabel + ". Based on what typically happens when this type of event is released during the current macro environment, explain what this release means for " + instLabel + " in the current trading session. What is the macro mechanism? What should the trader watch for now? Be specific to today's macro context.";
+  const contextLine = (ev.estimate || ev.prev)
+    ? " Estimate was: " + (ev.estimate || "n/a") + ". Previous reading: " + (ev.prev || "n/a") + "."
+    : "";
+  const msg = "Current time: " + now + " EST. Event just released: " + ev.event + "." + contextLine + " Instrument I am trading: " + instLabel + ". IMPORTANT: If estimate and previous are provided, use them to determine the direction of the surprise (higher or lower than expected) and make your verdict and explanation specific to that. For example if PPI came in higher than the estimate, it is HAWKISH for the Dollar. If it came in lower, it is DOVISH. Base your verdict on the actual numbers, not just the event name. Explain what this specific result means for " + instLabel + " right now. What is the macro mechanism? What should the trader watch for now?";
   return callClaude(sys, msg);
 }
 
@@ -1883,6 +1886,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
           files: [file],
           text: (() => {
             const name = inst.label;
+            if (isEventSummary) return name + "  -  Session Summary\n\nKnow what each release actually meant for your trade, not just the number.\nMarketDebriefs interprets every release in real time.\n\nBrief First, Trade After. marketdebriefs.com";
             if (isPostSession || isPostSessionBrief) return name + "  -  Post-Session Brief\n\nBrief First, Trade After. Get your full briefs @ marketdebriefs.com";
             if (isScalper) return name + "  -  Event Impact Check\n\nEvery free calendar tells you what's on the schedule.\nMarketDebriefs tells you what each event means for the instrument you're trading  -  before you enter.\n\nBrief First, Trade After. marketdebriefs.com";
             if (isEquity) return name + "  -  Equity Debrief\n\nMarkets shift. Sectors rotate. Don't trade tickers that have stopped moving.\nKnow which sectors are being driven by the current macro theme  -  in real time.\n\nBrief First, Trade After. marketdebriefs.com";
@@ -2109,7 +2113,9 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
             <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 8 }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 9, color: accent, fontFamily: "monospace", opacity: 0.85, lineHeight: 1.4, letterSpacing: 0.2 }}>
-                {(isPostSession || isPostSessionBrief)
+                {isEventSummary
+                  ? "Know what every release means · marketdebriefs.com"
+                  : (isPostSession || isPostSessionBrief)
                   ? "Get tomorrow's brief before the open · marketdebriefs.com"
                   : isEquity
                   ? "Go Pro · marketdebriefs.com"
@@ -2193,7 +2199,7 @@ function ScalperView({ inst, data, rawCalendar = [] }) {
     setPostLoading(p => ({ ...p, [i]: true }));
     setPostErrors(p => ({ ...p, [i]: null }));
     try {
-      const result = await getPostReleaseRead(ev.event, inst.label);
+      const result = await getPostReleaseRead(ev, inst.label);
       setPostReads(p => ({ ...p, [i]: result }));
       // Auto-open the result when it arrives
       setOpenReads(p => ({ ...p, [i]: true }));
