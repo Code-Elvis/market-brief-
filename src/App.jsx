@@ -853,6 +853,22 @@ async function getBreakingNarrative(headline) {
   return callClaude(sys, msg);
 }
 
+async function getEventSessionSummary(inst, releasedEvents) {
+  const now = new Date().toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true });
+  const eventList = releasedEvents.map(ev =>
+    ev.event + (ev.estimate ? " (Est: " + ev.estimate + ")" : "") + (ev.prev ? " (Prev: " + ev.prev + ")" : "")
+  ).join(", ");
+  const sys = "You are a professional macro market analyst. Write a concise mid/end-of-session summary of what high-impact events fired today and what they meant for a specific instrument. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
+    " RULES: Never mention specific price levels. Be direct about macro mechanisms." +
+    " SCHEMA: {"session_headline":"string","events_summary":[{"event":"string","verdict":"HAWKISH|DOVISH|BULLISH|BEARISH|NEUTRAL","impact":"string"}],"net_bias":"string","watch_next":"string"}." +
+    " session_headline: ONE sentence describing the overall macro tone of the session based on releases." +
+    " events_summary: each released event and what it meant for this instrument." +
+    " net_bias: overall net effect of today's releases on this instrument in ONE sentence." +
+    " watch_next: the next key event or theme to watch.";
+  const msg = "Current time: " + now + " EST. Instrument: " + inst.label + ". High-impact events released today: " + (eventList || "none specifically flagged") + ". Summarise what these releases meant for " + inst.label + " during today's session. What was the net macro tone? What should the trader watch next?";
+  return callClaude(sys, msg);
+}
+
 async function getPostReleaseRead(eventName, instLabel) {
   const now = new Date().toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true });
   const sys = "You are a professional macro market analyst. An economic event or data release has just occurred. Your job is to explain what the actual result means for traders right now  -  not what was expected, but what it signals for the current session. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
@@ -2470,6 +2486,8 @@ function AppInner({ navigate }) {
   const [data, setData] = useState(null);
   const [inst, setInst] = useState(null);
   const [error, setError] = useState(null);
+  // Cache results per mode so switching modes doesn't re-run brief
+  const [dataCache, setDataCache] = useState({}); // { full: {inst, data}, scalper: {inst, data} }
   // Global macro context  -  set when any Full Brief is generated
   // Passed to Stocks tab for sector impact intelligence
   const [globalMacroContext, setGlobalMacroContext] = useState(null);
@@ -2543,7 +2561,7 @@ function AppInner({ navigate }) {
     // ────────────────────────────────────────────────────────────────────────
 
     if (!found) { setError("Instrument not recognised. Try: ES, NQ, Euro, Gold, GBP, Oil, BTC"); return; }
-    setInst(found); setLoading(true); setError(null); setData(null); setTab("intel");
+    setInst(found); setLoading(true); setError(null); setData(null);
     try {
       // For scalper mode, fetch live calendar first and inject into the brief
       let calendarEvents = [];
@@ -2558,7 +2576,9 @@ function AppInner({ navigate }) {
         }
       }
       const result = await getBriefing(found, mm, calendarEvents);
-      setData(result); increment();
+      setData(result);
+      setDataCache(prev => ({ ...prev, [mm]: { inst: found, data: result } }));
+      increment();
       // Store macro context globally for Stocks tab sector intelligence
       if (mm === "full" && result) {
         setGlobalMacroContext({
@@ -2575,12 +2595,21 @@ function AppInner({ navigate }) {
 
   const switchMode = (m) => {
     if (m === "scalper" && !isPro) { triggerUpgrade("scalper"); return; }
-    setMode(m); if (inst && data) run(inst.label, m);
+    setMode(m);
+    // Restore cached result for this mode if same instrument
+    const cached = dataCache[m];
+    if (cached && inst && cached.inst.key === inst.key) {
+      setData(cached.data);
+      setError(null);
+    } else if (inst && (!cached || cached.inst.key !== inst.key)) {
+      // Different instrument or no cache - run fresh
+      run(inst.label, m);
+    }
+    // If no instrument yet, just switch mode - nothing to run
   };
 
   // Tabs  -  Options Flow removed until API is ready
   const TABS = [
-    { id: "intel",    label: "Intelligence" },
     { id: "stocks",   label: "Stocks" },
     { id: "breaking", label: "⚡ Breaking", pro: true },
     { id: "learn",    label: "Learn" }
@@ -2708,7 +2737,8 @@ function AppInner({ navigate }) {
           </div>
         </div>
         <div className="main-content" style={{ maxWidth: 860, margin: "0 auto", padding: "20px 20px 60px", width: "100%" }}>
-          {tab === "intel" && <div>
+          {/* Brief results always visible above other tabs */}
+          <div style={{ display: tab === "stocks" || tab === "breaking" || tab === "learn" ? "none" : "block" }}>
             {loading && <Loader />}
             {error && <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>}
             {!loading && !error && !data && !inst && (
@@ -2723,14 +2753,25 @@ function AppInner({ navigate }) {
             {!loading && data && inst && (
               <div style={{ marginTop: 20, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                 <button onClick={() => { setPostSessionData(null); setShowShareCard(true); }} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 8, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.06)", color: "#00d4ff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                  ☀️ Pre-Session Card
+                  {mode === "scalper" ? "📋 Upcoming Events Card" : "☀️ Pre-Session Card"}
                 </button>
                 <button
                   onClick={async () => {
                     setPostSessionLoading(true);
                     setPostSessionError(null);
                     try {
-                      // Fetch last trading day price move first
+                      // Events Brief mode: generate session summary of what fired
+                      if (mode === "scalper") {
+                        const releasedUS = rawCalendarEvents.filter(ev =>
+                          ev.passed && ev.country === "US" && (ev.impact === "high" || ev.impact === "medium")
+                        );
+                        const result = await getEventSessionSummary(inst, releasedUS);
+                        setPostSessionData({ ...result, _isEventSummary: true });
+                        setShowShareCard(true);
+                        setPostSessionLoading(false);
+                        return;
+                      }
+                      // Full Brief mode: fetch price and generate macro post-session
                       let priceContext = null;
                       try {
                         const pd = await fetch(`/api/chart-data?instrument=${encodeURIComponent(inst.label)}&days=7`).then(r => r.json());
@@ -2763,7 +2804,7 @@ function AppInner({ navigate }) {
                   }}
                   disabled={postSessionLoading}
                   style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 8, border: "1px solid rgba(255,165,0,.25)", background: "rgba(255,165,0,.06)", color: postSessionLoading ? "#444" : "#ffa500", fontSize: 12, fontWeight: 700, cursor: postSessionLoading ? "wait" : "pointer", fontFamily: "inherit" }}>
-                  {postSessionLoading ? "Generating…" : "🌙 Post-Session Card"}
+                  {postSessionLoading ? "Generating…" : mode === "scalper" ? "📊 Session Summary Card" : "🌙 Post-Session Card"}
                 </button>
               </div>
             )}
@@ -2779,7 +2820,7 @@ function AppInner({ navigate }) {
               />
             )}
 
-          </div>}
+          </div>
           {tab === "stocks" && (
             // Both Full Brief and Scalper Mode are now supported in the Stocks tab
             false ? null : isPro
