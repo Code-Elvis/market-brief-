@@ -853,6 +853,15 @@ async function getBreakingNarrative(headline) {
   return callClaude(sys, msg);
 }
 
+async function getPostReleaseRead(eventName, instLabel) {
+  const now = new Date().toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true });
+  const sys = "You are a professional macro market analyst. An economic event or data release has just occurred. Your job is to explain what the actual result means for traders right now  -  not what was expected, but what it signals for the current session. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
+    " RULES: 1. NEVER mention specific price levels. 2. Be direct about the macro mechanism  -  what does this result actually mean for this instrument RIGHT NOW. 3. verdict: one word  -  HAWKISH, DOVISH, BULLISH, BEARISH, or NEUTRAL  -  whichever best describes the impact on the instrument. 4. session_impact: ONE sentence  -  what this means for the rest of the current trading session. 5. watch_now: what to watch for in the next 1-2 hours as a direct result." +
+    " SCHEMA: {"event":"string","verdict":"HAWKISH|DOVISH|BULLISH|BEARISH|NEUTRAL","headline":"string","session_impact":"string","watch_now":"string","fades_when":"string"}";
+  const msg = "Current time: " + now + " EST. Event just released: " + eventName + ". Instrument I am trading: " + instLabel + ". Based on what typically happens when this type of event is released during the current macro environment, explain what this release means for " + instLabel + " in the current trading session. What is the macro mechanism? What should the trader watch for now? Be specific to today's macro context.";
+  return callClaude(sys, msg);
+}
+
 const DC = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
 const DB = { BULLISH: "rgba(0,212,170,.08)", BEARISH: "rgba(255,71,87,.08)", NEUTRAL: "rgba(255,215,0,.06)" };
 
@@ -2126,6 +2135,30 @@ function FullView({ inst, data }) {
 }
 
 function ScalperView({ inst, data }) {
+  const [postReads, setPostReads] = React.useState({}); // keyed by event index
+  const [postLoading, setPostLoading] = React.useState({});
+  const [postErrors, setPostErrors] = React.useState({});
+
+  const fetchPostRead = async (ev, i) => {
+    setPostLoading(p => ({ ...p, [i]: true }));
+    setPostErrors(p => ({ ...p, [i]: null }));
+    try {
+      const result = await getPostReleaseRead(ev.event, inst.label);
+      setPostReads(p => ({ ...p, [i]: result }));
+    } catch(e) {
+      setPostErrors(p => ({ ...p, [i]: "Could not get read. Try again." }));
+    }
+    setPostLoading(p => ({ ...p, [i]: false }));
+  };
+
+  const VERDICT_STYLE = {
+    HAWKISH:  { color: "#ff4757", bg: "rgba(255,71,87,.1)",   border: "rgba(255,71,87,.25)"   },
+    DOVISH:   { color: "#00d4aa", bg: "rgba(0,212,170,.1)",   border: "rgba(0,212,170,.25)"   },
+    BULLISH:  { color: "#00d4aa", bg: "rgba(0,212,170,.1)",   border: "rgba(0,212,170,.25)"   },
+    BEARISH:  { color: "#ff4757", bg: "rgba(255,71,87,.1)",   border: "rgba(255,71,87,.25)"   },
+    NEUTRAL:  { color: "#ffd700", bg: "rgba(255,215,0,.08)",  border: "rgba(255,215,0,.2)"    },
+  };
+
   const RL = {
     GREEN:  { label: "CLEAR",       sub: "Macro conditions calm",         color: "#00d4ff", bg: "rgba(0,212,255,.08)",  border: "rgba(0,212,255,.2)"  },
     YELLOW: { label: "CAUTION",     sub: "Something is close  -  be aware", color: "#f59e0b", bg: "rgba(245,158,11,.08)", border: "rgba(245,158,11,.2)" },
@@ -2149,22 +2182,76 @@ function ScalperView({ inst, data }) {
             TODAY'S HIGH-IMPACT EVENTS ({data.imminent.length})
           </div>
           {data.imminent.map((ev, i) => (
-            <div key={i} style={{ background: ev.passed ? "rgba(255,255,255,.02)" : "rgba(255,215,0,.05)", border: "1px solid " + (ev.passed ? "rgba(255,255,255,.06)" : "rgba(255,215,0,.15)"), borderRadius: 8, padding: "11px 13px", marginBottom: 7, opacity: ev.passed ? 0.5 : 1 }}>
+            <div key={i} style={{ background: ev.passed ? "rgba(0,212,255,.04)" : "rgba(255,215,0,.05)", border: "1px solid " + (ev.passed ? "rgba(0,212,255,.15)" : "rgba(255,215,0,.15)"), borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                <div style={{ fontSize: 13, color: ev.passed ? "#555" : "#e0e0e0", fontWeight: 600, flex: 1 }}>{ev.event}</div>
+                <div style={{ flex: 1 }}>
+                  {ev.passed && <div style={{ fontSize: 8, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>RELEASED</div>}
+                  <div style={{ fontSize: 13, color: ev.passed ? "#c0d0e0" : "#e0e0e0", fontWeight: 600 }}>{ev.event}</div>
+                </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  {ev.time_est && <div style={{ fontSize: 11, color: ev.passed ? "#444" : "#ffd700", fontWeight: 700 }}>{ev.time_est.replace(/ (EST|EDT|ET)$/i, "")} ET</div>}
-                  <div style={{ fontSize: 10, color: ev.passed ? "#333" : "#888", marginTop: 2 }}>
-                    {ev.due_in ? ev.due_in.replace(/^in\s+/i, "").replace(/^(\d)/, "in $1") : ""}
+                  {ev.time_est && <div style={{ fontSize: 11, color: ev.passed ? "#00d4ff" : "#ffd700", fontWeight: 700 }}>{ev.time_est.replace(/ (EST|EDT|ET)$/i, "")} ET</div>}
+                  <div style={{ fontSize: 10, color: ev.passed ? "#00d4ff" : "#888", marginTop: 2, opacity: 0.6 }}>
+                    {ev.passed ? "released" : ev.due_in ? ev.due_in.replace(/^in\s+/i, "").replace(/^(\d)/, "in $1") : ""}
                   </div>
                 </div>
               </div>
+              {/* Pre-release: show expected impact */}
               {ev.expected_impact && !ev.passed && (
                 <div style={{ fontSize: 11, color: "#555", marginTop: 6, lineHeight: 1.5, paddingTop: 6, borderTop: "1px solid rgba(255,215,0,.08)" }}>
                   {ev.expected_impact}
                 </div>
               )}
-              {ev.passed && <div style={{ fontSize: 10, color: "#333", marginTop: 3 }}>Released</div>}
+              {/* Post-release: show Get Session Read button or result */}
+              {ev.passed && !postReads[i] && (
+                <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px solid rgba(0,212,255,.1)" }}>
+                  {!postLoading[i] ? (
+                    <button onClick={() => fetchPostRead(ev, i)}
+                      style={{ width: "100%", padding: "8px 0", borderRadius: 6, border: "1px solid rgba(0,212,255,.25)", background: "rgba(0,212,255,.08)", color: "#00d4ff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                      What does this mean for my session? →
+                    </button>
+                  ) : (
+                    <div style={{ fontSize: 11, color: "#555", textAlign: "center", padding: "6px 0" }}>Analysing release…</div>
+                  )}
+                  {postErrors[i] && <div style={{ fontSize: 10, color: "#ff4757", marginTop: 4 }}>{postErrors[i]}</div>}
+                </div>
+              )}
+              {ev.passed && postReads[i] && (
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(0,212,255,.12)" }}>
+                  {/* Verdict badge */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                    {(() => {
+                      const vs = VERDICT_STYLE[postReads[i].verdict] || VERDICT_STYLE.NEUTRAL;
+                      return (
+                        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: vs.color, background: vs.bg, border: "1px solid " + vs.border, borderRadius: 4, padding: "3px 9px" }}>
+                          {postReads[i].verdict}
+                        </span>
+                      );
+                    })()}
+                    <span style={{ fontSize: 10, color: "#555", flex: 1 }}>{postReads[i].headline}</span>
+                  </div>
+                  {/* Session impact */}
+                  <div style={{ marginBottom: 8 }}>
+                    <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>SESSION IMPACT</div>
+                    <div style={{ fontSize: 12, color: "#a8d8ea", lineHeight: 1.6 }}>{postReads[i].session_impact}</div>
+                  </div>
+                  {/* Watch now */}
+                  <div style={{ padding: "8px 10px", background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 6, marginBottom: 8 }}>
+                    <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH NOW</div>
+                    <div style={{ fontSize: 11, color: "#c8a84b", lineHeight: 1.5 }}>{postReads[i].watch_now}</div>
+                  </div>
+                  {/* Fades when */}
+                  {postReads[i].fades_when && (
+                    <div style={{ fontSize: 10, color: "#333", lineHeight: 1.4 }}>
+                      <span style={{ color: "#2a2a2a", fontWeight: 700 }}>Fades when: </span>{postReads[i].fades_when}
+                    </div>
+                  )}
+                  {/* Refresh button */}
+                  <button onClick={() => setPostReads(p => ({ ...p, [i]: null }))}
+                    style={{ marginTop: 8, background: "none", border: "none", color: "#333", fontSize: 10, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                    ↻ refresh read
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
