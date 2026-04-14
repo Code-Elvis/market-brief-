@@ -2480,7 +2480,7 @@ function AppInner({ navigate }) {
 
   const { increment, canBrief, remaining } = useUsage(user?.id, isPro);
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState("intel");
+  const [tab, setTab] = useState("brief");
   const [mode, setMode] = useState("full");
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
@@ -2552,7 +2552,7 @@ function AppInner({ navigate }) {
       if (isPro) {
         // Pre-fill the stock search and switch to Stocks tab
         setStockQuery(q);
-        setTab("stocks");
+        setTab("stocks"); // Route to stocks tab
       } else {
         triggerUpgrade("stocks");
       }
@@ -2578,6 +2578,7 @@ function AppInner({ navigate }) {
       const result = await getBriefing(found, mm, calendarEvents);
       setData(result);
       setDataCache(prev => ({ ...prev, [mm]: { inst: found, data: result } }));
+      setTab("brief"); // Show brief results
       increment();
       // Store macro context globally for Stocks tab sector intelligence
       if (mm === "full" && result) {
@@ -2596,11 +2597,13 @@ function AppInner({ navigate }) {
   const switchMode = (m) => {
     if (m === "scalper" && !isPro) { triggerUpgrade("scalper"); return; }
     setMode(m);
+    setTab("brief"); // Always return to brief view when tapping mode buttons
     // Restore cached result for this mode if same instrument
     const cached = dataCache[m];
     if (cached && inst && cached.inst.key === inst.key) {
       setData(cached.data);
       setError(null);
+      setTab("brief"); // Show brief results
     } else if (inst && (!cached || cached.inst.key !== inst.key)) {
       // Different instrument or no cache - run fresh
       run(inst.label, m);
@@ -2693,7 +2696,7 @@ function AppInner({ navigate }) {
               <button onClick={() => run(query.trim())} disabled={loading} style={{ padding: "10px 16px", borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", background: loading ? "rgba(255,255,255,.02)" : "rgba(0,212,255,.1)", color: loading ? "#2a2a2a" : "#00d4ff", border: "1px solid rgba(0,212,255,.2)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>{loading ? "…" : "BRIEF ME"}</button>
             </div>
             <div style={{ display: "flex", gap: 5, marginBottom: 13, flexWrap: "wrap" }}>
-              {CHIPS.map(({ label, key }) => (<button key={key} onClick={() => { setQuery(label); run(label); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", color: "#444" }}>{label}</button>))}
+              {CHIPS.map(({ label, key }) => (<button key={key} onClick={() => { setQuery(label); setTab("brief"); run(label); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", color: "#444" }}>{label}</button>))}
             </div>
             <div style={{ display: "flex", overflowX: "auto" }}>
               {TABS.map(t => (
