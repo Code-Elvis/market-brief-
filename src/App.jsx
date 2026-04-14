@@ -2135,9 +2135,11 @@ function FullView({ inst, data }) {
 }
 
 function ScalperView({ inst, data, rawCalendar = [] }) {
-  const [postReads, setPostReads] = React.useState({}); // keyed by event index
+  const [postReads, setPostReads] = React.useState({});
   const [postLoading, setPostLoading] = React.useState({});
   const [postErrors, setPostErrors] = React.useState({});
+  const [openReads, setOpenReads] = React.useState({});
+  const [autoFetched, setAutoFetched] = React.useState({});
 
   const fetchPostRead = async (ev, i) => {
     setPostLoading(p => ({ ...p, [i]: true }));
@@ -2145,11 +2147,27 @@ function ScalperView({ inst, data, rawCalendar = [] }) {
     try {
       const result = await getPostReleaseRead(ev.event, inst.label);
       setPostReads(p => ({ ...p, [i]: result }));
+      // Auto-open the result when it arrives
+      setOpenReads(p => ({ ...p, [i]: true }));
     } catch(e) {
       setPostErrors(p => ({ ...p, [i]: "Could not get read. Try again." }));
     }
     setPostLoading(p => ({ ...p, [i]: false }));
   };
+
+  // Auto-fetch released events when they appear
+  React.useEffect(() => {
+    const released = rawCalendar.filter(ev =>
+      ev.passed && ev.country === "US" && (ev.impact === "high" || ev.impact === "medium")
+    );
+    released.forEach((ev, i) => {
+      const key = "cal_" + i;
+      if (!autoFetched[key] && !postReads[key] && !postLoading[key]) {
+        setAutoFetched(p => ({ ...p, [key]: true }));
+        fetchPostRead(ev, key);
+      }
+    });
+  }, [rawCalendar.length]);
 
   const VERDICT_STYLE = {
     HAWKISH:  { color: "#ff4757", bg: "rgba(255,71,87,.1)",   border: "rgba(255,71,87,.25)"   },
@@ -2179,9 +2197,7 @@ function ScalperView({ inst, data, rawCalendar = [] }) {
       {/* Released events from live calendar  -  high-impact US events that have passed */}
       {(() => {
         const released = rawCalendar.filter(ev =>
-          ev.passed &&
-          ev.country === "US" &&
-          (ev.impact === "high" || ev.impact === "medium")
+          ev.passed && ev.country === "US" && (ev.impact === "high" || ev.impact === "medium")
         );
         if (!released.length) return null;
         return (
@@ -2189,61 +2205,81 @@ function ScalperView({ inst, data, rawCalendar = [] }) {
             <div style={{ fontSize: 9, color: "#00d4ff", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>
               RELEASED TODAY ({released.length})
             </div>
-            {released.map((ev, i) => (
-              <div key={i} style={{ background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 8, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 3 }}>
-                      RELEASED {ev.time_est} ET {ev.impact === "high" ? " · HIGH IMPACT" : ""}
-                    </div>
-                    <div style={{ fontSize: 13, color: "#c0d0e0", fontWeight: 600 }}>{ev.event}</div>
-                    {(ev.estimate || ev.prev) && (
-                      <div style={{ fontSize: 10, color: "#555", marginTop: 3 }}>
-                        {ev.estimate ? "Est: " + ev.estimate : ""}
-                        {ev.estimate && ev.prev ? " · " : ""}
-                        {ev.prev ? "Prev: " + ev.prev : ""}
+            {released.map((ev, i) => {
+              const key = "cal_" + i;
+              const read = postReads[key];
+              const loading = postLoading[key];
+              const isOpen = !!openReads[key];
+              const vs = read ? (VERDICT_STYLE[read.verdict] || VERDICT_STYLE.NEUTRAL) : null;
+              return (
+                <div key={i}
+                  onClick={() => read && setOpenReads(p => ({ ...p, [key]: !p[key] }))}
+                  style={{
+                    background: read ? (vs.bg) : "rgba(0,212,255,.04)",
+                    border: "1px solid " + (read ? vs.border : "rgba(0,212,255,.15)"),
+                    borderLeft: "3px solid " + (read ? vs.color : "#00d4ff"),
+                    borderRadius: "0 8px 8px 0",
+                    padding: "11px 13px",
+                    marginBottom: 7,
+                    cursor: read ? "pointer" : "default",
+                  }}>
+                  {/* Header row */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 8, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 3 }}>
+                        RELEASED {ev.time_est} ET{ev.impact === "high" ? " · HIGH IMPACT" : ""}
                       </div>
-                    )}
+                      <div style={{ fontSize: 13, color: read ? "#f0f0f0" : "#c0d0e0", fontWeight: 600 }}>{ev.event}</div>
+                      {(ev.estimate || ev.prev) && (
+                        <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>
+                          {ev.estimate ? "Est: " + ev.estimate : ""}{ev.estimate && ev.prev ? " · " : ""}{ev.prev ? "Prev: " + ev.prev : ""}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      {read && (
+                        <div style={{ fontSize: 10, fontWeight: 800, color: vs.color, border: "1px solid " + vs.border, background: vs.bg, borderRadius: 4, padding: "2px 8px", marginBottom: 3 }}>
+                          {read.verdict}
+                        </div>
+                      )}
+                      {loading && <div style={{ fontSize: 10, color: "#555" }}>reading...</div>}
+                    </div>
                   </div>
+                  {/* Loading state */}
+                  {loading && (
+                    <div style={{ marginTop: 8, fontSize: 11, color: "#444", fontStyle: "italic" }}>Analysing release...</div>
+                  )}
+                  {/* Collapsed summary line  -  always visible once read is ready */}
+                  {read && !isOpen && (
+                    <div style={{ marginTop: 6, fontSize: 11, color: "#888", lineHeight: 1.4 }}>{read.headline}</div>
+                  )}
+                  {/* Expanded detail */}
+                  {read && isOpen && (
+                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,.06)" }}>
+                      <div style={{ fontSize: 8, color: "#444", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>WHAT IT MEANS FOR THIS SESSION</div>
+                      <div style={{ fontSize: 13, color: "#c8d6e5", lineHeight: 1.75, background: "rgba(0,0,0,.25)", padding: 11, borderRadius: 6, marginBottom: 10 }}>{read.session_impact}</div>
+                      <div style={{ padding: "8px 10px", background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 6, marginBottom: 8 }}>
+                        <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH NOW</div>
+                        <div style={{ fontSize: 11, color: "#c8a84b", lineHeight: 1.5 }}>{read.watch_now}</div>
+                      </div>
+                      {read.fades_when && (
+                        <div style={{ fontSize: 10, color: "#333", lineHeight: 1.4 }}>
+                          <span style={{ color: "#2a2a2a", fontWeight: 700 }}>Fades when: </span>{read.fades_when}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {/* Tap hint */}
+                  {read && (
+                    <div style={{ marginTop: 6, display: "flex", justifyContent: "flex-end" }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: isOpen ? "#555" : "#ffd700", background: isOpen ? "transparent" : "rgba(255,215,0,.08)", border: isOpen ? "none" : "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: isOpen ? 0 : "2px 8px" }}>
+                        {isOpen ? "▲ Hide explanation" : "▼ What does this mean?"}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                {/* Post-release read button / result */}
-                {!postReads[`cal_${i}`] ? (
-                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(0,212,255,.1)" }}>
-                    {!postLoading[`cal_${i}`] ? (
-                      <button onClick={() => fetchPostRead(ev, `cal_${i}`)}
-                        style={{ width: "100%", padding: "8px 0", borderRadius: 6, border: "1px solid rgba(0,212,255,.25)", background: "rgba(0,212,255,.06)", color: "#00d4ff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                        What does this mean for my session? →
-                      </button>
-                    ) : (
-                      <div style={{ fontSize: 11, color: "#555", textAlign: "center", padding: "6px 0" }}>Analysing release…</div>
-                    )}
-                    {postErrors[`cal_${i}`] && <div style={{ fontSize: 10, color: "#ff4757", marginTop: 4 }}>{postErrors[`cal_${i}`]}</div>}
-                  </div>
-                ) : (
-                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(0,212,255,.12)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                      {(() => {
-                        const vs = VERDICT_STYLE[postReads[`cal_${i}`].verdict] || VERDICT_STYLE.NEUTRAL;
-                        return <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: vs.color, background: vs.bg, border: "1px solid " + vs.border, borderRadius: 4, padding: "3px 9px" }}>{postReads[`cal_${i}`].verdict}</span>;
-                      })()}
-                      <span style={{ fontSize: 10, color: "#555", flex: 1 }}>{postReads[`cal_${i}`].headline}</span>
-                    </div>
-                    <div style={{ marginBottom: 8 }}>
-                      <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>SESSION IMPACT</div>
-                      <div style={{ fontSize: 12, color: "#a8d8ea", lineHeight: 1.6 }}>{postReads[`cal_${i}`].session_impact}</div>
-                    </div>
-                    <div style={{ padding: "8px 10px", background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 6 }}>
-                      <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH NOW</div>
-                      <div style={{ fontSize: 11, color: "#c8a84b", lineHeight: 1.5 }}>{postReads[`cal_${i}`].watch_now}</div>
-                    </div>
-                    <button onClick={() => setPostReads(p => ({ ...p, [`cal_${i}`]: null }))}
-                      style={{ marginTop: 8, background: "none", border: "none", color: "#333", fontSize: 10, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
-                      ↻ refresh read
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         );
       })()}
@@ -2253,7 +2289,7 @@ function ScalperView({ inst, data, rawCalendar = [] }) {
             TODAY'S HIGH-IMPACT EVENTS ({data.imminent.length})
           </div>
           {data.imminent.map((ev, i) => (
-            <div key={i} style={{ background: ev.passed ? "rgba(0,212,255,.04)" : "rgba(255,215,0,.05)", border: "1px solid " + (ev.passed ? "rgba(0,212,255,.15)" : "rgba(255,215,0,.15)"), borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}>
+            <div key={i} onClick={() => ev.passed && postReads[i] && setOpenReads(p => ({ ...p, [i]: !p[i] }))} style={{ background: ev.passed ? "rgba(0,212,255,.04)" : "rgba(255,215,0,.05)", border: "1px solid " + (ev.passed ? "rgba(0,212,255,.15)" : "rgba(255,215,0,.15)"), borderLeft: "3px solid " + (ev.passed && postReads[i] ? (VERDICT_STYLE[postReads[i].verdict] || VERDICT_STYLE.NEUTRAL).color : ev.passed ? "#00d4ff" : "rgba(255,215,0,.5)"), borderRadius: "0 8px 8px 0", padding: "11px 13px", marginBottom: 7, cursor: ev.passed && postReads[i] ? "pointer" : "default" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                 <div style={{ flex: 1 }}>
                   {ev.passed && <div style={{ fontSize: 8, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>RELEASED</div>}
@@ -2272,55 +2308,21 @@ function ScalperView({ inst, data, rawCalendar = [] }) {
                   {ev.expected_impact}
                 </div>
               )}
-              {/* Post-release: show Get Session Read button or result */}
-              {ev.passed && !postReads[i] && (
-                <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px solid rgba(0,212,255,.1)" }}>
-                  {!postLoading[i] ? (
-                    <button onClick={() => fetchPostRead(ev, i)}
-                      style={{ width: "100%", padding: "8px 0", borderRadius: 6, border: "1px solid rgba(0,212,255,.25)", background: "rgba(0,212,255,.08)", color: "#00d4ff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                      What does this mean for my session? →
-                    </button>
-                  ) : (
-                    <div style={{ fontSize: 11, color: "#555", textAlign: "center", padding: "6px 0" }}>Analysing release…</div>
-                  )}
-                  {postErrors[i] && <div style={{ fontSize: 10, color: "#ff4757", marginTop: 4 }}>{postErrors[i]}</div>}
-                </div>
+              {/* Post-release: collapsible read */}
+              {ev.passed && postLoading[i] && (
+                <div style={{ marginTop: 6, fontSize: 11, color: "#444", fontStyle: "italic" }}>Analysing release...</div>
               )}
-              {ev.passed && postReads[i] && (
-                <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(0,212,255,.12)" }}>
-                  {/* Verdict badge */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    {(() => {
-                      const vs = VERDICT_STYLE[postReads[i].verdict] || VERDICT_STYLE.NEUTRAL;
-                      return (
-                        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: vs.color, background: vs.bg, border: "1px solid " + vs.border, borderRadius: 4, padding: "3px 9px" }}>
-                          {postReads[i].verdict}
-                        </span>
-                      );
-                    })()}
-                    <span style={{ fontSize: 10, color: "#555", flex: 1 }}>{postReads[i].headline}</span>
-                  </div>
-                  {/* Session impact */}
-                  <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>SESSION IMPACT</div>
-                    <div style={{ fontSize: 12, color: "#a8d8ea", lineHeight: 1.6 }}>{postReads[i].session_impact}</div>
-                  </div>
-                  {/* Watch now */}
-                  <div style={{ padding: "8px 10px", background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 6, marginBottom: 8 }}>
+              {ev.passed && postReads[i] && !openReads[i] && (
+                <div style={{ marginTop: 6, fontSize: 11, color: "#888" }}>{postReads[i].headline}</div>
+              )}
+              {ev.passed && postReads[i] && openReads[i] && (
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,.06)" }}>
+                  <div style={{ fontSize: 8, color: "#444", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>WHAT IT MEANS FOR THIS SESSION</div>
+                  <div style={{ fontSize: 13, color: "#c8d6e5", lineHeight: 1.75, background: "rgba(0,0,0,.25)", padding: 11, borderRadius: 6, marginBottom: 10 }}>{postReads[i].session_impact}</div>
+                  <div style={{ padding: "8px 10px", background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 6 }}>
                     <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH NOW</div>
                     <div style={{ fontSize: 11, color: "#c8a84b", lineHeight: 1.5 }}>{postReads[i].watch_now}</div>
                   </div>
-                  {/* Fades when */}
-                  {postReads[i].fades_when && (
-                    <div style={{ fontSize: 10, color: "#333", lineHeight: 1.4 }}>
-                      <span style={{ color: "#2a2a2a", fontWeight: 700 }}>Fades when: </span>{postReads[i].fades_when}
-                    </div>
-                  )}
-                  {/* Refresh button */}
-                  <button onClick={() => setPostReads(p => ({ ...p, [i]: null }))}
-                    style={{ marginTop: 8, background: "none", border: "none", color: "#333", fontSize: 10, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
-                    ↻ refresh read
-                  </button>
                 </div>
               )}
             </div>
