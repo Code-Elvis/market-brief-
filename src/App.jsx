@@ -1148,6 +1148,111 @@ function BreakingGate({ onUpgrade }) {
 }
 
 // ── STOCKS TAB (Pro) ──────────────────────────────────────────────────────────
+
+// ── SOCIAL HEAT ───────────────────────────────────────────────────────────────
+function SocialHeat({ ticker }) {
+  const [data, setData] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
+  const [fetched, setFetched] = React.useState(null); // last ticker fetched
+
+  React.useEffect(() => {
+    if (!ticker || ticker === fetched) return;
+    setLoading(true);
+    setData(null);
+    fetch("/api/social?ticker=" + encodeURIComponent(ticker))
+      .then(r => r.json())
+      .then(d => { setData(d); setFetched(ticker); })
+      .catch(() => { setData({ found: false }); setFetched(ticker); })
+      .finally(() => setLoading(false));
+  }, [ticker]);
+
+  if (loading) return (
+    <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
+      <div style={{ fontSize: 9, color: "#333", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>SOCIAL HEAT</div>
+      <div style={{ fontSize: 11, color: "#333" }}>Reading social pulse...</div>
+    </div>
+  );
+
+  if (!data || !data.found) return null;
+
+  const TREND_STYLE = {
+    rising:  { color: "#00d4aa", icon: "▲", label: "RISING",  bg: "rgba(0,212,170,.08)",  border: "rgba(0,212,170,.2)"  },
+    stable:  { color: "#ffd700", icon: "●", label: "STABLE",  bg: "rgba(255,215,0,.06)",  border: "rgba(255,215,0,.2)"  },
+    falling: { color: "#ff4757", icon: "▼", label: "FALLING", bg: "rgba(255,71,87,.08)",  border: "rgba(255,71,87,.2)"  },
+  };
+  const ts = TREND_STYLE[data.trend] || TREND_STYLE.stable;
+  const buzz = data.buzz_score ?? 0;
+  const bullPct = data.bullish_pct ?? 0;
+  const bearPct = data.bearish_pct ?? 0;
+
+  // Buzz bar colour based on score
+  const buzzColor = buzz >= 70 ? "#ff4757" : buzz >= 40 ? "#ffd700" : "#00d4aa";
+
+  return (
+    <div style={{ background: ts.bg, border: "1px solid " + ts.border, borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <div style={{ fontSize: 9, color: ts.color, letterSpacing: 1.5, fontWeight: 700 }}>SOCIAL HEAT</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {data.is_validated && (
+            <span style={{ fontSize: 8, color: "#00d4aa", background: "rgba(0,212,170,.1)", border: "1px solid rgba(0,212,170,.25)", borderRadius: 3, padding: "1px 5px", fontWeight: 700, letterSpacing: 0.5 }}>
+              MULTI-PLATFORM
+            </span>
+          )}
+          <span style={{ fontSize: 11, fontWeight: 800, color: ts.color }}>
+            {ts.icon} {ts.label}
+          </span>
+        </div>
+      </div>
+
+      {/* Buzz score bar */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+          <span style={{ fontSize: 9, color: "#555", letterSpacing: 1 }}>BUZZ SCORE</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: buzzColor }}>{Math.round(buzz)}/100</span>
+        </div>
+        <div style={{ height: 4, background: "rgba(255,255,255,.06)", borderRadius: 2 }}>
+          <div style={{ height: 4, width: Math.min(buzz, 100) + "%", background: buzzColor, borderRadius: 2, transition: "width .4s ease" }} />
+        </div>
+      </div>
+
+      {/* Bullish / Bearish split */}
+      {(bullPct > 0 || bearPct > 0) && (
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+            <span style={{ fontSize: 9, color: "#00d4aa", fontWeight: 700 }}>▲ BULLISH {Math.round(bullPct)}%</span>
+            <span style={{ fontSize: 9, color: "#ff4757", fontWeight: 700 }}>▼ BEARISH {Math.round(bearPct)}%</span>
+          </div>
+          <div style={{ height: 4, background: "rgba(255,71,87,.3)", borderRadius: 2, overflow: "hidden" }}>
+            <div style={{ height: 4, width: Math.round(bullPct) + "%", background: "#00d4aa", borderRadius: 2 }} />
+          </div>
+        </div>
+      )}
+
+      {/* Trend history sparkline */}
+      {data.trend_history && data.trend_history.length > 1 && (
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 9, color: "#333", letterSpacing: 1, marginBottom: 5 }}>7-DAY BUZZ</div>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 24 }}>
+            {data.trend_history.slice(-7).map((v, i) => {
+              const h = Math.max(3, Math.round((v / 100) * 24));
+              const c = v >= 60 ? "#ff4757" : v >= 35 ? "#ffd700" : "#00d4aa";
+              return <div key={i} style={{ flex: 1, height: h, background: c, borderRadius: 2, opacity: 0.7 }} />;
+            })}
+          </div>
+        </div>
+      )}
+
+      <div style={{ fontSize: 10, color: "#333", lineHeight: 1.4 }}>
+        {buzz >= 70
+          ? "Unusually high social activity - often precedes volatility. Cross-reference with fundamentals before trading."
+          : buzz >= 40
+          ? "Moderate social interest. Monitor for narrative shifts."
+          : "Low social noise. Price action likely driven by macro or fundamentals, not social narrative."}
+      </div>
+    </div>
+  );
+}
+
 function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError, onShareCard, macroContext, onPostSession }) {
   const isScalper = mode === "scalper";
   const [sectorData, setSectorData] = React.useState(null);
@@ -1359,6 +1464,10 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
       )}
       {!isScalper && !loading && data && (
         <EquityView inst={{ label: data.instrument || query, color: "#f59e0b", flag: "STOCK" }} data={data} />
+      )}
+      {/* Social Heat - auto-loads when equity brief is ready */}
+      {!isScalper && !loading && data && query && (
+        <SocialHeat ticker={query.toUpperCase().trim()} />
       )}
       {/* Session cards  -  Pre and Post  -  shown after equity brief loads */}
       {!isScalper && !loading && data && (
@@ -2540,6 +2649,11 @@ function AppInner({ navigate }) {
   const [equityShareData, setEquityShareData] = useState(null);
   const [postSessionData, setPostSessionData] = useState(null);
   const [rawCalendarEvents, setRawCalendarEvents] = useState([]);
+  const [alertsEnabled, setAlertsEnabled] = useState(() => {
+    try { return localStorage.getItem("md_alerts_enabled") === "true"; } catch(e) { return false; }
+  });
+  const [newAlertBanner, setNewAlertBanner] = useState(null); // headline string or null
+  const [pushSupported, setPushSupported] = useState(false);
   const [postSessionLoading, setPostSessionLoading] = useState(false);
   const [postSessionError, setPostSessionError] = useState(null);
   const [breakingHeadline, setBreakingHeadline] = useState("");
@@ -2559,7 +2673,7 @@ function AppInner({ navigate }) {
     return [];
   });
   const [feedLoading, setFeedLoading] = useState(false);
-  const [lastFetchCount, setLastFetchCount] = useState(null); // null=never fetched, 0=no new, N=N new
+  const [lastFetchCount, setLastFetchCount] = useState(null);
   const [feedLastFetched, setFeedLastFetched] = useState(() => {
     try {
       const stored = localStorage.getItem("md_narrative_feed_ts");
@@ -2631,6 +2745,48 @@ function AppInner({ navigate }) {
     } catch (e) { setError(e.message || "Fetch failed. Please try again."); }
     finally { setLoading(false); }
   };
+
+  // Check push support on mount
+  React.useEffect(() => {
+    const supported = "serviceWorker" in navigator && "PushManager" in window;
+    setPushSupported(supported);
+  }, []);
+
+  // Auto-fetch narratives every 15 minutes when Breaking tab is active
+  React.useEffect(() => {
+    if (tab !== "breaking" || !isPro) return;
+    const fetchNarratives = async () => {
+      try {
+        const r = await fetch("/api/narratives");
+        const d = await r.json();
+        if (d.narratives?.length > 0) {
+          setNarrativeFeed(prev => {
+            const existingIds = new Set(prev.map(n => n.id));
+            const newOnes = d.narratives.filter(n => !existingIds.has(n.id));
+            const newAlerts = newOnes.filter(n => n.political_alert);
+            if (newAlerts.length > 0) {
+              setNewAlertBanner(newAlerts[0].headline);
+              setTimeout(() => setNewAlertBanner(null), 12000);
+            }
+            setLastFetchCount(newOnes.length);
+            const merged = [...newOnes, ...prev].slice(0, 40);
+            const updated = [...merged.filter(n => n.political_alert), ...merged.filter(n => !n.political_alert)];
+            const today = new Date().toISOString().slice(0, 10);
+            try { localStorage.setItem("md_narrative_feed", JSON.stringify({ date: today, feed: updated })); } catch(e) {}
+            return updated;
+          });
+          const now = new Date();
+          setFeedLastFetched(now);
+          try {
+            const today = new Date().toISOString().slice(0, 10);
+            localStorage.setItem("md_narrative_feed_ts", JSON.stringify({ date: today, ts: now.toISOString() }));
+          } catch(e) {}
+        }
+      } catch(e) { console.error("Auto-fetch failed:", e); }
+    };
+    const interval = setInterval(fetchNarratives, 15 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [tab, isPro]);
 
   const switchMode = (m) => {
     if (m === "scalper" && !isPro) { triggerUpgrade("scalper"); return; }
@@ -2932,60 +3088,95 @@ function AppInner({ navigate }) {
               {!isPro && <BreakingGate onUpgrade={() => triggerUpgrade("breaking")} />}
               {isPro && <>
 
+              {/* ── IN-APP ALERT BANNER ── */}
+              {newAlertBanner && (
+                <div onClick={() => setNewAlertBanner(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999, background: "#ff4757", padding: "11px 16px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer", boxShadow: "0 2px 12px rgba(255,71,87,.4)" }}>
+                  <span style={{ fontSize: 16 }}>🚨</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: "white", letterSpacing: 1, marginBottom: 1 }}>BREAKING ALERT</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,.9)", lineHeight: 1.3 }}>{newAlertBanner}</div>
+                  </div>
+                  <span style={{ fontSize: 11, color: "rgba(255,255,255,.6)" }}>x</span>
+                </div>
+              )}
+
               {/* ── LIVE FEED ── */}
               <div style={{ marginBottom: 24 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                  <div style={{ fontSize: 11, color: "#ff4757", letterSpacing: 2, fontWeight: 700 }}>📰 TODAY'S NARRATIVES</div>
-                  <button
-                    onClick={async () => {
-                      setFeedLoading(true);
-                      try {
-                        const r = await fetch("/api/narratives?force=true");
-                        const d = await r.json();
-                        const incomingCount = d.narratives?.length || 0;
-                        setLastFetchCount(incomingCount > 0 ? d.narratives.filter(n => {
-                          // count genuinely new ones not already in feed
-                          return true;
-                        }).length : 0);
-                        if (d.narratives?.length > 0) {
-                          setNarrativeFeed(prev => {
-                            const existingIds = new Set(prev.map(n => n.id));
-                            const newOnes = d.narratives.filter(n => !existingIds.has(n.id));
-                            setLastFetchCount(newOnes.length);
-                            const merged = [...newOnes, ...prev].slice(0, 40);
-                            const updated = [
-                              ...merged.filter(n => n.political_alert),
-                              ...merged.filter(n => !n.political_alert),
-                            ];
-                            const today = new Date().toISOString().slice(0, 10);
-                            try {
-                              localStorage.setItem("md_narrative_feed", JSON.stringify({ date: today, feed: updated }));
-                            } catch(e) {}
-                            return updated;
-                          });
-                          const now = new Date();
-                          setFeedLastFetched(now);
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ fontSize: 11, color: "#ff4757", letterSpacing: 2, fontWeight: 700 }}>📰 TODAY'S NARRATIVES</div>
+                    {/* Auto-refresh pulse indicator */}
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#00d4ff", opacity: 0.7, animation: "md-ping 2s ease-in-out infinite" }} title="Auto-updating every 15 min" />
+                  </div>
+                  {/* Enable Alerts button */}
+                  {pushSupported && (
+                    <button
+                      onClick={async () => {
+                        if (alertsEnabled) {
+                          // Unsubscribe
                           try {
-                            const today = new Date().toISOString().slice(0, 10);
-                            localStorage.setItem("md_narrative_feed_ts", JSON.stringify({ date: today, ts: now.toISOString() }));
-                          } catch(e) {}
+                            const reg = await navigator.serviceWorker.ready;
+                            const sub = await reg.pushManager.getSubscription();
+                            if (sub) {
+                              await fetch("/api/push-subscribe", {
+                                method: "DELETE",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ subscription: sub.toJSON() }),
+                              });
+                              await sub.unsubscribe();
+                            }
+                          } catch(e) { console.error("Unsubscribe failed:", e); }
+                          setAlertsEnabled(false);
+                          try { localStorage.setItem("md_alerts_enabled", "false"); } catch(e) {}
+                        } else {
+                          // Subscribe
+                          try {
+                            const permission = await Notification.requestPermission();
+                            if (permission !== "granted") {
+                              alert("Enable notifications in your browser settings to receive trade alerts.");
+                              return;
+                            }
+                            const reg = await navigator.serviceWorker.ready;
+                            const vapidKey = process.env.REACT_APP_VAPID_PUBLIC_KEY ||
+                              document.querySelector("meta[name=vapid-public-key]")?.content;
+                            if (!vapidKey) {
+                              console.warn("VAPID public key not found - alerts enabled for in-app only");
+                              setAlertsEnabled(true);
+                              try { localStorage.setItem("md_alerts_enabled", "true"); } catch(e) {}
+                              return;
+                            }
+                            const sub = await reg.pushManager.subscribe({
+                              userVisibleOnly: true,
+                              applicationServerKey: vapidKey,
+                            });
+                            await fetch("/api/push-subscribe", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ subscription: sub.toJSON() }),
+                            });
+                            setAlertsEnabled(true);
+                            try { localStorage.setItem("md_alerts_enabled", "true"); } catch(e) {}
+                          } catch(e) {
+                            console.error("Subscribe failed:", e);
+                            if (e.name === "NotAllowedError") {
+                              alert("Notification permission denied. Enable in browser settings to receive alerts.");
+                            }
+                          }
                         }
-                      } catch(e) { console.error(e); }
-                      setFeedLoading(false);
-                    }}
-                    disabled={feedLoading}
-                    style={{ fontSize: 10, color: feedLoading ? "#333" : "#ff4757", background: "none", border: "1px solid rgba(255,71,87,.2)", borderRadius: 6, padding: "4px 10px", cursor: feedLoading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
-                    {feedLoading ? "Fetching…" : "↻ Refresh"}
-                  </button>
+                      }}
+                      style={{ fontSize: 10, color: alertsEnabled ? "#00d4ff" : "#444", background: alertsEnabled ? "rgba(0,212,255,.08)" : "none", border: "1px solid " + (alertsEnabled ? "rgba(0,212,255,.25)" : "rgba(255,255,255,.08)"), borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5 }}>
+                      {alertsEnabled ? "🔔 Alerts On" : "🔕 Enable Alerts"}
+                    </button>
+                  )}
                 </div>
 
                 {feedLastFetched && (
                   <div style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "monospace", marginBottom: 10 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    <span style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "monospace" }}>Last checked {feedLastFetched.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
-                    {lastFetchCount !== null && (
-                      <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: lastFetchCount > 0 ? "rgba(0,229,255,.1)" : "rgba(255,255,255,.04)", color: lastFetchCount > 0 ? "#00e5ff" : "#444", border: "1px solid " + (lastFetchCount > 0 ? "rgba(0,229,255,.2)" : "rgba(255,255,255,.06)"), fontFamily: "monospace" }}>
-                        {lastFetchCount > 0 ? `+${lastFetchCount} new` : "no new stories"}
+                    <span style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "monospace" }}>Updated {feedLastFetched.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
+                    {lastFetchCount !== null && lastFetchCount > 0 && (
+                      <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: "rgba(0,229,255,.1)", color: "#00e5ff", border: "1px solid rgba(0,229,255,.2)", fontFamily: "monospace" }}>
+                        +{lastFetchCount} new
                       </span>
                     )}
                   </div>
