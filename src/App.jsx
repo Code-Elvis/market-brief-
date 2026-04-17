@@ -3168,6 +3168,35 @@ function AppInner({ navigate }) {
                       {alertsEnabled ? "🔔 Alerts On" : "🔕 Enable Alerts"}
                     </button>
                   )}
+                  {/* Manual refresh - always visible */}
+                  <button
+                    onClick={async () => {
+                      setFeedLoading(true);
+                      try {
+                        const r = await fetch("/api/narratives?force=true");
+                        const d = await r.json();
+                        if (d.narratives?.length > 0) {
+                          setNarrativeFeed(prev => {
+                            const existingIds = new Set(prev.map(n => n.id));
+                            const newOnes = d.narratives.filter(n => !existingIds.has(n.id));
+                            setLastFetchCount(newOnes.length);
+                            const merged = [...newOnes, ...prev].slice(0, 40);
+                            const updated = [...merged.filter(n => n.political_alert), ...merged.filter(n => !n.political_alert)];
+                            const today = new Date().toISOString().slice(0, 10);
+                            try { localStorage.setItem("md_narrative_feed", JSON.stringify({ date: today, feed: updated })); } catch(e) {}
+                            return updated;
+                          });
+                          const now = new Date();
+                          setFeedLastFetched(now);
+                          try { localStorage.setItem("md_narrative_feed_ts", JSON.stringify({ date: new Date().toISOString().slice(0,10), ts: now.toISOString() })); } catch(e) {}
+                        }
+                      } catch(e) { console.error(e); }
+                      setFeedLoading(false);
+                    }}
+                    disabled={feedLoading}
+                    style={{ fontSize: 10, color: feedLoading ? "#333" : "#ff4757", background: "none", border: "1px solid rgba(255,71,87,.2)", borderRadius: 6, padding: "4px 10px", cursor: feedLoading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+                    {feedLoading ? "Fetching…" : "↻ Refresh"}
+                  </button>
                 </div>
 
                 {feedLastFetched && (
