@@ -3,8 +3,22 @@
 // writes to KV cache, detects new political alerts, fires push notifications.
 
 import Anthropic from "@anthropic-ai/sdk";
-import { kv } from "@vercel/kv";
-import webpush from "web-push";
+
+// Dynamic imports - gracefully degrade if packages not yet installed
+let kv = null;
+let webpush = null;
+try {
+  const kvModule = await import("@vercel/kv");
+  kv = kvModule.kv;
+} catch (e) {
+  console.log("@vercel/kv not available - KV caching disabled");
+}
+try {
+  const wpModule = await import("web-push");
+  webpush = wpModule.default || wpModule;
+} catch (e) {
+  console.log("web-push not available - push notifications disabled");
+}
 
 const KV_NARRATIVES_KEY  = "md:narratives:latest";
 const KV_SEEN_IDS_KEY    = "md:narratives:seen_ids";
@@ -178,7 +192,11 @@ export default async function handler(req, res) {
       count: narratives.length,
       cached: false,
     };
-    await kv.set(KV_NARRATIVES_KEY, JSON.stringify(cachePayload), { ex: 1200 }); // 20min expiry
+    if (kv) {
+      await kv.set(KV_NARRATIVES_KEY, JSON.stringify(cachePayload), { ex: 1200 });
+    } else {
+      console.log("KV not available - skipping cache write");
+    }
 
     // 5. Fire push notifications for new political alerts
     if (newAlerts.length > 0) {
@@ -195,7 +213,7 @@ export default async function handler(req, res) {
 
     // 6. Update seen IDs (keep last 200 to prevent unbounded growth)
     const allIds = [...seenIds, ...newOnes.map(n => n.id)].slice(-200);
-    await kv.set(KV_SEEN_IDS_KEY, allIds);
+    if (kv) await kv.set(KV_SEEN_IDS_KEY, allIds);
 
     console.log(`Done. ${narratives.length} narratives, ${newAlerts.length} new alerts`);
 
