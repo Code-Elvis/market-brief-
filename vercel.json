@@ -1,15 +1,12 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/app",      "destination": "/index.html" },
-    { "source": "/help",     "destination": "/help.html" },
-    { "source": "/",         "destination": "/landing.html" },
-    { "source": "/(.*)",     "destination": "/index.html" }
+    { "source": "/app", "destination": "/index.html" },
+    { "source": "/", "destination": "/landing.html" }
   ],
   "crons": [
     {
-      "path": "/api/auto-brief",
-      "schedule": "30 12 * * 1-5"
+      "path": "/api/narratives-cron",
+      "schedule": "0,15,30,45 * * * *"
     }
   ]
 }
