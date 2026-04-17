@@ -1,12 +1,18 @@
 {
   "rewrites": [
-    { "source": "/app", "destination": "/index.html" },
-    { "source": "/", "destination": "/landing.html" }
+    {
+      "source": "/app",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/",
+      "destination": "/landing.html"
+    }
   ],
   "crons": [
     {
       "path": "/api/narratives-cron",
-      "schedule": "0,15,30,45 * * * *"
+      "schedule": "0 8 * * *"
     }
   ]
 }
