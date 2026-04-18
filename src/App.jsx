@@ -885,7 +885,7 @@ const DC = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
 const DB = { BULLISH: "rgba(0,212,170,.08)", BEARISH: "rgba(255,71,87,.08)", NEUTRAL: "rgba(255,215,0,.06)" };
 
 // ── UPGRADE MODAL ─────────────────────────────────────────────────────────────
-function UpgradeModal({ reason, onClose, userId, email }) {
+function UpgradeModal({ reason, onClose, userId, email, isOnTrial, daysLeft, trialExpired }) {
   const [loading, setLoading] = useState(false);
   const checkout = async () => {
     setLoading(true);
@@ -2625,7 +2625,7 @@ function AppInner({ navigate }) {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  const { increment, canBrief, remaining } = useUsage(user?.id, isPro);
+  const { increment, canBrief, remaining, isOnTrial, daysLeft, effectivelyPro } = useUsage(user?.id, isPro, user);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("brief");
   const [mode, setMode] = useState("full");
@@ -2694,7 +2694,7 @@ function AppInner({ navigate }) {
   const run = async (q, m) => {
     if (!canBrief) { triggerUpgrade("limit"); return; }
     const mm = m !== undefined ? m : mode;
-    if (mm === "scalper" && !isPro) { triggerUpgrade("scalper"); return; }
+    if (mm === "scalper" && !effectivelyPro) { triggerUpgrade("scalper"); return; }
     const found = detect(q);
 
     // ── STOCK INTERCEPT ──────────────────────────────────────────────────────
@@ -2754,7 +2754,7 @@ function AppInner({ navigate }) {
 
   // Auto-fetch narratives every 15 minutes when Breaking tab is active
   React.useEffect(() => {
-    if (tab !== "breaking" || !isPro) return;
+    if (tab !== "breaking" || !effectivelyPro) return;
     const fetchNarratives = async () => {
       try {
         const r = await fetch("/api/narratives");
@@ -2789,7 +2789,7 @@ function AppInner({ navigate }) {
   }, [tab, isPro]);
 
   const switchMode = (m) => {
-    if (m === "scalper" && !isPro) { triggerUpgrade("scalper"); return; }
+    if (m === "scalper" && !effectivelyPro) { triggerUpgrade("scalper"); return; }
     setMode(m);
     setTab("brief"); // Always return to brief view when tapping mode buttons
     // Restore cached result for this mode if same instrument
@@ -2815,7 +2815,7 @@ function AppInner({ navigate }) {
   return (
     <>
       <style>{`*, *::before, *::after { box-sizing: border-box; } body { margin: 0; padding: 0; } textarea { box-sizing: border-box; } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }`}</style>
-      {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} />}
+      {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} isOnTrial={isOnTrial} daysLeft={daysLeft} trialExpired={!isPro && !isOnTrial && !!user?.publicMetadata?.trial_start} />}
 
       {/* ── BRIEF LOADING OVERLAY  -  keeps user in app during fetch ── */}
       {loading && (
@@ -2858,7 +2858,13 @@ function AppInner({ navigate }) {
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {!isPro && <button onClick={() => triggerUpgrade("limit")} style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: remaining <= 1 ? "rgba(255,71,87,.1)" : "rgba(255,255,255,.03)", border: "1px solid " + (remaining <= 1 ? "rgba(255,71,87,.3)" : "rgba(255,255,255,.07)"), color: remaining <= 1 ? "#ff4757" : "#333", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>{remaining} left</button>}
-                {isPro && <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: "rgba(0,212,255,.08)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontWeight: 700 }}>PRO</span>}
+                {isPro && !isOnTrial && <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: "rgba(0,212,255,.08)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontWeight: 700 }}>PRO</span>}
+                {isOnTrial && (
+                  <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: daysLeft <= 2 ? "rgba(255,71,87,.15)" : "rgba(245,158,11,.1)", border: "1px solid " + (daysLeft <= 2 ? "rgba(255,71,87,.4)" : "rgba(245,158,11,.3)"), color: daysLeft <= 2 ? "#ff4757" : "#f59e0b", fontWeight: 700, cursor: "pointer" }}
+                    onClick={() => triggerUpgrade("trial")}>
+                    TRIAL {daysLeft}d
+                  </span>
+                )}
                 <span style={{ fontSize: 9, fontFamily: "monospace", color: "#2a2a2a", letterSpacing: 1 }}>
                   {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" }).toUpperCase()}
                 </span>
@@ -2878,8 +2884,8 @@ function AppInner({ navigate }) {
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
-              {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Events Brief", sub: isPro ? "Event impact before you enter" : "Pro only 🔒" }].map(m => (
-                <button key={m.id} onClick={() => switchMode(m.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: mode === m.id ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.02)", border: mode === m.id ? "1px solid rgba(0,212,255,.25)" : "1px solid rgba(255,255,255,.05)", color: mode === m.id ? "#00d4ff" : (m.id === "scalper" && !isPro ? "#2a2a2a" : "#444") }}>
+              {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Events Brief", sub: effectivelyPro ? "Event impact before you enter" : "Pro only 🔒" }].map(m => (
+                <button key={m.id} onClick={() => switchMode(m.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: mode === m.id ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.02)", border: mode === m.id ? "1px solid rgba(0,212,255,.25)" : "1px solid rgba(255,255,255,.05)", color: mode === m.id ? "#00d4ff" : (m.id === "scalper" && !effectivelyPro ? "#2a2a2a" : "#444") }}>
                   <div style={{ fontSize: 11, fontWeight: 700 }}>{m.label}</div>
                   <div style={{ fontSize: 9, marginTop: 2, opacity: 0.7 }}>{m.sub}</div>
                 </button>
@@ -2925,15 +2931,32 @@ function AppInner({ navigate }) {
                   }
                 }} style={{ flex: 1, minWidth: 60, padding: "9px 4px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent"), whiteSpace: "nowrap" }}>
                   {t.label}
-                  {t.id === "stocks" && !isPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}
-                  {t.id === "stocks" && isPro && <span style={{ marginLeft: 4, fontSize: 8, color: "#f59e0b", opacity: 0.6 }}>●</span>}
-                  {t.id === "breaking" && !isPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}
+                  {t.id === "stocks" && !effectivelyPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}
+                  {t.id === "stocks" && effectivelyPro && <span style={{ marginLeft: 4, fontSize: 8, color: "#f59e0b", opacity: 0.6 }}>●</span>}
+                  {t.id === "breaking" && !effectivelyPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}
                 </button>
               ))}
             </div>
           </div>
         </div>
         <div className="main-content" style={{ maxWidth: 860, margin: "0 auto", padding: "20px 20px 60px", width: "100%" }}>
+          {/* Trial expiry banner - shows once per session when trial just ended */}
+          {!isPro && !isOnTrial && user?.publicMetadata?.trial_start && (() => {
+            const dismissed = (() => { try { return sessionStorage.getItem("md_trial_banner_dismissed") === "true"; } catch(e) { return false; } })();
+            if (dismissed) return null;
+            return (
+              <div style={{ marginBottom: 14, padding: "12px 16px", borderRadius: 9, background: "rgba(245,158,11,.08)", border: "1px solid rgba(245,158,11,.25)", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b", marginBottom: 3 }}>Your 7-day trial has ended</div>
+                  <div style={{ fontSize: 11, color: "#888", lineHeight: 1.5 }}>Upgrade to Pro to keep full access, or continue with 3 free briefs per day.</div>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  <button onClick={() => triggerUpgrade("trial_expired")} style={{ fontSize: 10, fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,.12)", border: "1px solid rgba(245,158,11,.3)", borderRadius: 6, padding: "5px 11px", cursor: "pointer", fontFamily: "inherit" }}>Upgrade</button>
+                  <button onClick={() => { try { sessionStorage.setItem("md_trial_banner_dismissed", "true"); } catch(e) {} const el = document.getElementById("md-trial-banner"); if (el) el.style.display = "none"; }} style={{ fontSize: 10, color: "#444", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "5px 8px" }}>x</button>
+                </div>
+              </div>
+            );
+          })()}
           {/* Brief results always visible above other tabs */}
           <div style={{ display: tab === "stocks" || tab === "breaking" || tab === "learn" ? "none" : "block" }}>
             {loading && <Loader />}
@@ -3031,7 +3054,7 @@ function AppInner({ navigate }) {
           </div>
           {tab === "stocks" && (
             // Both Full Brief and Scalper Mode are now supported in the Stocks tab
-            false ? null : isPro
+            false ? null : effectivelyPro
                 ? <StocksTab
                     query={stockQuery} setQuery={setStockQuery}
                     data={stockData} setData={setStockData}
@@ -3085,8 +3108,8 @@ function AppInner({ navigate }) {
 
           {tab === "breaking" && (
             <div style={{ paddingBottom: 40 }}>
-              {!isPro && <BreakingGate onUpgrade={() => triggerUpgrade("breaking")} />}
-              {isPro && <>
+              {!effectivelyPro && <BreakingGate onUpgrade={() => triggerUpgrade("breaking")} />}
+              {effectivelyPro && <>
 
               {/* ── IN-APP ALERT BANNER ── */}
               {newAlertBanner && (
