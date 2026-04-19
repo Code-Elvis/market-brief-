@@ -1,55 +1,57 @@
 // api/push-subscribe.js
-// Saves or removes Web Push subscriptions in Vercel KV.
-// Called from App.jsx when a Pro user enables or disables alerts.
-
-import { kv } from "@vercel/kv";
-
-const KV_SUBSCRIPTIONS = "md:push:subscriptions";
+// Saves or removes Web Push subscriptions.
+// KV is only used if configured - gracefully degrades otherwise.
+// @vercel/kv is NOT imported at module level to avoid crashing the bundle.
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
   if (req.method === "OPTIONS") return res.status(200).end();
 
+  // KV not available yet - return success silently
+  // Will be enabled once @vercel/kv is in package.json
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+    return res.status(200).json({ ok: true, note: "KV not configured - subscription not saved" });
+  }
+
+  let kv;
+  try {
+    const kvMod = await import("@vercel/kv");
+    kv = kvMod.kv;
+  } catch (e) {
+    return res.status(200).json({ ok: true, note: "KV not available" });
+  }
+
   let body = {};
+  try { body = typeof req.body === "string" ? JSON.parse(req.body) : req.body; }
+  catch (e) { return res.status(400).json({ error: "Invalid JSON" }); }
+
+  const KV_SUBSCRIPTIONS = "md:push:subscriptions";
+
   try {
-    body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-  } catch (e) {
-    return res.status(400).json({ error: "Invalid JSON" });
-  }
-
-  const { subscription } = body;
-  if (!subscription || !subscription.endpoint) {
-    return res.status(400).json({ error: "Missing subscription" });
-  }
-
-  let subscriptions = [];
-  try {
-    subscriptions = (await kv.get(KV_SUBSCRIPTIONS)) || [];
-  } catch (e) {
-    subscriptions = [];
-  }
-
-  if (req.method === "POST") {
-    // Add subscription if not already stored
-    const exists = subscriptions.some(s => s.endpoint === subscription.endpoint);
-    if (!exists) {
-      subscriptions.push(subscription);
-      await kv.set(KV_SUBSCRIPTIONS, subscriptions);
-      console.log(`New push subscription. Total: ${subscriptions.length}`);
+    if (req.method === "DELETE") {
+      const { endpoint } = body;
+      if (!endpoint) return res.status(400).json({ error: "Missing endpoint" });
+      const existing = await kv.get(KV_SUBSCRIPTIONS) || [];
+      const updated = existing.filter(s => s.endpoint !== endpoint);
+      await kv.set(KV_SUBSCRIPTIONS, updated);
+      return res.status(200).json({ ok: true, removed: true });
     }
-    return res.status(200).json({ ok: true, count: subscriptions.length });
-  }
 
-  if (req.method === "DELETE") {
-    const before = subscriptions.length;
-    subscriptions = subscriptions.filter(s => s.endpoint !== subscription.endpoint);
-    await kv.set(KV_SUBSCRIPTIONS, subscriptions);
-    console.log(`Removed push subscription. ${before} -> ${subscriptions.length}`);
-    return res.status(200).json({ ok: true, count: subscriptions.length });
-  }
+    if (req.method === "POST") {
+      const { subscription } = body;
+      if (!subscription?.endpoint) return res.status(400).json({ error: "Missing subscription" });
+      const existing = await kv.get(KV_SUBSCRIPTIONS) || [];
+      const filtered = existing.filter(s => s.endpoint !== subscription.endpoint);
+      filtered.push(subscription);
+      await kv.set(KV_SUBSCRIPTIONS, filtered);
+      return res.status(200).json({ ok: true, subscribed: true });
+    }
 
-  return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
+  } catch (e) {
+    console.error("push-subscribe error:", e.message);
+    return res.status(500).json({ error: e.message });
+  }
 }
