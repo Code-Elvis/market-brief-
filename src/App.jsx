@@ -69,15 +69,15 @@ function HelpPage({ navigate }) {
   const [openItem, setOpenItem] = useState(null);
   const sections = [
     { id: "getting-started", icon: "🚀", title: "Getting Started", color: "rgba(0,212,255,.1)", items: [
-      { q: "How do I get started with MarketDebriefs?", a: "Getting started takes under 60 seconds. Type any instrument into the search bar  -  ES, Gold, EUR/USD, BTC, Oil  -  and hit BRIEF ME. Your first brief is ready in under 30 seconds. No credit card needed." },
+      { q: "How do I get started with MarketDebriefs?", a: "Getting started takes under 60 seconds. Sign up for a free 7-day trial  -  no credit card needed. Type any instrument into the search bar  -  ES, Gold, EUR/USD, BTC, Oil  -  and hit BRIEF ME. Your first brief is ready in under 30 seconds. You get full Pro access for 7 days." },
       { q: "What is the recommended workflow before and during trading?", a: "Step 1  -  Type your instrument and run a Full Brief. Read the macro theme, high-impact events and geopolitical risks. Step 2  -  Run Events Brief for a CLEAR / CAUTION / STAND DOWN check  -  see exactly what each scheduled event means for your specific instrument. Step 3  -  Check Breaking Narratives every 15 minutes. If a political alert or macro headline fires that invalidates your setup you see it here first. Step 4  -  For stocks, check the Stocks tab  -  macro sector impacts auto-populate from your brief. Step 5  -  End of day, run a Post-Session Brief on any stock to understand what drove the move. Brief First, Trade After." },
       { q: "What exactly does MarketDebriefs do?", a: "MarketDebriefs is a macro intelligence tool for active traders. Before you enter a trade, type in your instrument and receive an instant AI-powered briefing covering the current central bank stance, live geopolitical risks, upcoming high-impact events (CPI, NFP, Fed decisions), and why they move price. Think of it as having an institutional macro analyst on call  -  in seconds, before every trade." },
       { q: "Which instruments are supported?", a: "25+ instruments across all major asset classes. Equity Indices: ES S&P 500, NQ NASDAQ, RTY Russell 2000, YM Dow Jones, DAX, Nikkei, FTSE, CAC. Metals: Gold, Silver, Copper. Energy: WTI Crude, Brent, Natural Gas. FX: EUR/USD, GBP/USD, USD/JPY, AUD/USD, USD/CAD, USD/CHF, DXY. Crypto: Bitcoin, Ethereum. Rates: 10Y Treasury. Volatility: VIX. You can also type any custom instrument or stock ticker." },
-      { q: "How many free briefs do I get?", a: "On the Free plan you get 3 Full Briefs per day. The limit resets every 24 hours. Upgrade to Pro (€49/month) for unlimited briefs plus Scalper Mode and Equity Debriefs." },
+      { q: "How many free briefs do I get?", a: "New users get a full 7-day free trial with complete Pro access  -  unlimited briefs, Events Brief, Breaking Narratives, Stocks, all instruments. No credit card required. After 7 days you can upgrade to Pro (\u20ac49/month) or continue on the free tier with 3 Full Briefs per day." },
       { q: "Can I install MarketDebriefs on my phone?", a: "Yes  -  MarketDebriefs is a Progressive Web App (PWA). iPhone Safari: tap Share → Add to Home Screen. Android Chrome: tap the three-dot menu → Add to Home Screen, or tap the ⊕ GET APP button in the app header. Works like a native app once installed." },
     ]},
     { id: "plans", icon: "💎", title: "Plans & Pricing", color: "rgba(245,158,11,.1)", items: [
-      { q: "What is the difference between Free and Pro?", a: "Free  -  3 Full Briefs per day, Learn section. No credit card required. Pro (€49/month)  -  Unlimited briefs, Events Brief (what each scheduled event means for your instrument), Breaking Narratives (live macro feed + political alerts), Equity Debriefs with Pre and Post-Session cards, macro sector impact intelligence in Stocks, all 25+ instruments covered. All sections work in sync  -  macro context flows from Intelligence through Events, Breaking Narratives and Stocks." },
+      { q: "What is the difference between Free and Pro?", a: "New users start with a 7-day free trial  -  full Pro access, no credit card required. After the trial: Free tier gives 3 Full Briefs per day and the Learn section. Pro (\u20ac49/month) gives unlimited briefs, Events Brief, Breaking Narratives (live macro feed + political alerts), Equity Debriefs, macro sector intelligence in Stocks, and all 25+ instruments." },
       { q: "Can I cancel my Pro subscription anytime?", a: "Yes. No contracts, no cancellation fees. Cancel anytime. Your Pro access continues until the end of the current billing period and you won't be charged again after that." },
       { q: "Is there a refund policy?", a: "If you're not satisfied within the first 7 days of your Pro subscription, contact us for a full refund  -  no questions asked. After 7 days refunds are considered case-by-case. Email support@marketdebriefs.com." },
       { q: "Do you offer promo or discount codes?", a: "Promo codes are occasionally offered through our affiliate partners and creator collaborations. If you have a code, enter it at the Pro checkout screen." },
@@ -310,8 +310,13 @@ function LandingPage({ navigate }) {
         </div>
         <h1 style={{ fontSize: "clamp(32px, 6vw, 58px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-1.5px", color: "#fff", marginBottom: 20 }}>Know the macro<br /><span style={{ color: "#00d4ff" }}>before you trade.</span></h1>
         <p style={{ fontSize: "clamp(14px, 2vw, 17px)", color: "#555", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 36px" }}>Bloomberg tells you what happened.<br /><span style={{ color: "#888" }}>Market Debriefs tells you what it means.</span></p>
-        <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 36px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginBottom: 14 }}>GET YOUR BRIEF FREE →</button>
-        <div style={{ fontSize: 12, color: "#2a2a2a" }}>No credit card · 3 free briefs daily</div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.3)", borderRadius: 20, padding: "4px 14px", marginBottom: 16 }}>
+          <span style={{ fontSize: 10, color: "#f59e0b", fontWeight: 800, letterSpacing: 1 }}>7-DAY FREE TRIAL</span>
+          <span style={{ fontSize: 10, color: "#555" }}>Full Pro access · No card needed</span>
+        </div>
+        <div style={{ marginBottom: 0 }} />
+        <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 36px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginBottom: 14 }}>START FREE 7-DAY TRIAL →</button>
+        <div style={{ fontSize: 12, color: "#2a2a2a" }}>7-day free trial · No credit card · Full Pro access</div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", padding: "0 32px 60px", maxWidth: 600, margin: "0 auto" }}>
         {["ES S&P 500","NQ NASDAQ","Gold XAU","WTI Oil","EUR/USD","GBP/USD","Bitcoin","VIX","USD/JPY","Russell 2000"].map(t => (
@@ -566,7 +571,7 @@ function LandingPage({ navigate }) {
           <div className="md-col" style={{ background: "rgba(0,212,255,.04)", padding: "24px 20px", borderLeft: "1px solid rgba(0,212,255,.1)" }}>
             <div style={{ fontSize: 11, color: "#00d4ff", fontWeight: 700, letterSpacing: 2, marginBottom: 20 }}>MARKET DEBRIEFS</div>
             {[
-              ["Full macro briefing", "€0  -  Free"],
+              ["Full macro briefing", "7-day free trial"],
               ["AI reads it for you", "< 30 seconds"],
               ["All-in-one platform", "€49 / mo Pro"],
               ["Macro context built-in", "Every brief"],
@@ -588,15 +593,16 @@ function LandingPage({ navigate }) {
         <div style={{ fontSize: 11, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 24 }}>PRICING</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 32 }}>
           {[
-            { name: "Free", price: "€0", features: ["3 briefs/day", "Full Brief", "Learn section"] },
+            { name: "Trial", price: "Free · 7 days", features: ["Full Pro access", "All features", "No credit card"], highlight: false, isTrial: true },
             { name: "Pro", price: "€49/mo", features: ["Unlimited briefs", "Events Brief", "Breaking Narratives", "Stocks + Post-Session", "All instruments"], highlight: true },
           ].map(p => (
-            <div key={p.name} style={{ background: p.highlight ? "rgba(0,212,255,.06)" : "rgba(255,255,255,.02)", border: `1px solid ${p.highlight ? "rgba(0,212,255,.25)" : "rgba(255,255,255,.06)"}`, borderRadius: 12, padding: 20, textAlign: "left" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: p.highlight ? "#00d4ff" : "#555", marginBottom: 6 }}>{p.name}</div>
+            <div key={p.name} style={{ background: p.highlight ? "rgba(0,212,255,.06)" : p.isTrial ? "rgba(245,158,11,.06)" : "rgba(255,255,255,.02)", border: `1px solid ${p.highlight ? "rgba(0,212,255,.25)" : p.isTrial ? "rgba(245,158,11,.3)" : "rgba(255,255,255,.06)"}`, borderRadius: 12, padding: 20, textAlign: "left", position: "relative" }}>
+              {p.isTrial && <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "#f59e0b", color: "#000", fontSize: 9, fontWeight: 800, padding: "2px 10px", borderRadius: 10, letterSpacing: 1, whiteSpace: "nowrap" }}>START HERE</div>}
+              <div style={{ fontSize: 12, fontWeight: 700, color: p.highlight ? "#00d4ff" : p.isTrial ? "#f59e0b" : "#555", marginBottom: 6 }}>{p.name}</div>
               <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", marginBottom: 14 }}>{p.price}</div>
               {p.features.map(f => (
                 <div key={f} style={{ fontSize: 12, color: "#555", marginBottom: 5, display: "flex", gap: 7 }}>
-                  <span style={{ color: p.highlight ? "#00d4ff" : "#333" }}>✓</span>{f}
+                  <span style={{ color: p.highlight ? "#00d4ff" : p.isTrial ? "#f59e0b" : "#333" }}>✓</span>{f}
                 </div>
               ))}
             </div>
@@ -638,8 +644,8 @@ function LandingPage({ navigate }) {
             inflation data, liquidity cycles. Trading without this context is like sailing without knowing the weather.
             The institutions know. Now you can too.
           </p>
-          <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 40px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>GET YOUR BRIEF FREE →</button>
-          <div style={{ marginTop: 14, fontSize: 11, color: "#2a2a2a" }}>Free forever · No card needed · Takes 30 seconds</div>
+          <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 40px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>START FREE 7-DAY TRIAL →</button>
+          <div style={{ marginTop: 14, fontSize: 11, color: "#2a2a2a" }}>7-day free trial · Full Pro access · No credit card</div>
         </div>
       </div>
 
@@ -992,7 +998,7 @@ function AuthScreen() {
       </div>
       {/* Free tier reminder */}
       <div style={{ marginTop: 10, fontSize: 11, color: "#2a2a2a", textAlign: "center", fontFamily: "monospace", letterSpacing: 0.5 }}>
-        Free · 3 briefs/day · No credit card needed
+        7-day free trial · Full Pro access · No card needed
       </div>
 
     </div>
