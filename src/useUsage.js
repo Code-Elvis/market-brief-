@@ -1,28 +1,20 @@
 // src/useUsage.js
-// Tracks daily brief usage with localStorage.
-// Now also computes trial status from Clerk publicMetadata.
+// Tracks daily brief usage.
+// Trial status is driven by Stripe via publicMetadata.on_trial (set by stripe-webhook.js).
+// isPro = publicMetadata.pro === true (paid subscriber)
+// isOnTrial = publicMetadata.on_trial === true (card collected, within 7-day trial)
+// effectivelyPro = isPro || isOnTrial
 
 import { useState, useEffect } from "react";
 
 const DAILY_FREE_LIMIT = 3;
-const TRIAL_DAYS = 7;
 
 export function useUsage(userId, isPro, user) {
-  // ── Trial computation ────────────────────────────────────────────────────
-  const trialStart = user?.publicMetadata?.trial_start;
-  const isOnTrial  = trialStart
-    ? (Date.now() - new Date(trialStart).getTime()) < TRIAL_DAYS * 24 * 60 * 60 * 1000
-    : false;
-  const daysLeft = trialStart
-    ? Math.max(0, TRIAL_DAYS - Math.floor(
-        (Date.now() - new Date(trialStart).getTime()) / (24 * 60 * 60 * 1000)
-      ))
-    : 0;
-
-  // Trial users get the same access as paid Pro
+  // Trial status comes from Stripe webhook via Clerk publicMetadata
+  const isOnTrial     = user?.publicMetadata?.on_trial === true;
   const effectivelyPro = isPro || isOnTrial;
 
-  // ── Daily usage tracking ─────────────────────────────────────────────────
+  // Daily usage tracking via localStorage
   const storageKey = userId ? `usage_${userId}` : null;
   const today = new Date().toISOString().slice(0, 10);
 
@@ -34,7 +26,6 @@ export function useUsage(userId, isPro, user) {
     } catch { return 0; }
   });
 
-  // Reset count if day has rolled over
   useEffect(() => {
     if (!storageKey) return;
     try {
@@ -47,7 +38,7 @@ export function useUsage(userId, isPro, user) {
   }, [storageKey, today]);
 
   const increment = () => {
-    if (effectivelyPro) return; // No tracking needed for Pro/trial users
+    if (effectivelyPro) return;
     setCount(prev => {
       const next = prev + 1;
       try {
@@ -57,8 +48,8 @@ export function useUsage(userId, isPro, user) {
     });
   };
 
-  const canBrief   = effectivelyPro || count < DAILY_FREE_LIMIT;
-  const remaining  = effectivelyPro ? Infinity : Math.max(0, DAILY_FREE_LIMIT - count);
+  const canBrief  = effectivelyPro || count < DAILY_FREE_LIMIT;
+  const remaining = effectivelyPro ? Infinity : Math.max(0, DAILY_FREE_LIMIT - count);
 
-  return { increment, canBrief, remaining, isOnTrial, daysLeft, effectivelyPro };
+  return { increment, canBrief, remaining, isOnTrial, effectivelyPro };
 }
