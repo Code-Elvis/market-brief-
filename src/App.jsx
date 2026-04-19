@@ -93,7 +93,7 @@ function HelpPage({ navigate }) {
     ]},
     { id: "billing", icon: "💳", title: "Billing", color: "rgba(0,212,255,.08)", items: [
       { q: "What payment methods do you accept?", a: "All major credit and debit cards (Visa, Mastercard, Amex) via Stripe. Your card details are never stored on our servers. Pricing is in EUR and Stripe handles currency conversion automatically." },
-      { q: "When am I charged?", a: "You are charged €49 on the day you upgrade to Pro, then on the same date each month. You will receive a receipt by email after each payment." },
+      { q: "When am I charged?", a: "Your card is collected when you start the 7-day free trial but you are not charged until the trial ends. After 7 days your subscription starts at €49/month and renews monthly. Cancel anytime before day 7 and you will not be charged. A receipt is emailed after each payment." },
       { q: "Can I get a VAT invoice?", a: "Yes. A receipt is automatically emailed after each payment. For a formal VAT invoice email support@marketdebriefs.com with your billing details." },
       { q: "How do I cancel my subscription?", a: "Email support@marketdebriefs.com with the subject 'Cancel subscription' and your account email. We'll process it same day. Your Pro access continues until the end of the current billing period." },
     ]},
@@ -316,7 +316,7 @@ function LandingPage({ navigate }) {
         </div>
         <div style={{ marginBottom: 0 }} />
         <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 36px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginBottom: 14 }}>START FREE 7-DAY TRIAL →</button>
-        <div style={{ fontSize: 12, color: "#2a2a2a" }}>7-day free trial · No credit card · Full Pro access</div>
+        <div style={{ fontSize: 12, color: "#2a2a2a" }}>7-day free trial · Card required · Cancel anytime</div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", padding: "0 32px 60px", maxWidth: 600, margin: "0 auto" }}>
         {["ES S&P 500","NQ NASDAQ","Gold XAU","WTI Oil","EUR/USD","GBP/USD","Bitcoin","VIX","USD/JPY","Russell 2000"].map(t => (
@@ -645,7 +645,7 @@ function LandingPage({ navigate }) {
             The institutions know. Now you can too.
           </p>
           <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 40px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>START FREE 7-DAY TRIAL →</button>
-          <div style={{ marginTop: 14, fontSize: 11, color: "#2a2a2a" }}>7-day free trial · Full Pro access · No credit card</div>
+          <div style={{ marginTop: 14, fontSize: 11, color: "#2a2a2a" }}>7-day free trial · Full Pro access · Cancel before day 7 · No charge</div>
         </div>
       </div>
 
@@ -891,7 +891,7 @@ const DC = { BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
 const DB = { BULLISH: "rgba(0,212,170,.08)", BEARISH: "rgba(255,71,87,.08)", NEUTRAL: "rgba(255,215,0,.06)" };
 
 // ── UPGRADE MODAL ─────────────────────────────────────────────────────────────
-function UpgradeModal({ reason, onClose, userId, email, isOnTrial, daysLeft, trialExpired }) {
+function UpgradeModal({ reason, onClose, userId, email, isOnTrial, trialExpired }) {
   const [loading, setLoading] = useState(false);
   const checkout = async () => {
     setLoading(true);
@@ -906,13 +906,17 @@ function UpgradeModal({ reason, onClose, userId, email, isOnTrial, daysLeft, tri
       <div style={{ background: "#0d1117", border: "1px solid rgba(0,212,255,.2)", borderRadius: 16, padding: 32, maxWidth: 380, width: "100%", textAlign: "center" }}>
         <div style={{ fontSize: 32, marginBottom: 16 }}>📊</div>
         <div style={{ fontSize: 20, fontWeight: 800, color: "#f0f0f0", marginBottom: 10 }}>
-          {reason === "limit" ? "Daily Limit Reached" : reason === "stocks" ? "Equity Debriefs  -  Pro" : "Pro Feature"}
+          {trialExpired ? "Your Trial Has Ended" : isOnTrial ? "Lock In Pro Access" : reason === "limit" ? "Daily Limit Reached" : reason === "stocks" ? "Equity Debriefs  -  Pro" : "Pro Feature"}
         </div>
         <div style={{ fontSize: 13, color: "#666", lineHeight: 1.7, marginBottom: 24 }}>
-          {reason === "limit"
-            ? "You've used your 3 free briefs today. Upgrade to Pro for unlimited briefs, Scalper Mode, and Equity Debriefs."
+          {trialExpired
+            ? "Everything you used over the last 7 days  -  Events Brief, Breaking Narratives, unlimited briefs  -  is still available. Upgrade to keep it."
+            : isOnTrial
+            ? "You are on a free trial with full Pro access. Upgrade now to ensure uninterrupted access after your trial ends."
+            : reason === "limit"
+            ? "You have used your 3 free briefs today. Upgrade to Pro for unlimited briefs, Scalper Mode, and Equity Debriefs."
             : reason === "stocks"
-            ? "Stock debriefs are a Pro feature. Get earnings context, macro tailwinds & headwinds, sector rotation, and institutional flow for any stock  -  instantly."
+            ? "Stock debriefs are a Pro feature. Get earnings context, macro tailwinds and headwinds, sector rotation, and institutional flow for any stock  -  instantly."
             : "Events Brief and Equity Debriefs are Pro features."}
         </div>
         <div style={{ background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.12)", borderRadius: 10, padding: 16, marginBottom: 24, textAlign: "left" }}>
@@ -924,7 +928,7 @@ function UpgradeModal({ reason, onClose, userId, email, isOnTrial, daysLeft, tri
           ))}
         </div>
         <button onClick={checkout} disabled={loading} style={{ width: "100%", padding: "14px 20px", borderRadius: 10, border: "none", cursor: loading ? "wait" : "pointer", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", fontSize: 15, fontWeight: 800, fontFamily: "inherit", marginBottom: 12 }}>
-          {loading ? "Redirecting…" : "Upgrade to Pro  -  €49/mo"}
+          {loading ? "Redirecting…" : isOnTrial ? "Continue with Pro  -  €49/mo" : trialExpired ? "Reactivate Pro  -  €49/mo" : "Start 7-Day Free Trial  -  €49/mo after"}
         </button>
         <button onClick={onClose} style={{ background: "none", border: "none", color: "#333", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Maybe later</button>
       </div>
@@ -998,7 +1002,7 @@ function AuthScreen() {
       </div>
       {/* Free tier reminder */}
       <div style={{ marginTop: 10, fontSize: 11, color: "#2a2a2a", textAlign: "center", fontFamily: "monospace", letterSpacing: 0.5 }}>
-        7-day free trial · Full Pro access · No card needed
+        7-day free trial · Full Pro access · Cancel anytime
       </div>
 
     </div>
@@ -2631,7 +2635,7 @@ function AppInner({ navigate }) {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  const { increment, canBrief, remaining, isOnTrial, daysLeft, effectivelyPro } = useUsage(user?.id, isPro, user);
+  const { increment, canBrief, remaining, isOnTrial, effectivelyPro } = useUsage(user?.id, isPro, user);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("brief");
   const [mode, setMode] = useState("full");
@@ -2821,7 +2825,7 @@ function AppInner({ navigate }) {
   return (
     <>
       <style>{`*, *::before, *::after { box-sizing: border-box; } body { margin: 0; padding: 0; } textarea { box-sizing: border-box; } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }`}</style>
-      {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} isOnTrial={isOnTrial} daysLeft={daysLeft} trialExpired={!isPro && !isOnTrial && !!user?.publicMetadata?.trial_start} />}
+      {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} isOnTrial={isOnTrial} trialExpired={!isPro && !isOnTrial && !!user?.publicMetadata?.signup_at} />}
 
       {/* ── BRIEF LOADING OVERLAY  -  keeps user in app during fetch ── */}
       {loading && (
@@ -2866,9 +2870,10 @@ function AppInner({ navigate }) {
                 {!isPro && <button onClick={() => triggerUpgrade("limit")} style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: remaining <= 1 ? "rgba(255,71,87,.1)" : "rgba(255,255,255,.03)", border: "1px solid " + (remaining <= 1 ? "rgba(255,71,87,.3)" : "rgba(255,255,255,.07)"), color: remaining <= 1 ? "#ff4757" : "#333", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>{remaining} left</button>}
                 {isPro && !isOnTrial && <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: "rgba(0,212,255,.08)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontWeight: 700 }}>PRO</span>}
                 {isOnTrial && (
-                  <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: daysLeft <= 2 ? "rgba(255,71,87,.15)" : "rgba(245,158,11,.1)", border: "1px solid " + (daysLeft <= 2 ? "rgba(255,71,87,.4)" : "rgba(245,158,11,.3)"), color: daysLeft <= 2 ? "#ff4757" : "#f59e0b", fontWeight: 700, cursor: "pointer" }}
-                    onClick={() => triggerUpgrade("trial")}>
-                    TRIAL {daysLeft}d
+                  <span
+                    onClick={() => triggerUpgrade("trial")}
+                    style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.3)", color: "#f59e0b", fontWeight: 700, cursor: "pointer" }}>
+                    TRIAL
                   </span>
                 )}
                 <span style={{ fontSize: 9, fontFamily: "monospace", color: "#2a2a2a", letterSpacing: 1 }}>
@@ -2947,7 +2952,7 @@ function AppInner({ navigate }) {
         </div>
         <div className="main-content" style={{ maxWidth: 860, margin: "0 auto", padding: "20px 20px 60px", width: "100%" }}>
           {/* Trial expiry banner - shows once per session when trial just ended */}
-          {!isPro && !isOnTrial && user?.publicMetadata?.trial_start && (() => {
+          {!isPro && !isOnTrial && user?.publicMetadata?.signup_at && (() => {
             const dismissed = (() => { try { return sessionStorage.getItem("md_trial_banner_dismissed") === "true"; } catch(e) { return false; } })();
             if (dismissed) return null;
             return (
