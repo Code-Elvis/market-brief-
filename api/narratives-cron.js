@@ -4,20 +4,14 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
-// Dynamic imports - gracefully degrade if packages not yet installed
-let kv = null;
-let webpush = null;
-try {
-  const kvModule = await import("@vercel/kv");
-  kv = kvModule.kv;
-} catch (e) {
-  console.log("@vercel/kv not available - KV caching disabled");
+// KV and web-push loaded lazily inside handler only when env vars present
+async function getKV() {
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
+  try { const { kv } = await import("@vercel/kv"); return kv; } catch(e) { return null; }
 }
-try {
-  const wpModule = await import("web-push");
-  webpush = wpModule.default || wpModule;
-} catch (e) {
-  console.log("web-push not available - push notifications disabled");
+async function getWebPush() {
+  if (!process.env.VAPID_PUBLIC_KEY) return null;
+  try { const wp = await import("web-push"); return wp.default || wp; } catch(e) { return null; }
 }
 
 const KV_NARRATIVES_KEY  = "md:narratives:latest";
@@ -141,6 +135,8 @@ async function sendPushNotifications(narrative) {
 
 // ── Main handler ────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
+  const kv = await getKV();
+  const webpush = await getWebPush();
   // Verify this was called by Vercel cron
   const authHeader = req.headers.authorization;
   if (
