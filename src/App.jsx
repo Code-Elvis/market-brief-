@@ -312,11 +312,11 @@ function LandingPage({ navigate }) {
         <p style={{ fontSize: "clamp(14px, 2vw, 17px)", color: "#555", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 36px" }}>Bloomberg tells you what happened.<br /><span style={{ color: "#888" }}>Market Debriefs tells you what it means.</span></p>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.3)", borderRadius: 20, padding: "4px 14px", marginBottom: 16 }}>
           <span style={{ fontSize: 10, color: "#f59e0b", fontWeight: 800, letterSpacing: 1 }}>7-DAY FREE TRIAL</span>
-          <span style={{ fontSize: 10, color: "#555" }}>Full Pro access · No card needed</span>
+          <span style={{ fontSize: 10, color: "#555" }}>Stop missing moves while you sleep</span>
         </div>
         <div style={{ marginBottom: 0 }} />
         <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 36px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginBottom: 14 }}>START FREE 7-DAY TRIAL →</button>
-        <div style={{ fontSize: 12, color: "#2a2a2a" }}>7-day free trial · Card required · Cancel anytime</div>
+        <div style={{ fontSize: 12, color: "#2a2a2a" }}>Used by traders who trade smarter · Cancel anytime</div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", padding: "0 32px 60px", maxWidth: 600, margin: "0 auto" }}>
         {["ES S&P 500","NQ NASDAQ","Gold XAU","WTI Oil","EUR/USD","GBP/USD","Bitcoin","VIX","USD/JPY","Russell 2000"].map(t => (
@@ -593,7 +593,7 @@ function LandingPage({ navigate }) {
         <div style={{ fontSize: 11, color: "#333", letterSpacing: 2, fontWeight: 700, marginBottom: 24 }}>PRICING</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 32 }}>
           {[
-            { name: "Trial", price: "Free · 7 days", features: ["Full Pro access", "All features", "No credit card"], highlight: false, isTrial: true },
+            { name: "Trial", price: "Free · 7 days", features: ["Full Pro access", "All features", "Cancel anytime"], highlight: false, isTrial: true },
             { name: "Pro", price: "€49/mo", features: ["Unlimited briefs", "Events Brief", "Breaking Narratives", "Stocks + Post-Session", "All instruments"], highlight: true },
           ].map(p => (
             <div key={p.name} style={{ background: p.highlight ? "rgba(0,212,255,.06)" : p.isTrial ? "rgba(245,158,11,.06)" : "rgba(255,255,255,.02)", border: `1px solid ${p.highlight ? "rgba(0,212,255,.25)" : p.isTrial ? "rgba(245,158,11,.3)" : "rgba(255,255,255,.06)"}`, borderRadius: 12, padding: 20, textAlign: "left", position: "relative" }}>
@@ -608,7 +608,7 @@ function LandingPage({ navigate }) {
             </div>
           ))}
         </div>
-        <button onClick={() => navigate("/app")} className="cta-btn" style={{ width: "100%", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>START FREE  -  NO CARD NEEDED</button>
+        <button onClick={() => navigate("/app")} className="cta-btn" style={{ width: "100%", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>START FREE 7-DAY TRIAL →</button>
       </div>
 
       {/* ── EMAIL CAPTURE ── */}
@@ -645,7 +645,7 @@ function LandingPage({ navigate }) {
             The institutions know. Now you can too.
           </p>
           <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 40px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>START FREE 7-DAY TRIAL →</button>
-          <div style={{ marginTop: 14, fontSize: 11, color: "#2a2a2a" }}>7-day free trial · Full Pro access · Cancel before day 7 · No charge</div>
+          <div style={{ marginTop: 14, fontSize: 11, color: "#2a2a2a" }}>Join traders who brief first and trade after · Cancel anytime</div>
         </div>
       </div>
 
@@ -914,7 +914,7 @@ function UpgradeModal({ reason, onClose, userId, email, isOnTrial, trialExpired 
             : isOnTrial
             ? "You are on a free trial with full Pro access. Upgrade now to ensure uninterrupted access after your trial ends."
             : reason === "limit"
-            ? "You have used your 3 free briefs today. Upgrade to Pro for unlimited briefs, Scalper Mode, and Equity Debriefs."
+            ? "You have used your 3 briefs for today. Upgrade to Pro for unlimited briefs, all instruments, Events Brief, and Breaking Narratives."
             : reason === "stocks"
             ? "Stock debriefs are a Pro feature. Get earnings context, macro tailwinds and headwinds, sector rotation, and institutional flow for any stock  -  instantly."
             : "Events Brief and Equity Debriefs are Pro features."}
@@ -971,7 +971,7 @@ function AuthScreen() {
             borderBottom: view === "sign-up" ? "2px solid #00d4ff" : "2px solid transparent",
             transition: "all .15s"
           }}>
-          Sign up free
+          Start free trial
         </button>
         <button
           onClick={() => setView("sign-in")}
@@ -1002,7 +1002,7 @@ function AuthScreen() {
       </div>
       {/* Free tier reminder */}
       <div style={{ marginTop: 10, fontSize: 11, color: "#2a2a2a", textAlign: "center", fontFamily: "monospace", letterSpacing: 0.5 }}>
-        7-day free trial · Full Pro access · Cancel anytime
+        7-day free trial · Cancel anytime
       </div>
 
     </div>
@@ -2240,7 +2240,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
                   ? "Go Pro · marketdebriefs.com"
                   : isScalper
                   ? "Rebrief before every trade · marketdebriefs.com"
-                  : "Start free · marketdebriefs.com"}
+                  : "Brief first, trade after · marketdebriefs.com"}
               </span>
               <span style={{ fontSize: 8, color: "#1a1a1a", fontFamily: "monospace", letterSpacing: 1.2, flexShrink: 0 }}>MACRO INTELLIGENCE</span>
             </div>
@@ -2959,7 +2959,7 @@ function AppInner({ navigate }) {
               <div style={{ marginBottom: 14, padding: "12px 16px", borderRadius: 9, background: "rgba(245,158,11,.08)", border: "1px solid rgba(245,158,11,.25)", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b", marginBottom: 3 }}>Your 7-day trial has ended</div>
-                  <div style={{ fontSize: 11, color: "#888", lineHeight: 1.5 }}>Upgrade to Pro to keep full access, or continue with 3 free briefs per day.</div>
+                  <div style={{ fontSize: 11, color: "#888", lineHeight: 1.5 }}>Upgrade to keep knowing the macro before every trade.</div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   <button onClick={() => triggerUpgrade("trial_expired")} style={{ fontSize: 10, fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,.12)", border: "1px solid rgba(245,158,11,.3)", borderRadius: 6, padding: "5px 11px", cursor: "pointer", fontFamily: "inherit" }}>Upgrade</button>
