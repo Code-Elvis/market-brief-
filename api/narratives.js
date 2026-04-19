@@ -1,20 +1,22 @@
 // api/narratives.js
-// Reads from Vercel KV shared cache first (populated by narratives-cron.js).
-// Falls back to direct Claude call if cache is stale/missing.
-// This means manual refresh still works but hits cache 99% of the time.
+// Generates breaking narratives via Claude + Finnhub.
+// KV caching is enabled only when @vercel/kv is installed (Vercel Pro + KV storage set up).
+// Until then, falls back to direct Claude call every time - same as original behaviour.
 
 import Anthropic from "@anthropic-ai/sdk";
 
-const KV_NARRATIVES_KEY = "md:narratives:latest";
-const CACHE_TTL_MS = 16 * 60 * 1000; // 16 minutes - slightly longer than cron interval
+const CACHE_TTL_MS = 16 * 60 * 1000;
+const KV_KEY = "md:narratives:latest";
 
-// Try to import KV — gracefully degrade if not configured yet
-let kv = null;
-try {
-  const kvModule = await import("@vercel/kv");
-  kv = kvModule.kv;
-} catch (e) {
-  console.log("Vercel KV not available, using direct Claude calls");
+async function getKV() {
+  // Only attempt KV if the env vars exist (set automatically when Vercel KV is connected)
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
+  try {
+    const { kv } = await import("@vercel/kv");
+    return kv;
+  } catch (e) {
+    return null;
+  }
 }
 
 async function generateNarratives() {
@@ -30,7 +32,7 @@ async function generateNarratives() {
     const raw = await res.json();
     console.log(`Finnhub returned ${Array.isArray(raw) ? raw.length : 0} articles`);
     articles = (Array.isArray(raw) ? raw : [])
-      .filter(a => a.datetime >= since)
+      .filter(a => a.datetime >= Math.floor(Date.now() / 1000) - 6 * 60 * 60)
       .slice(0, 20);
   } catch (e) {
     console.error("Finnhub fetch failed:", e.message);
@@ -49,7 +51,7 @@ RULES:
 2. urgency: CRITICAL=market moving right now, HIGH=significant within hours, MEDIUM=relevant today, LOW=background
 3. instruments: 3-5 most directly affected markets
 4. narrative_summary: 2-3 sentences maximum, institutional tone
-5. tensions: cross-asset conflicts/contradictions
+5. tensions: cross-asset conflicts or contradictions
 6. watch_for: specific triggers to monitor
 7. fades_when: what resolves this narrative`;
 
@@ -69,24 +71,7 @@ RULES:
     .join("");
 
   const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-  const parsed = JSON.parse(cleaned);
-
-  // Write to KV cache for future users
-  if (kv) {
-    try {
-      const payload = {
-        narratives: parsed.narratives || [],
-        fetched_at: new Date().toISOString(),
-        count: (parsed.narratives || []).length,
-        cached: false,
-      };
-      await kv.set(KV_NARRATIVES_KEY, JSON.stringify(payload), { ex: 1200 });
-    } catch (e) {
-      console.log("KV write failed (non-fatal):", e.message);
-    }
-  }
-
-  return parsed;
+  return JSON.parse(cleaned);
 }
 
 export default async function handler(req, res) {
@@ -94,40 +79,44 @@ export default async function handler(req, res) {
 
   const force = req.query?.force === "true";
 
-  // Try KV cache first (unless force refresh)
+  // Try KV cache first (only if KV is configured)
+  const kv = await getKV();
   if (kv && !force) {
     try {
-      const cached = await kv.get(KV_NARRATIVES_KEY);
+      const cached = await kv.get(KV_KEY);
       if (cached) {
         const parsed = typeof cached === "string" ? JSON.parse(cached) : cached;
         const age = Date.now() - new Date(parsed.fetched_at).getTime();
-
         if (age < CACHE_TTL_MS) {
           console.log(`Serving from KV cache (${Math.round(age / 1000)}s old)`);
-          return res.status(200).json({
-            ...parsed,
-            cached: true,
-            cache_age_seconds: Math.round(age / 1000),
-          });
+          return res.status(200).json({ ...parsed, cached: true, cache_age_seconds: Math.round(age / 1000) });
         }
-        console.log(`KV cache stale (${Math.round(age / 1000)}s), fetching fresh`);
-      } else {
-        console.log("No KV cache found, fetching fresh");
       }
     } catch (e) {
-      console.log("KV read failed, falling back to direct fetch:", e.message);
+      console.log("KV read failed, fetching fresh:", e.message);
     }
   }
 
-  // Cache miss or force refresh — call Claude directly
+  // Direct Claude call
   try {
     const result = await generateNarratives();
-    return res.status(200).json({
+    const payload = {
       narratives: result.narratives || [],
       fetched_at: new Date().toISOString(),
       count: (result.narratives || []).length,
       cached: false,
-    });
+    };
+
+    // Write to KV if available
+    if (kv) {
+      try {
+        await kv.set(KV_KEY, JSON.stringify(payload), { ex: 1200 });
+      } catch (e) {
+        console.log("KV write failed (non-fatal):", e.message);
+      }
+    }
+
+    return res.status(200).json(payload);
   } catch (e) {
     console.error("Narratives generation failed:", e.message);
     return res.status(500).json({ error: e.message, narratives: [] });
