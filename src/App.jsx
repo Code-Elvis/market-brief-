@@ -2762,41 +2762,7 @@ function AppInner({ navigate }) {
     setPushSupported(supported);
   }, []);
 
-  // Auto-fetch narratives every 15 minutes when Breaking tab is active
-  React.useEffect(() => {
-    if (tab !== "breaking" || !effectivelyPro) return;
-    const fetchNarratives = async () => {
-      try {
-        const r = await fetch("/api/narratives");
-        const d = await r.json();
-        if (d.narratives?.length > 0) {
-          setNarrativeFeed(prev => {
-            const existingIds = new Set(prev.map(n => n.id));
-            const newOnes = d.narratives.filter(n => !existingIds.has(n.id));
-            const newAlerts = newOnes.filter(n => n.political_alert);
-            if (newAlerts.length > 0) {
-              setNewAlertBanner(newAlerts[0].headline);
-              setTimeout(() => setNewAlertBanner(null), 12000);
-            }
-            setLastFetchCount(newOnes.length);
-            const merged = [...newOnes, ...prev].slice(0, 40);
-            const updated = [...merged.filter(n => n.political_alert), ...merged.filter(n => !n.political_alert)];
-            const today = new Date().toISOString().slice(0, 10);
-            try { localStorage.setItem("md_narrative_feed", JSON.stringify({ date: today, feed: updated })); } catch(e) {}
-            return updated;
-          });
-          const now = new Date();
-          setFeedLastFetched(now);
-          try {
-            const today = new Date().toISOString().slice(0, 10);
-            localStorage.setItem("md_narrative_feed_ts", JSON.stringify({ date: today, ts: now.toISOString() }));
-          } catch(e) {}
-        }
-      } catch(e) { console.error("Auto-fetch failed:", e); }
-    };
-    const interval = setInterval(fetchNarratives, 15 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [tab, isPro]);
+  // Auto-fetch handled by server cron (narratives-cron.js) - no client polling needed
 
   const switchMode = (m) => {
     if (m === "scalper" && !effectivelyPro) { triggerUpgrade("scalper"); return; }
@@ -3139,8 +3105,7 @@ function AppInner({ navigate }) {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <div style={{ fontSize: 11, color: "#ff4757", letterSpacing: 2, fontWeight: 700 }}>📰 TODAY'S NARRATIVES</div>
-                    {/* Auto-refresh pulse indicator */}
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#00d4ff", opacity: 0.7, animation: "md-ping 2s ease-in-out infinite" }} title="Auto-updating every 15 min" />
+
                   </div>
                   {/* Enable Alerts button */}
                   {pushSupported && (
