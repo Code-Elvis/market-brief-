@@ -2005,11 +2005,11 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
           files: [file],
           text: (() => {
             const name = inst.label;
-            if (isEventSummary) return name + "  -  Session Summary\n\nKnow what each release actually meant for your trade, not just the number.\nMarketDebriefs interprets every release in real time.\n\nBrief First, Trade After. marketdebriefs.com";
-            if (isPostSession || isPostSessionBrief) return name + "  -  Post-Session Brief\n\nBrief First, Trade After. Get your full briefs @ marketdebriefs.com";
-            if (isScalper) return name + "  -  Event Impact Check\n\nEvery free calendar tells you what's on the schedule.\nMarketDebriefs tells you what each event means for the instrument you're trading  -  before you enter.\n\nBrief First, Trade After. marketdebriefs.com";
-            if (isEquity) return name + "  -  Equity Debrief\n\nMarkets shift. Sectors rotate. Don't trade tickers that have stopped moving.\nKnow which sectors are being driven by the current macro theme  -  in real time.\n\nBrief First, Trade After. marketdebriefs.com";
-            return name + "  -  Pre-Session Brief\n\nMarkets shift. Sectors rotate. Don't trade tickers that have stopped moving.\nKnow which sectors are being driven by the current macro theme  -  in real time.\n\nBrief First, Trade After. marketdebriefs.com";
+            if (isEventSummary) return name + "  -  Session Summary\n\nThis is a snapshot of today's session  -  not the full picture.\nMarketDebriefs gives you the full read: what every release means for your trade, before and after it fires.\n\nGet your full briefs @ marketdebriefs.com";
+            if (isPostSession || isPostSessionBrief) return name + "  -  Post-Session Brief\n\nWhat drove today's move. What it signals. What to watch next session.\nBrief First, Trade After. marketdebriefs.com";
+            if (isScalper) return name + "  -  Event Impact Check\n\nThis is a snapshot  -  not the full picture.\nThe full brief tells you exactly what each scheduled event means for the instrument you're trading, in real time.\n\nGet your full briefs @ marketdebriefs.com";
+            if (isEquity) return name + "  -  Equity Brief\n\nThis is a snapshot  -  not the full picture.\nThe full brief gives you the complete macro context: sector rotation, institutional flow, catalyst events and what they mean for your trade.\n\nGet your full briefs @ marketdebriefs.com";
+            return name + "  -  Full Brief\n\nThis is a snapshot  -  not the full picture.\nThe full brief covers what's driving price, every high-impact event, geopolitical risk, and what it all means for your trade.\n\nGet your full briefs @ marketdebriefs.com";
           })(),
         });
         setShared(true);
@@ -2233,14 +2233,14 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 9, color: accent, fontFamily: "monospace", opacity: 0.85, lineHeight: 1.4, letterSpacing: 0.2 }}>
                 {isEventSummary
-                  ? "Know what every release means · marketdebriefs.com"
+                  ? "This is a snapshot. Get your full briefs @ marketdebriefs.com"
                   : (isPostSession || isPostSessionBrief)
-                  ? "Get tomorrow's brief before the open · marketdebriefs.com"
+                  ? "What drove the move. What to watch next. marketdebriefs.com"
                   : isEquity
-                  ? "Go Pro · marketdebriefs.com"
+                  ? "This is a snapshot. Get your full briefs @ marketdebriefs.com"
                   : isScalper
-                  ? "Rebrief before every trade · marketdebriefs.com"
-                  : "Brief first, trade after · marketdebriefs.com"}
+                  ? "This is a snapshot. Get your full briefs @ marketdebriefs.com"
+                  : "This is a snapshot. Get your full briefs @ marketdebriefs.com"}
               </span>
               <span style={{ fontSize: 8, color: "#1a1a1a", fontFamily: "monospace", letterSpacing: 1.2, flexShrink: 0 }}>MACRO INTELLIGENCE</span>
             </div>
