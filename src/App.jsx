@@ -3100,6 +3100,78 @@ function AppInner({ navigate }) {
                 </div>
               )}
 
+              {/* ── NOTIFICATION OPT-IN/OUT STRIP ── */}
+              {pushSupported && (
+                <div style={{ marginBottom: 14, padding: "10px 14px", background: alertsEnabled ? "rgba(0,212,255,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (alertsEnabled ? "rgba(0,212,255,.2)" : "rgba(255,255,255,.07)"), borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: alertsEnabled ? "#00d4ff" : "#555", marginBottom: 2 }}>
+                      {alertsEnabled ? "🔔 Breaking alerts ON" : "🔕 Breaking alerts OFF"}
+                    </div>
+                    <div style={{ fontSize: 10, color: "#333", lineHeight: 1.4 }}>
+                      {alertsEnabled
+                        ? "You'll be notified when a macro-moving event hits. Tap to turn off."
+                        : "Get notified the moment a political alert or macro story breaks. Tap to turn on."}
+                    </div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (alertsEnabled) {
+                        // UNSUBSCRIBE
+                        try {
+                          const reg = await navigator.serviceWorker.ready;
+                          const sub = await reg.pushManager.getSubscription();
+                          if (sub) {
+                            await fetch("/api/push-subscribe", {
+                              method: "DELETE",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ endpoint: sub.endpoint }),
+                            });
+                            await sub.unsubscribe();
+                          }
+                        } catch(e) { console.error("Unsubscribe failed:", e); }
+                        setAlertsEnabled(false);
+                        try { localStorage.setItem("md_alerts_enabled", "false"); } catch(e) {}
+                      } else {
+                        // SUBSCRIBE
+                        try {
+                          const permission = await Notification.requestPermission();
+                          if (permission !== "granted") {
+                            alert("To receive alerts, enable notifications for this site in your browser or phone settings.");
+                            return;
+                          }
+                          const reg = await navigator.serviceWorker.ready;
+                          const vapidKey = document.querySelector("meta[name=vapid-public-key]")?.content;
+                          if (!vapidKey) {
+                            // No VAPID yet - save intent only
+                            setAlertsEnabled(true);
+                            try { localStorage.setItem("md_alerts_enabled", "true"); } catch(e) {}
+                            return;
+                          }
+                          const sub = await reg.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: vapidKey,
+                          });
+                          await fetch("/api/push-subscribe", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ subscription: sub.toJSON() }),
+                          });
+                          setAlertsEnabled(true);
+                          try { localStorage.setItem("md_alerts_enabled", "true"); } catch(e) {}
+                        } catch(e) {
+                          console.error("Subscribe failed:", e);
+                          if (e.name === "NotAllowedError") {
+                            alert("Notification permission denied. Go to your browser or phone Settings to allow notifications for this site.");
+                          }
+                        }
+                      }
+                    }}
+                    style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 8, border: "1px solid " + (alertsEnabled ? "rgba(255,71,87,.3)" : "rgba(0,212,255,.3)"), background: alertsEnabled ? "rgba(255,71,87,.08)" : "rgba(0,212,255,.08)", color: alertsEnabled ? "#ff4757" : "#00d4ff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                    {alertsEnabled ? "Turn Off" : "Turn On"}
+                  </button>
+                </div>
+              )}
+
               {/* ── LIVE FEED ── */}
               <div style={{ marginBottom: 24 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -3107,66 +3179,7 @@ function AppInner({ navigate }) {
                     <div style={{ fontSize: 11, color: "#ff4757", letterSpacing: 2, fontWeight: 700 }}>📰 TODAY'S NARRATIVES</div>
 
                   </div>
-                  {/* Enable Alerts button */}
-                  {pushSupported && (
-                    <button
-                      onClick={async () => {
-                        if (alertsEnabled) {
-                          // Unsubscribe
-                          try {
-                            const reg = await navigator.serviceWorker.ready;
-                            const sub = await reg.pushManager.getSubscription();
-                            if (sub) {
-                              await fetch("/api/push-subscribe", {
-                                method: "DELETE",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ subscription: sub.toJSON() }),
-                              });
-                              await sub.unsubscribe();
-                            }
-                          } catch(e) { console.error("Unsubscribe failed:", e); }
-                          setAlertsEnabled(false);
-                          try { localStorage.setItem("md_alerts_enabled", "false"); } catch(e) {}
-                        } else {
-                          // Subscribe
-                          try {
-                            const permission = await Notification.requestPermission();
-                            if (permission !== "granted") {
-                              alert("Enable notifications in your browser settings to receive trade alerts.");
-                              return;
-                            }
-                            const reg = await navigator.serviceWorker.ready;
-                            const vapidKey = process.env.REACT_APP_VAPID_PUBLIC_KEY ||
-                              document.querySelector("meta[name=vapid-public-key]")?.content;
-                            if (!vapidKey) {
-                              console.warn("VAPID public key not found - alerts enabled for in-app only");
-                              setAlertsEnabled(true);
-                              try { localStorage.setItem("md_alerts_enabled", "true"); } catch(e) {}
-                              return;
-                            }
-                            const sub = await reg.pushManager.subscribe({
-                              userVisibleOnly: true,
-                              applicationServerKey: vapidKey,
-                            });
-                            await fetch("/api/push-subscribe", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ subscription: sub.toJSON() }),
-                            });
-                            setAlertsEnabled(true);
-                            try { localStorage.setItem("md_alerts_enabled", "true"); } catch(e) {}
-                          } catch(e) {
-                            console.error("Subscribe failed:", e);
-                            if (e.name === "NotAllowedError") {
-                              alert("Notification permission denied. Enable in browser settings to receive alerts.");
-                            }
-                          }
-                        }
-                      }}
-                      style={{ fontSize: 10, color: alertsEnabled ? "#00d4ff" : "#444", background: alertsEnabled ? "rgba(0,212,255,.08)" : "none", border: "1px solid " + (alertsEnabled ? "rgba(0,212,255,.25)" : "rgba(255,255,255,.08)"), borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5 }}>
-                      {alertsEnabled ? "🔔 Alerts On" : "🔕 Enable Alerts"}
-                    </button>
-                  )}
+                  {/* Refresh button only in header row */}
                   {/* Manual refresh - always visible */}
                   <button
                     onClick={async () => {
