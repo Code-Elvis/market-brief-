@@ -71,3 +71,4 @@ export default async function handler(req, res) {
     console.error("subscribe error:", err.message);
     return res.status(500).json({ success: false, message: "Network error. Please try again." });
   }
+}
