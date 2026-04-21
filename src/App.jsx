@@ -1263,6 +1263,194 @@ function SocialHeat({ ticker }) {
   );
 }
 
+
+// ── LARGE CAP UNIVERSE ────────────────────────────────────────────────────
+const LARGE_CAPS = [
+  { ticker: "AAPL", name: "Apple" },
+  { ticker: "MSFT", name: "Microsoft" },
+  { ticker: "NVDA", name: "Nvidia" },
+  { ticker: "AMZN", name: "Amazon" },
+  { ticker: "GOOGL", name: "Alphabet" },
+  { ticker: "META", name: "Meta" },
+  { ticker: "TSLA", name: "Tesla" },
+  { ticker: "AVGO", name: "Broadcom" },
+  { ticker: "JPM", name: "JPMorgan" },
+  { ticker: "V", name: "Visa" },
+  { ticker: "XOM", name: "Exxon" },
+  { ticker: "UNH", name: "UnitedHealth" },
+  { ticker: "WMT", name: "Walmart" },
+  { ticker: "NFLX", name: "Netflix" },
+  { ticker: "AMD", name: "AMD" },
+  { ticker: "BA", name: "Boeing" },
+  { ticker: "GS", name: "Goldman Sachs" },
+  { ticker: "BAC", name: "Bank of America" },
+  { ticker: "COST", name: "Costco" },
+  { ticker: "ORCL", name: "Oracle" },
+];
+
+async function getEarningsWatchData() {
+  const r = await fetch("/api/earnings-watch");
+  if (!r.ok) throw new Error("Earnings watch failed");
+  return r.json();
+}
+
+async function getEarningsMacroImplication(ticker, name, beat, surprise) {
+  const beatStr = beat ? "beat" : "missed";
+  const surpriseStr = surprise != null ? ` by ${Math.abs(surprise)}%` : "";
+  const sys = "You are a macro market analyst. Respond ONLY with valid JSON. No markdown. Schema: {"implication":"string","index_impact":"string"}";
+  const msg = `${name} (${ticker}) ${beatStr} earnings estimates${surpriseStr}. In one sentence each: (1) implication for the sector and related stocks, (2) likely impact on ES/NQ/index futures at the open. No price levels.`;
+  return callClaude(sys, msg, 200);
+}
+
+function EarningsWatch({ onBriefMe }) {
+  const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [data, setData] = React.useState(null);
+  const [implications, setImplications] = React.useState({});
+
+  React.useEffect(() => {
+    getEarningsWatchData()
+      .then(async d => {
+        setData(d);
+        // Auto-expand if there are previous day movers
+        if (d.prevMovers.length > 0) setOpen(true);
+        setLoading(false);
+
+        // Pre-generate implications for prev day movers
+        if (d.prevMovers.length > 0) {
+          const impls = {};
+          await Promise.all(d.prevMovers.map(async m => {
+            try {
+              const impl = await getEarningsMacroImplication(m.ticker, m.name, m.beat, m.surprise);
+              if (impl) impls[m.ticker] = impl;
+            } catch(e) {}
+          }));
+          setImplications(impls);
+        }
+      })
+      .catch(() => { setLoading(false); setData({ reportingToday: [], prevMovers: [] }); });
+  }, []);
+
+  const total = data ? data.reportingToday.length + data.prevMovers.length : 0;
+
+  // Hide entirely if nothing relevant and not loading
+  if (!loading && total === 0) return null;
+
+  return (
+    <div style={{ marginBottom: 16, border: "1px solid rgba(255,215,0,.15)", borderRadius: 10, overflow: "hidden", background: "rgba(255,215,0,.02)" }}>
+      {/* Header - always visible */}
+      <button onClick={() => setOpen(o => !o)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 13 }}>📅</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#ffd700", letterSpacing: 1.5 }}>EARNINGS WATCH</span>
+          {!loading && total > 0 && (
+            <span style={{ fontSize: 9, background: "rgba(255,215,0,.12)", color: "#ffd700", border: "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: "1px 6px", fontWeight: 700 }}>
+              {data.reportingToday.length > 0 && `${data.reportingToday.length} today`}
+              {data.reportingToday.length > 0 && data.prevMovers.length > 0 && " · "}
+              {data.prevMovers.length > 0 && `${data.prevMovers.length} AH mover${data.prevMovers.length > 1 ? "s" : ""}`}
+            </span>
+          )}
+          {loading && <span style={{ fontSize: 9, color: "#2a2a2a" }}>Loading…</span>}
+        </div>
+        <span style={{ fontSize: 10, color: "#2a2a2a" }}>{open ? "▲" : "▼"}</span>
+      </button>
+
+      {/* Expanded content */}
+      {open && !loading && data && (
+        <div style={{ borderTop: "1px solid rgba(255,215,0,.08)", padding: "10px 14px 14px" }}>
+
+          {/* Section 1: Reporting Today */}
+          {data.reportingToday.length > 0 && (
+            <div style={{ marginBottom: data.prevMovers.length > 0 ? 14 : 0 }}>
+              {/* Pre-market */}
+              {data.reportingToday.filter(e => e.hour === "pre").length > 0 && (
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 8, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>☀️ PRE-MARKET TODAY</div>
+                  {data.reportingToday.filter(e => e.hour === "pre").map(e => (
+                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 10, color: "#444" }}>{e.name}</span>
+                      </div>
+                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(245,158,11,.3)", background: "rgba(245,158,11,.06)", color: "#f59e0b", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* After close */}
+              {data.reportingToday.filter(e => e.hour === "post").length > 0 && (
+                <div>
+                  <div style={{ fontSize: 8, color: "#c084fc", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>🌙 AFTER CLOSE TODAY</div>
+                  {data.reportingToday.filter(e => e.hour === "post").map(e => (
+                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 10, color: "#444" }}>{e.name}</span>
+                      </div>
+                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(192,132,252,.3)", background: "rgba(192,132,252,.06)", color: "#c084fc", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* TBD timing */}
+              {data.reportingToday.filter(e => e.hour === "tbd").length > 0 && (
+                <div>
+                  <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>📋 REPORTING TODAY</div>
+                  {data.reportingToday.filter(e => e.hour === "tbd").map(e => (
+                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 10, color: "#444" }}>{e.name}</span>
+                      </div>
+                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#555", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Section 2: Previous Session AH Movers */}
+          {data.prevMovers.length > 0 && (
+            <div>
+              <div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>⚡ PREVIOUS SESSION AH MOVERS</div>
+              {data.prevMovers.map(e => {
+                const impl = implications[e.ticker];
+                const beatColor = e.beat ? "#00d4aa" : "#ff4757";
+                const beatLabel = e.beat ? "BEAT" : "MISS";
+                return (
+                  <div key={e.ticker} style={{ padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: impl ? 6 : 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: beatColor, background: e.beat ? "rgba(0,212,170,.1)" : "rgba(255,71,87,.1)", border: "1px solid " + (e.beat ? "rgba(0,212,170,.25)" : "rgba(255,71,87,.25)"), borderRadius: 3, padding: "1px 5px" }}>{beatLabel}</span>
+                        {e.surprise != null && <span style={{ fontSize: 9, color: beatColor }}>{e.beat ? "+" : ""}{e.surprise}% vs est.</span>}
+                      </div>
+                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(255,71,87,.3)", background: "rgba(255,71,87,.06)", color: "#ff4757", cursor: "pointer", fontFamily: "inherit", fontWeight: 700, flexShrink: 0 }}>Brief Me</button>
+                    </div>
+                    {impl ? (
+                      <div style={{ paddingLeft: 4 }}>
+                        <div style={{ fontSize: 11, color: "#666", lineHeight: 1.5, marginBottom: 3 }}>{impl.implication}</div>
+                        <div style={{ fontSize: 10, color: "#00d4ff", opacity: 0.7 }}>📊 {impl.index_impact}</div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 10, color: "#2a2a2a", paddingLeft: 4 }}>Generating macro implication…</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {data.reportingToday.length === 0 && data.prevMovers.length === 0 && (
+            <div style={{ fontSize: 11, color: "#2a2a2a", textAlign: "center", padding: "8px 0" }}>No large cap earnings in this window</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError, onShareCard, macroContext, onPostSession }) {
   const isScalper = mode === "scalper";
   const [sectorData, setSectorData] = React.useState(null);
@@ -1272,6 +1460,28 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
   const [equityPostData, setEquityPostData] = React.useState(null);
   const [equityPostLoading, setEquityPostLoading] = React.useState(false);
   const [equityPostError, setEquityPostError] = React.useState(null);
+
+  // EarningsWatch: handle Brief Me tap - prefill ticker and run brief
+  const handleEarningsBriefMe = (ticker) => {
+    setQuery(ticker);
+    // scroll to top of stocks tab so user sees the result
+    const top = document.getElementById("stocks-top");
+    if (top) top.scrollIntoView({ behavior: "smooth", block: "start" });
+    // fire the brief after a tick so setQuery has propagated
+    setTimeout(async () => {
+      if (isScalper) {
+        setScalperLoading(true); setScalperError(null); setScalperData(null);
+        try { const r = await getEquityScalper(ticker); setScalperData(r); }
+        catch(e) { setScalperError(e.message || "Failed"); }
+        finally { setScalperLoading(false); }
+      } else {
+        setLoading(true); setError(null); setData(null);
+        try { const r = await getEquityBrief(ticker); setData(r); }
+        catch(e) { setError(e.message || "Failed"); }
+        finally { setLoading(false); }
+      }
+    }, 50);
+  };
 
   const runEquityPost = async () => {
     const q = query.trim();
@@ -1330,6 +1540,8 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
     <div>
       {/* Anchor for scroll-to-top when ticker is tapped */}
       <div id="stocks-top" style={{ height: 0 }} />
+      {/* ── EARNINGS WATCH ── */}
+      {!isScalper && <EarningsWatch onBriefMe={handleEarningsBriefMe} />}
       {/* ── MACRO SECTOR IMPACT ── */}
       {!isScalper && macroContext && (
         <div style={{ marginBottom: 20 }}>
