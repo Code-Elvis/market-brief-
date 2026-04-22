@@ -518,7 +518,7 @@ function LandingPage({ navigate }) {
               {i < 4 && <div style={{ position: "absolute", left: 19, top: 52, width: 2, height: "calc(100% - 20px)", background: "linear-gradient(to bottom, rgba(0,212,255,.15), rgba(0,212,255,.05))", zIndex: 0 }} />}
 
               {/* Step number circle */}
-              <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: "50%", background: "#0a0c0f", border: "1px solid rgba(0,212,255,.2)", display: "flex", alignItems: "center", justifyContent: "center", marginRight: 16, marginTop: 4, zIndex: 1, flexShrink: 0 }}>
+              <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: "50%", background: "#0a0c0f", border: "1px solid rgba(0,212,255,.2)", display: "flex", alignItems: "center", justifyContent: "center", marginRight: 16, marginTop: 4, zIndex: 1 }}>
                 <span style={{ fontSize: 11, fontWeight: 800, color: "#00d4ff", opacity: 0.7 }}>{s.step}</span>
               </div>
 
