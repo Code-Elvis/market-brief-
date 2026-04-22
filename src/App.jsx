@@ -1297,7 +1297,7 @@ async function getEarningsWatchData() {
 async function getEarningsMacroImplication(ticker, name, beat, surprise) {
   const beatStr = beat ? "beat" : "missed";
   const surpriseStr = surprise != null ? ` by ${Math.abs(surprise)}%` : "";
-  const sys = "You are a macro market analyst. Respond ONLY with valid JSON. No markdown. Schema: {"implication":"string","index_impact":"string"}";
+  const sys = "You are a macro market analyst. Respond ONLY with valid JSON. No markdown. Schema: {\"implication\":\"string\",\"index_impact\":\"string\"}";
   const msg = `${name} (${ticker}) ${beatStr} earnings estimates${surpriseStr}. In one sentence each: (1) implication for the sector and related stocks, (2) likely impact on ES/NQ/index futures at the open. No price levels.`;
   return callClaude(sys, msg, 200);
 }
