@@ -1605,6 +1605,166 @@ function AgedWellSection() {
   );
 }
 
+
+// ── EARNINGS WATCH ────────────────────────────────────────────────────────────
+function EarningsWatch({ onBriefMe }) {
+  const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [data, setData] = React.useState(null);
+  const [implications, setImplications] = React.useState({});
+
+  React.useEffect(() => {
+    fetch("/api/earnings-watch")
+      .then(r => r.json())
+      .then(async d => {
+        setData(d);
+        // Auto-expand if there are prev movers with actual results
+        if (d.prevMovers && d.prevMovers.some(m => !m.pending)) setOpen(true);
+        setLoading(false);
+        // Pre-generate AI implications for non-pending prev movers
+        if (d.prevMovers && d.prevMovers.length > 0) {
+          const impls = {};
+          await Promise.all(
+            d.prevMovers.filter(m => !m.pending && m.beat != null).map(async m => {
+              try {
+                const beatStr = m.beat ? "beat" : "missed";
+                const surpriseStr = m.surprise != null ? ` by ${Math.abs(m.surprise)}%` : "";
+                const sys = "You are a macro market analyst. Respond ONLY with valid JSON. No markdown. Schema: {\"implication\":\"string\",\"index_impact\":\"string\"}";
+                const msg = `${m.name} (${m.ticker}) ${beatStr} earnings estimates${surpriseStr}. In one sentence each: (1) implication for the sector and related stocks, (2) likely impact on ES/NQ/index futures at the open. No price levels.`;
+                const impl = await callClaude(sys, msg, 200);
+                if (impl) impls[m.ticker] = impl;
+              } catch(e) {}
+            })
+          );
+          setImplications(impls);
+        }
+      })
+      .catch(() => { setLoading(false); setData({ reportingToday: [], prevMovers: [] }); });
+  }, []);
+
+  const total = data ? data.reportingToday.length + data.prevMovers.length : 0;
+
+  // Hide entirely if nothing and not loading
+  if (!loading && total === 0) return null;
+
+  const todayPre  = data?.reportingToday.filter(e => e.hour === "pre")  || [];
+  const todayPost = data?.reportingToday.filter(e => e.hour === "post") || [];
+  const todayTbd  = data?.reportingToday.filter(e => e.hour === "tbd")  || [];
+
+  return (
+    <div style={{ marginBottom: 16, border: "1px solid rgba(255,215,0,.15)", borderRadius: 10, overflow: "hidden", background: "rgba(255,215,0,.02)" }}>
+      {/* Header */}
+      <button onClick={() => setOpen(o => !o)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 13 }}>📅</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#ffd700", letterSpacing: 1.5 }}>EARNINGS WATCH</span>
+          {!loading && total > 0 && (
+            <span style={{ fontSize: 9, background: "rgba(255,215,0,.12)", color: "#ffd700", border: "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: "1px 6px", fontWeight: 700 }}>
+              {data.reportingToday.length > 0 && `${data.reportingToday.length} today`}
+              {data.reportingToday.length > 0 && data.prevMovers.length > 0 && " · "}
+              {data.prevMovers.length > 0 && `${data.prevMovers.length} recent`}
+            </span>
+          )}
+          {loading && <span style={{ fontSize: 9, color: "#2a2a2a" }}>Loading…</span>}
+        </div>
+        <span style={{ fontSize: 10, color: "#2a2a2a" }}>{open ? "▲" : "▼"}</span>
+      </button>
+
+      {open && !loading && data && (
+        <div style={{ borderTop: "1px solid rgba(255,215,0,.08)", padding: "10px 14px 14px" }}>
+
+          {/* Section 1: Reporting Today */}
+          {data.reportingToday.length > 0 && (
+            <div style={{ marginBottom: data.prevMovers.length > 0 ? 14 : 0 }}>
+              {todayPre.length > 0 && (
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 8, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>☀️ PRE-MARKET TODAY</div>
+                  {todayPre.map(e => (
+                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 10, color: "#444" }}>{e.name}</span>
+                      </div>
+                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(245,158,11,.3)", background: "rgba(245,158,11,.06)", color: "#f59e0b", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {todayPost.length > 0 && (
+                <div style={{ marginBottom: todayTbd.length > 0 ? 8 : 0 }}>
+                  <div style={{ fontSize: 8, color: "#c084fc", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>🌙 AFTER CLOSE TODAY</div>
+                  {todayPost.map(e => (
+                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 10, color: "#444" }}>{e.name}</span>
+                      </div>
+                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(192,132,252,.3)", background: "rgba(192,132,252,.06)", color: "#c084fc", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {todayTbd.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>📋 REPORTING TODAY</div>
+                  {todayTbd.map(e => (
+                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 10, color: "#444" }}>{e.name}</span>
+                      </div>
+                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#555", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Section 2: Previous Movers */}
+          {data.prevMovers.length > 0 && (
+            <div>
+              <div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>⚡ RECENT EARNINGS</div>
+              {data.prevMovers.map(e => {
+                const impl = implications[e.ticker];
+                const beatColor = e.pending ? "#555" : e.beat ? "#00d4aa" : "#ff4757";
+                const beatLabel = e.pending ? "PENDING" : e.beat ? "BEAT" : "MISS";
+                const badgeBg   = e.pending ? "rgba(255,255,255,.04)" : e.beat ? "rgba(0,212,170,.1)" : "rgba(255,71,87,.1)";
+                const badgeBdr  = e.pending ? "rgba(255,255,255,.1)" : e.beat ? "rgba(0,212,170,.25)" : "rgba(255,71,87,.25)";
+                return (
+                  <div key={e.ticker} style={{ padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: (!e.pending && impl) ? 6 : 2 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: beatColor, background: badgeBg, border: "1px solid " + badgeBdr, borderRadius: 3, padding: "1px 5px" }}>{beatLabel}</span>
+                        {e.surprise != null && !e.pending && <span style={{ fontSize: 9, color: beatColor }}>{e.beat ? "+" : ""}{e.surprise}% vs est.</span>}
+                        {e.pending && <span style={{ fontSize: 9, color: "#333" }}>Results pending</span>}
+                      </div>
+                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(255,71,87,.3)", background: "rgba(255,71,87,.06)", color: "#ff4757", cursor: "pointer", fontFamily: "inherit", fontWeight: 700, flexShrink: 0 }}>Brief Me</button>
+                    </div>
+                    {!e.pending && impl ? (
+                      <div style={{ paddingLeft: 2 }}>
+                        <div style={{ fontSize: 11, color: "#555", lineHeight: 1.5, marginBottom: 2 }}>{impl.implication}</div>
+                        <div style={{ fontSize: 10, color: "#00d4ff", opacity: 0.7 }}>📊 {impl.index_impact}</div>
+                      </div>
+                    ) : !e.pending && e.beat != null ? (
+                      <div style={{ fontSize: 10, color: "#2a2a2a", paddingLeft: 2 }}>Generating macro implication…</div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {data.reportingToday.length === 0 && data.prevMovers.length === 0 && (
+            <div style={{ fontSize: 11, color: "#2a2a2a", textAlign: "center", padding: "8px 0" }}>No large cap earnings in this window</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError, onShareCard, macroContext, onPostSession }) {
   const isScalper = mode === "scalper";
   const [sectorData, setSectorData] = React.useState(null);
@@ -1614,6 +1774,26 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
   const [equityPostData, setEquityPostData] = React.useState(null);
   const [equityPostLoading, setEquityPostLoading] = React.useState(false);
   const [equityPostError, setEquityPostError] = React.useState(null);
+
+  // EarningsWatch: tap Brief Me -> prefill ticker and run brief
+  const handleEarningsBriefMe = (ticker) => {
+    setQuery(ticker);
+    const top = document.getElementById("stocks-top");
+    if (top) top.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(async () => {
+      if (isScalper) {
+        setScalperLoading(true); setScalperError(null); setScalperData(null);
+        try { const r = await getEquityScalper(ticker); setScalperData(r); }
+        catch(e) { setScalperError(e.message || "Failed"); }
+        finally { setScalperLoading(false); }
+      } else {
+        setLoading(true); setError(null); setData(null);
+        try { const r = await getEquityBrief(ticker); setData(r); }
+        catch(e) { setError(e.message || "Failed"); }
+        finally { setLoading(false); }
+      }
+    }, 50);
+  };
 
   const runEquityPost = async () => {
     const q = query.trim();
@@ -1676,6 +1856,8 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
     <div>
       {/* Anchor for scroll-to-top when ticker is tapped */}
       <div id="stocks-top" style={{ height: 0 }} />
+      {/* ── EARNINGS WATCH ── */}
+      {!isScalper && <EarningsWatch onBriefMe={handleEarningsBriefMe} />}
       {/* ── AGED WELL: TODAY'S CALLS ── */}
       {!isScalper && <AgedWellSection />}
       {/* ── MACRO SECTOR IMPACT ── */}
