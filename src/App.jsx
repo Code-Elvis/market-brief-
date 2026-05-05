@@ -1607,45 +1607,17 @@ function AgedWellSection() {
 
 
 // ── EARNINGS WATCH ────────────────────────────────────────────────────────────
-function EarningsWatch({ onBriefMe }) {
+function EarningsWatch({ onBriefMe, ewData, ewImplications, ewLoading }) {
   const [open, setOpen] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
-  const [data, setData] = React.useState(null);
-  const [implications, setImplications] = React.useState({});
 
   React.useEffect(() => {
-    fetch("/api/earnings-watch")
-      .then(r => r.json())
-      .then(async d => {
-        setData(d);
-        // Auto-expand if there are prev movers with actual results
-        if (d.prevMovers && d.prevMovers.some(m => !m.pending)) setOpen(true);
-        setLoading(false);
-        // Pre-generate AI implications for non-pending prev movers
-        if (d.prevMovers && d.prevMovers.length > 0) {
-          const impls = {};
-          await Promise.all(
-            d.prevMovers.filter(m => !m.pending && m.beat != null).map(async m => {
-              try {
-                const beatStr = m.beat ? "beat" : "missed";
-                const surpriseStr = m.surprise != null ? ` by ${Math.abs(m.surprise)}%` : "";
-                const sys = "You are a macro market analyst. Respond ONLY with valid JSON. No markdown. Schema: {\"implication\":\"string\",\"index_impact\":\"string\"}";
-                const msg = `${m.name} (${m.ticker}) ${beatStr} earnings estimates${surpriseStr}. In one sentence each: (1) implication for the sector and related stocks, (2) likely impact on ES/NQ/index futures at the open. No price levels.`;
-                const impl = await callClaude(sys, msg, 200);
-                if (impl) impls[m.ticker] = impl;
-              } catch(e) {}
-            })
-          );
-          setImplications(impls);
-        }
-      })
-      .catch(() => { setLoading(false); setData({ reportingToday: [], prevMovers: [] }); });
-  }, []);
+    if (ewData?.prevMovers?.some(m => !m.pending)) setOpen(true);
+  }, [ewData]);
 
+  const data  = ewData;
   const total = data ? data.reportingToday.length + data.prevMovers.length : 0;
 
-  // Hide entirely if nothing and not loading
-  if (!loading && total === 0) return null;
+  if (!ewLoading && total === 0) return null;
 
   const todayPre  = data?.reportingToday.filter(e => e.hour === "pre")  || [];
   const todayPost = data?.reportingToday.filter(e => e.hour === "post") || [];
@@ -1653,27 +1625,24 @@ function EarningsWatch({ onBriefMe }) {
 
   return (
     <div style={{ marginBottom: 16, border: "1px solid rgba(255,215,0,.15)", borderRadius: 10, overflow: "hidden", background: "rgba(255,215,0,.02)" }}>
-      {/* Header */}
       <button onClick={() => setOpen(o => !o)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 13 }}>📅</span>
           <span style={{ fontSize: 10, fontWeight: 700, color: "#ffd700", letterSpacing: 1.5 }}>EARNINGS WATCH</span>
-          {!loading && total > 0 && (
+          {!ewLoading && total > 0 && (
             <span style={{ fontSize: 9, background: "rgba(255,215,0,.12)", color: "#ffd700", border: "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: "1px 6px", fontWeight: 700 }}>
               {data.reportingToday.length > 0 && `${data.reportingToday.length} today`}
               {data.reportingToday.length > 0 && data.prevMovers.length > 0 && " · "}
               {data.prevMovers.length > 0 && `${data.prevMovers.length} recent`}
             </span>
           )}
-          {loading && <span style={{ fontSize: 9, color: "#2a2a2a" }}>Loading…</span>}
+          {ewLoading && <span style={{ fontSize: 9, color: "#2a2a2a" }}>Loading…</span>}
         </div>
         <span style={{ fontSize: 10, color: "#2a2a2a" }}>{open ? "▲" : "▼"}</span>
       </button>
 
-      {open && !loading && data && (
+      {open && !ewLoading && data && (
         <div style={{ borderTop: "1px solid rgba(255,215,0,.08)", padding: "10px 14px 14px" }}>
-
-          {/* Section 1: Reporting Today */}
           {data.reportingToday.length > 0 && (
             <div style={{ marginBottom: data.prevMovers.length > 0 ? 14 : 0 }}>
               {todayPre.length > 0 && (
@@ -1720,13 +1689,11 @@ function EarningsWatch({ onBriefMe }) {
               )}
             </div>
           )}
-
-          {/* Section 2: Previous Movers */}
           {data.prevMovers.length > 0 && (
             <div>
               <div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>⚡ RECENT EARNINGS</div>
               {data.prevMovers.map(e => {
-                const impl = implications[e.ticker];
+                const impl = ewImplications[e.ticker];
                 const beatColor = e.pending ? "#555" : e.beat ? "#00d4aa" : "#ff4757";
                 const beatLabel = e.pending ? "PENDING" : e.beat ? "BEAT" : "MISS";
                 const badgeBg   = e.pending ? "rgba(255,255,255,.04)" : e.beat ? "rgba(0,212,170,.1)" : "rgba(255,71,87,.1)";
@@ -1755,7 +1722,6 @@ function EarningsWatch({ onBriefMe }) {
               })}
             </div>
           )}
-
           {data.reportingToday.length === 0 && data.prevMovers.length === 0 && (
             <div style={{ fontSize: 11, color: "#2a2a2a", textAlign: "center", padding: "8px 0" }}>No large cap earnings in this window</div>
           )}
@@ -1765,7 +1731,8 @@ function EarningsWatch({ onBriefMe }) {
   );
 }
 
-function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError, onShareCard, macroContext, onPostSession }) {
+
+function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError, onShareCard, macroContext, onPostSession, ewData, ewImplications, ewLoading }) {
   const isScalper = mode === "scalper";
   const [sectorData, setSectorData] = React.useState(null);
   const [sectorLoading, setSectorLoading] = React.useState(false);
@@ -1857,7 +1824,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
       {/* Anchor for scroll-to-top when ticker is tapped */}
       <div id="stocks-top" style={{ height: 0 }} />
       {/* ── EARNINGS WATCH ── */}
-      {!isScalper && <EarningsWatch onBriefMe={handleEarningsBriefMe} />}
+      {!isScalper && <EarningsWatch onBriefMe={handleEarningsBriefMe} ewData={ewData} ewImplications={ewImplications} ewLoading={ewLoading} />}
       {/* ── AGED WELL: TODAY'S CALLS ── */}
       {!isScalper && <AgedWellSection />}
       {/* ── MACRO SECTOR IMPACT ── */}
@@ -3178,6 +3145,10 @@ function AppInner({ navigate }) {
   // Global macro context  -  set when any Full Brief is generated
   // Passed to Stocks tab for sector impact intelligence
   const [globalMacroContext, setGlobalMacroContext] = useState(null);
+  // EarningsWatch: fetched once at app level, survives tab switches
+  const [ewData, setEwData] = useState(null);
+  const [ewImplications, setEwImplications] = useState({});
+  const [ewLoading, setEwLoading] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState("limit");
   const [stockQuery, setStockQuery] = useState("");
@@ -3290,6 +3261,39 @@ function AppInner({ navigate }) {
   React.useEffect(() => {
     const supported = "serviceWorker" in navigator && "PushManager" in window;
     setPushSupported(supported);
+  }, []);
+
+  // EarningsWatch: fetch once on mount, never again for this session
+  React.useEffect(() => {
+    if (ewData !== null || ewLoading) return; // already fetched or in flight
+    setEwLoading(true);
+    fetch("/api/earnings-watch")
+      .then(r => r.json())
+      .then(async d => {
+        setEwData(d);
+        setEwLoading(false);
+        // Pre-generate AI implications for non-pending prev movers
+        if (d.prevMovers && d.prevMovers.length > 0) {
+          const impls = {};
+          await Promise.all(
+            d.prevMovers.filter(m => !m.pending && m.beat != null).map(async m => {
+              try {
+                const beatStr = m.beat ? "beat" : "missed";
+                const surpriseStr = m.surprise != null ? ` by ${Math.abs(m.surprise)}%` : "";
+                const sys = "You are a macro market analyst. Respond ONLY with valid JSON. No markdown. Schema: {\"implication\":\"string\",\"index_impact\":\"string\"}";
+                const msg = `${m.name} (${m.ticker}) ${beatStr} earnings estimates${surpriseStr}. In one sentence each: (1) implication for the sector and related stocks, (2) likely impact on ES/NQ/index futures at the open. No price levels.`;
+                const impl = await callClaude(sys, msg, 200);
+                if (impl) impls[m.ticker] = impl;
+              } catch(e) {}
+            })
+          );
+          setEwImplications(impls);
+        }
+      })
+      .catch(() => {
+        setEwData({ reportingToday: [], prevMovers: [] });
+        setEwLoading(false);
+      });
   }, []);
 
   // Auto-fetch handled by server cron (narratives-cron.js) - no client polling needed
@@ -3572,6 +3576,7 @@ function AppInner({ navigate }) {
                     scalperData={scalperStockData} setScalperData={setScalperStockData}
                     scalperLoading={scalperStockLoading} setScalperLoading={setScalperStockLoading}
                     scalperError={scalperStockError} setScalperError={setScalperStockError}
+                    ewData={ewData} ewImplications={ewImplications} ewLoading={ewLoading}
                     onShareCard={async (d, ct, q, sessionType) => {
                       if (sessionType === "post") {
                         // Generate post-session brief for the equity
