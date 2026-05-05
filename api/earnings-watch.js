@@ -1,6 +1,6 @@
 // api/earnings-watch.js
 // Returns large cap earnings for today, yesterday, and tomorrow.
-// Used by EarningsWatch component in the Stocks tab.
+// Uses US Eastern time for date calculations to match market conventions.
 // Env vars: FINNHUB_API_KEY
 
 export const config = { maxDuration: 10 };
@@ -18,6 +18,14 @@ const NAME_MAP = {
   GS:"Goldman Sachs", BAC:"Bank of America", COST:"Costco", ORCL:"Oracle",
 };
 
+// ET offset: UTC-4 during EDT (Mar-Nov), UTC-5 during EST (Nov-Mar)
+// Using UTC-4 as default — close enough for calendar date boundaries
+function getETDateStr(offsetDays = 0) {
+  const now = new Date();
+  const etMs = now.getTime() + (offsetDays * 86400000) - (4 * 3600000);
+  return new Date(etMs).toISOString().slice(0, 10);
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method === "OPTIONS") return res.status(200).end();
@@ -25,22 +33,18 @@ export default async function handler(req, res) {
   const FH_KEY = process.env.FINNHUB_API_KEY;
   if (!FH_KEY) return res.status(200).json({ reportingToday: [], prevMovers: [] });
 
-  const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
-
-  const yday = new Date(today); yday.setDate(yday.getDate() - 1);
-  const ydayStr = yday.toISOString().slice(0, 10);
-
-  const tmrw = new Date(today); tmrw.setDate(tmrw.getDate() + 1);
-  const tmrwStr = tmrw.toISOString().slice(0, 10);
+  const todayStr = getETDateStr(0);
+  const tmrwStr  = getETDateStr(1);
+  const fromStr  = getETDateStr(-3); // 3 days back to catch AMC stragglers
 
   try {
-    const url = `https://finnhub.io/api/v1/calendar/earnings?from=${ydayStr}&to=${tmrwStr}&token=${FH_KEY}`;
+    const url = `https://finnhub.io/api/v1/calendar/earnings?from=${fromStr}&to=${tmrwStr}&token=${FH_KEY}`;
     const r = await fetch(url);
     if (!r.ok) throw new Error(`Finnhub ${r.status}`);
     const raw = await r.json();
     const all = (raw.earningsCalendar || []).filter(e => LARGE_CAPS.includes(e.symbol));
 
+    // Reporting today
     const reportingToday = all
       .filter(e => e.date === todayStr)
       .map(e => ({
@@ -49,19 +53,28 @@ export default async function handler(req, res) {
         hour: e.hour === "bmo" ? "pre" : e.hour === "amc" ? "post" : "tbd",
       }));
 
+    // Previous movers: last 3 days, most recent per ticker, include pending results
+    const prevDates = [getETDateStr(-1), getETDateStr(-2), getETDateStr(-3)];
+    const seen = new Set();
     const prevMovers = all
-      .filter(e => e.date === ydayStr && e.epsActual != null)
+      .filter(e => prevDates.includes(e.date) && !seen.has(e.symbol) && seen.add(e.symbol))
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 6)
       .map(e => {
-        const surprise = e.epsEstimate
+        const hasResult = e.epsActual != null;
+        const surprise = hasResult && e.epsEstimate
           ? (((e.epsActual - e.epsEstimate) / Math.abs(e.epsEstimate)) * 100).toFixed(1)
           : null;
         return {
           ticker: e.symbol,
           name: NAME_MAP[e.symbol] || e.symbol,
-          epsActual: e.epsActual,
-          epsEstimate: e.epsEstimate,
+          date: e.date,
+          hour: e.hour === "bmo" ? "pre" : e.hour === "amc" ? "post" : "tbd",
+          epsActual: e.epsActual ?? null,
+          epsEstimate: e.epsEstimate ?? null,
           surprise,
-          beat: e.epsEstimate != null ? e.epsActual >= e.epsEstimate : null,
+          beat: hasResult && e.epsEstimate != null ? e.epsActual >= e.epsEstimate : null,
+          pending: !hasResult,
         };
       });
 
