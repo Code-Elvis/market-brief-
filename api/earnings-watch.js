@@ -28,6 +28,7 @@ function getETDateStr(offsetDays = 0) {
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   if (req.method === "OPTIONS") return res.status(200).end();
 
   const FH_KEY = process.env.FINNHUB_API_KEY;
@@ -78,7 +79,7 @@ export default async function handler(req, res) {
         };
       });
 
-    return res.status(200).json({ reportingToday, prevMovers });
+    return res.status(200).json({ reportingToday, prevMovers, v: 2 });
   } catch (e) {
     console.error("earnings-watch error:", e.message);
     return res.status(200).json({ reportingToday: [], prevMovers: [], error: e.message });
