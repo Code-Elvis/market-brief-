@@ -1264,187 +1264,341 @@ function SocialHeat({ ticker }) {
 }
 
 
-// ── LARGE CAP UNIVERSE ────────────────────────────────────────────────────
-const LARGE_CAPS = [
-  { ticker: "AAPL", name: "Apple" },
-  { ticker: "MSFT", name: "Microsoft" },
-  { ticker: "NVDA", name: "Nvidia" },
-  { ticker: "AMZN", name: "Amazon" },
-  { ticker: "GOOGL", name: "Alphabet" },
-  { ticker: "META", name: "Meta" },
-  { ticker: "TSLA", name: "Tesla" },
-  { ticker: "AVGO", name: "Broadcom" },
-  { ticker: "JPM", name: "JPMorgan" },
-  { ticker: "V", name: "Visa" },
-  { ticker: "XOM", name: "Exxon" },
-  { ticker: "UNH", name: "UnitedHealth" },
-  { ticker: "WMT", name: "Walmart" },
-  { ticker: "NFLX", name: "Netflix" },
-  { ticker: "AMD", name: "AMD" },
-  { ticker: "BA", name: "Boeing" },
-  { ticker: "GS", name: "Goldman Sachs" },
-  { ticker: "BAC", name: "Bank of America" },
-  { ticker: "COST", name: "Costco" },
-  { ticker: "ORCL", name: "Oracle" },
-];
 
-async function getEarningsWatchData() {
-  const r = await fetch("/api/earnings-watch");
-  if (!r.ok) throw new Error("Earnings watch failed");
-  return r.json();
+// ── AGED WELL ─────────────────────────────────────────────────────────────
+// Stores equity brief snapshots in localStorage at generation time.
+// After 4pm EST checks if the stock moved in the predicted direction.
+// If yes → surfaces a shareable card with an intraday price chart.
+
+const AW_STORAGE_KEY = "md:agedwell:calls";
+const AW_MAX_STORED  = 20; // keep last 20 calls rolling
+
+function awStoreCall(ticker, sentiment, headline_summary) {
+  if (!ticker || !sentiment || sentiment === "neutral" || sentiment === "mixed") return;
+  try {
+    const stored = JSON.parse(localStorage.getItem(AW_STORAGE_KEY) || "[]");
+    // dedupe same ticker same day
+    const today = new Date().toISOString().slice(0, 10);
+    const filtered = stored.filter(c => !(c.ticker === ticker.toUpperCase() && c.date === today));
+    filtered.unshift({
+      ticker: ticker.toUpperCase(),
+      sentiment,          // "bullish" | "bearish"
+      headline_summary,
+      timestamp: Date.now(),
+      date: today,
+    });
+    localStorage.setItem(AW_STORAGE_KEY, JSON.stringify(filtered.slice(0, AW_MAX_STORED)));
+  } catch(e) {}
 }
 
-async function getEarningsMacroImplication(ticker, name, beat, surprise) {
-  const beatStr = beat ? "beat" : "missed";
-  const surpriseStr = surprise != null ? ` by ${Math.abs(surprise)}%` : "";
-  const sys = "You are a macro market analyst. Respond ONLY with valid JSON. No markdown. Schema: {\"implication\":\"string\",\"index_impact\":\"string\"}";
-  const msg = `${name} (${ticker}) ${beatStr} earnings estimates${surpriseStr}. In one sentence each: (1) implication for the sector and related stocks, (2) likely impact on ES/NQ/index futures at the open. No price levels.`;
-  return callClaude(sys, msg, 200);
+function awGetTodayCalls() {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const stored = JSON.parse(localStorage.getItem(AW_STORAGE_KEY) || "[]");
+    return stored.filter(c => c.date === today);
+  } catch(e) { return []; }
 }
 
-function EarningsWatch({ onBriefMe }) {
-  const [open, setOpen] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
-  const [data, setData] = React.useState(null);
-  const [implications, setImplications] = React.useState({});
+async function awFetchIntradayCandles(ticker) {
+  // Finnhub intraday 5-min candles for today
+  const now   = Math.floor(Date.now() / 1000);
+  const start = now - 8 * 3600; // last 8 hours covers full session
+  const url   = `/api/candle?symbol=${ticker.toUpperCase()}&resolution=5&from=${start}&to=${now}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("candle fetch failed");
+  const d = await r.json();
+  if (!d.c || d.c.length < 2) throw new Error("insufficient candle data");
+  return d; // { t, o, h, l, c, v }
+}
+
+function awCheckAgedWell(call, candles) {
+  if (!candles || !candles.c || candles.c.length < 2) return null;
+  const firstClose = candles.c[0];
+  const lastClose  = candles.c[candles.c.length - 1];
+  const pctMove    = ((lastClose - firstClose) / firstClose) * 100;
+  const movedUp    = pctMove >= 2;
+  const movedDown  = pctMove <= -2;
+  if (call.sentiment === "bullish" && movedUp)   return { pct: pctMove, direction: "up" };
+  if (call.sentiment === "bearish" && movedDown)  return { pct: pctMove, direction: "down" };
+  return null;
+}
+
+function awIsAfterMarketClose() {
+  const now = new Date();
+  // Convert to EST
+  const est = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  return est.getHours() >= 16;
+}
+
+// Draw Lightweight Charts intraday chart inside a canvas div
+function AgedWellChart({ candles, briefTimestamp }) {
+  const containerRef = React.useRef(null);
+  const chartRef     = React.useRef(null);
 
   React.useEffect(() => {
-    getEarningsWatchData()
-      .then(async d => {
-        setData(d);
-        // Auto-expand if there are previous day movers
-        if (d.prevMovers.length > 0) setOpen(true);
-        setLoading(false);
+    if (!containerRef.current || !candles || !candles.t) return;
 
-        // Pre-generate implications for prev day movers
-        if (d.prevMovers.length > 0) {
-          const impls = {};
-          await Promise.all(d.prevMovers.map(async m => {
-            try {
-              const impl = await getEarningsMacroImplication(m.ticker, m.name, m.beat, m.surprise);
-              if (impl) impls[m.ticker] = impl;
-            } catch(e) {}
-          }));
-          setImplications(impls);
-        }
-      })
-      .catch(() => { setLoading(false); setData({ reportingToday: [], prevMovers: [] }); });
-  }, []);
+    // Load Lightweight Charts from CDN dynamically
+    if (!window.LightweightCharts) {
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js";
+      script.onload = () => initChart();
+      document.head.appendChild(script);
+    } else {
+      initChart();
+    }
 
-  const total = data ? data.reportingToday.length + data.prevMovers.length : 0;
+    function initChart() {
+      if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
+      const chart = window.LightweightCharts.createChart(containerRef.current, {
+        width:  containerRef.current.clientWidth,
+        height: 160,
+        layout: { background: { color: "#0a0c0f" }, textColor: "#444" },
+        grid:   { vertLines: { color: "rgba(255,255,255,.04)" }, horzLines: { color: "rgba(255,255,255,.04)" } },
+        rightPriceScale: { borderColor: "rgba(255,255,255,.08)" },
+        timeScale: { borderColor: "rgba(255,255,255,.08)", timeVisible: true, secondsVisible: false },
+        crosshair: { mode: 0 },
+      });
+      chartRef.current = chart;
 
-  // Hide entirely if nothing relevant and not loading
-  if (!loading && total === 0) return null;
+      const series = chart.addCandlestickSeries({
+        upColor:   "#00d4aa",
+        downColor: "#ff4757",
+        borderUpColor:   "#00d4aa",
+        borderDownColor: "#ff4757",
+        wickUpColor:     "#00d4aa",
+        wickDownColor:   "#ff4757",
+      });
+
+      const chartData = candles.t.map((t, i) => ({
+        time: t,
+        open:  candles.o[i],
+        high:  candles.h[i],
+        low:   candles.l[i],
+        close: candles.c[i],
+      }));
+      series.setData(chartData);
+
+      // Flag line at brief generation time
+      if (briefTimestamp) {
+        const briefTime = Math.floor(briefTimestamp / 1000);
+        series.setMarkers([{
+          time:     briefTime,
+          position: "belowBar",
+          color:    "#ffd700",
+          shape:    "arrowUp",
+          text:     "Brief",
+        }]);
+      }
+      chart.timeScale().fitContent();
+    }
+
+    return () => { if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; } };
+  }, [candles, briefTimestamp]);
 
   return (
-    <div style={{ marginBottom: 16, border: "1px solid rgba(255,215,0,.15)", borderRadius: 10, overflow: "hidden", background: "rgba(255,215,0,.02)" }}>
-      {/* Header - always visible */}
-      <button onClick={() => setOpen(o => !o)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+    <div ref={containerRef} style={{ width: "100%", height: 160, borderRadius: 6, overflow: "hidden" }} />
+  );
+}
+
+function AgedWellCard({ call, candles, outcome, onShare, onDismiss }) {
+  const [sharing, setSharing]  = React.useState(false);
+  const [shared,  setShared]   = React.useState(false);
+  const cardRef = React.useRef(null);
+
+  const briefTime = new Date(call.timestamp).toLocaleTimeString("en-US", {
+    hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/New_York"
+  });
+  const pctStr  = (outcome.pct >= 0 ? "+" : "") + outcome.pct.toFixed(2) + "%";
+  const callDir = call.sentiment === "bullish" ? "bullish" : "bearish";
+  const moveDir = outcome.direction === "up" ? "moved up" : "moved down";
+
+  const handleShare = async () => {
+    if (!cardRef.current) return;
+    setSharing(true);
+    try {
+      if (!window.html2canvas) {
+        await new Promise((res, rej) => {
+          const sc = document.createElement("script");
+          sc.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+          sc.onload = res; sc.onerror = rej;
+          document.head.appendChild(sc);
+        });
+      }
+      const canvas = await window.html2canvas(cardRef.current, {
+        backgroundColor: "#0a0c0f", scale: 2, useCORS: true, logging: false,
+      });
+      const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+      const file = new File([blob], `marketdebriefs-aged-well-${call.ticker}.png`, { type: "image/png" });
+      const shareText = `${call.ticker} was called ${callDir} at ${briefTime} this morning.
+
+It ${moveDir} ${pctStr} by close.
+
+Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], text: shareText });
+        setShared(true);
+        setTimeout(() => setShared(false), 3000);
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = file.name; a.click();
+        URL.revokeObjectURL(url);
+        setShared(true);
+        setTimeout(() => setShared(false), 3000);
+      }
+    } catch(e) { console.error("share failed", e); }
+    finally { setSharing(false); }
+  };
+
+  return (
+    <div style={{ marginBottom: 16, border: "1px solid rgba(255,215,0,.25)", borderRadius: 12, overflow: "hidden", background: "rgba(255,215,0,.03)" }}>
+      {/* Card content — captured by html2canvas */}
+      <div ref={cardRef} style={{ background: "#0a0c0f", padding: "14px 14px 10px" }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 14 }}>✅</span>
+            <span style={{ fontSize: 10, fontWeight: 800, color: "#ffd700", letterSpacing: 1.5 }}>AGED WELL</span>
+            <span style={{ fontSize: 10, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{call.ticker}</span>
+          </div>
+          <span style={{ fontSize: 9, color: "#444", fontFamily: "monospace" }}>marketdebriefs.com</span>
+        </div>
+
+        {/* Original brief snippet */}
+        <div style={{ padding: "8px 10px", background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 7, marginBottom: 10 }}>
+          <div style={{ fontSize: 8, color: "#ffd700", fontWeight: 700, letterSpacing: 1.2, marginBottom: 4 }}>
+            BRIEF GENERATED {briefTime} EST
+          </div>
+          <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>
+            {call.headline_summary?.slice(0, 120)}{call.headline_summary?.length > 120 ? "..." : ""}
+          </div>
+          <div style={{ marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: callDir === "bullish" ? "#00d4aa" : "#ff4757",
+              background: callDir === "bullish" ? "rgba(0,212,170,.1)" : "rgba(255,71,87,.1)",
+              border: "1px solid " + (callDir === "bullish" ? "rgba(0,212,170,.25)" : "rgba(255,71,87,.25)"),
+              borderRadius: 3, padding: "1px 6px" }}>
+              {callDir.toUpperCase()}
+            </span>
+          </div>
+        </div>
+
+        {/* Chart */}
+        <AgedWellChart candles={candles} briefTimestamp={call.timestamp} />
+
+        {/* Outcome */}
+        <div style={{ marginTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ fontSize: 11, color: "#e0e0e0" }}>
+            Session close: <span style={{ fontWeight: 800, color: outcome.direction === "up" ? "#00d4aa" : "#ff4757",
+              fontFamily: "monospace" }}>{pctStr}</span>
+          </div>
+          <div style={{ fontSize: 9, color: "#ffd700", fontWeight: 700 }}>Brief First, Trade After.</div>
+        </div>
+      </div>
+
+      {/* Action buttons — outside canvas capture */}
+      <div style={{ display: "flex", gap: 8, padding: "10px 14px", borderTop: "1px solid rgba(255,215,0,.08)" }}>
+        <button onClick={handleShare} disabled={sharing} style={{
+          flex: 1, padding: "10px", borderRadius: 8, border: "none",
+          background: sharing ? "rgba(255,215,0,.05)" : "linear-gradient(135deg,#ffd700,#f59e0b)",
+          color: sharing ? "#555" : "#000",
+          fontSize: 12, fontWeight: 800, fontFamily: "inherit", cursor: sharing ? "wait" : "pointer",
+        }}>
+          {sharing ? "Preparing..." : shared ? "✓ Shared!" : "↗ Share This Call"}
+        </button>
+        <button onClick={onDismiss} style={{
+          padding: "10px 16px", borderRadius: 8,
+          border: "1px solid rgba(255,255,255,.08)", background: "transparent",
+          color: "#444", fontSize: 12, cursor: "pointer", fontFamily: "inherit",
+        }}>Dismiss</button>
+      </div>
+    </div>
+  );
+}
+
+function AgedWellSection() {
+  const [calls,    setCalls]    = React.useState([]);
+  const [results,  setResults]  = React.useState({}); // ticker -> { candles, outcome }
+  const [loading,  setLoading]  = React.useState(false);
+  const [dismissed, setDismissed] = React.useState([]);
+  const [open,     setOpen]     = React.useState(false);
+
+  React.useEffect(() => {
+    if (!awIsAfterMarketClose()) return;
+    const todayCalls = awGetTodayCalls();
+    if (!todayCalls.length) return;
+    setCalls(todayCalls);
+    setLoading(true);
+
+    Promise.all(todayCalls.map(async call => {
+      try {
+        const candles = await awFetchIntradayCandles(call.ticker);
+        const outcome = awCheckAgedWell(call, candles);
+        return { ticker: call.ticker, candles, outcome };
+      } catch(e) { return { ticker: call.ticker, candles: null, outcome: null }; }
+    })).then(res => {
+      const r = {};
+      res.forEach(x => { r[x.ticker] = { candles: x.candles, outcome: x.outcome }; });
+      setResults(r);
+      // auto-expand if any aged well
+      const anyAged = res.some(x => x.outcome !== null);
+      if (anyAged) setOpen(true);
+      setLoading(false);
+    });
+  }, []);
+
+  const agedCalls = calls.filter(c => {
+    const r = results[c.ticker];
+    return r?.outcome !== null && r?.outcome !== undefined && !dismissed.includes(c.ticker);
+  });
+
+  // hide entirely before 4pm or nothing stored
+  if (!awIsAfterMarketClose() || (calls.length === 0 && !loading)) return null;
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      {/* Section header */}
+      <button onClick={() => setOpen(o => !o)} style={{
+        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "10px 14px", background: "rgba(255,215,0,.03)",
+        border: "1px solid rgba(255,215,0,.15)", borderRadius: 10,
+        cursor: "pointer", fontFamily: "inherit", marginBottom: open ? 10 : 0,
+      }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 13 }}>📅</span>
-          <span style={{ fontSize: 10, fontWeight: 700, color: "#ffd700", letterSpacing: 1.5 }}>EARNINGS WATCH</span>
-          {!loading && total > 0 && (
-            <span style={{ fontSize: 9, background: "rgba(255,215,0,.12)", color: "#ffd700", border: "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: "1px 6px", fontWeight: 700 }}>
-              {data.reportingToday.length > 0 && `${data.reportingToday.length} today`}
-              {data.reportingToday.length > 0 && data.prevMovers.length > 0 && " · "}
-              {data.prevMovers.length > 0 && `${data.prevMovers.length} AH mover${data.prevMovers.length > 1 ? "s" : ""}`}
+          <span style={{ fontSize: 13 }}>✅</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#ffd700", letterSpacing: 1.5 }}>TODAY'S CALLS</span>
+          {!loading && agedCalls.length > 0 && (
+            <span style={{ fontSize: 9, background: "rgba(255,215,0,.12)", color: "#ffd700",
+              border: "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: "1px 6px", fontWeight: 700 }}>
+              {agedCalls.length} aged well
             </span>
           )}
-          {loading && <span style={{ fontSize: 9, color: "#2a2a2a" }}>Loading…</span>}
+          {loading && <span style={{ fontSize: 9, color: "#2a2a2a" }}>Checking calls...</span>}
         </div>
         <span style={{ fontSize: 10, color: "#2a2a2a" }}>{open ? "▲" : "▼"}</span>
       </button>
 
-      {/* Expanded content */}
-      {open && !loading && data && (
-        <div style={{ borderTop: "1px solid rgba(255,215,0,.08)", padding: "10px 14px 14px" }}>
-
-          {/* Section 1: Reporting Today */}
-          {data.reportingToday.length > 0 && (
-            <div style={{ marginBottom: data.prevMovers.length > 0 ? 14 : 0 }}>
-              {/* Pre-market */}
-              {data.reportingToday.filter(e => e.hour === "pre").length > 0 && (
-                <div style={{ marginBottom: 8 }}>
-                  <div style={{ fontSize: 8, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>☀️ PRE-MARKET TODAY</div>
-                  {data.reportingToday.filter(e => e.hour === "pre").map(e => (
-                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
-                        <span style={{ fontSize: 10, color: "#444" }}>{e.name}</span>
-                      </div>
-                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(245,158,11,.3)", background: "rgba(245,158,11,.06)", color: "#f59e0b", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {/* After close */}
-              {data.reportingToday.filter(e => e.hour === "post").length > 0 && (
-                <div>
-                  <div style={{ fontSize: 8, color: "#c084fc", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>🌙 AFTER CLOSE TODAY</div>
-                  {data.reportingToday.filter(e => e.hour === "post").map(e => (
-                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
-                        <span style={{ fontSize: 10, color: "#444" }}>{e.name}</span>
-                      </div>
-                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(192,132,252,.3)", background: "rgba(192,132,252,.06)", color: "#c084fc", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {/* TBD timing */}
-              {data.reportingToday.filter(e => e.hour === "tbd").length > 0 && (
-                <div>
-                  <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>📋 REPORTING TODAY</div>
-                  {data.reportingToday.filter(e => e.hour === "tbd").map(e => (
-                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
-                        <span style={{ fontSize: 10, color: "#444" }}>{e.name}</span>
-                      </div>
-                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#555", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
-                    </div>
-                  ))}
-                </div>
-              )}
+      {open && (
+        <div>
+          {loading && (
+            <div style={{ textAlign: "center", padding: "16px 0", fontSize: 11, color: "#2a2a2a" }}>
+              Checking today's calls against market close...
             </div>
           )}
-
-          {/* Section 2: Previous Session AH Movers */}
-          {data.prevMovers.length > 0 && (
-            <div>
-              <div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>⚡ PREVIOUS SESSION AH MOVERS</div>
-              {data.prevMovers.map(e => {
-                const impl = implications[e.ticker];
-                const beatColor = e.beat ? "#00d4aa" : "#ff4757";
-                const beatLabel = e.beat ? "BEAT" : "MISS";
-                return (
-                  <div key={e.ticker} style={{ padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: impl ? 6 : 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: beatColor, background: e.beat ? "rgba(0,212,170,.1)" : "rgba(255,71,87,.1)", border: "1px solid " + (e.beat ? "rgba(0,212,170,.25)" : "rgba(255,71,87,.25)"), borderRadius: 3, padding: "1px 5px" }}>{beatLabel}</span>
-                        {e.surprise != null && <span style={{ fontSize: 9, color: beatColor }}>{e.beat ? "+" : ""}{e.surprise}% vs est.</span>}
-                      </div>
-                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(255,71,87,.3)", background: "rgba(255,71,87,.06)", color: "#ff4757", cursor: "pointer", fontFamily: "inherit", fontWeight: 700, flexShrink: 0 }}>Brief Me</button>
-                    </div>
-                    {impl ? (
-                      <div style={{ paddingLeft: 4 }}>
-                        <div style={{ fontSize: 11, color: "#666", lineHeight: 1.5, marginBottom: 3 }}>{impl.implication}</div>
-                        <div style={{ fontSize: 10, color: "#00d4ff", opacity: 0.7 }}>📊 {impl.index_impact}</div>
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: 10, color: "#2a2a2a", paddingLeft: 4 }}>Generating macro implication…</div>
-                    )}
-                  </div>
-                );
-              })}
+          {!loading && agedCalls.length === 0 && (
+            <div style={{ textAlign: "center", padding: "12px 0", fontSize: 11, color: "#2a2a2a" }}>
+              No calls aged well today — market didn't move enough in the predicted direction.
             </div>
           )}
-
-          {data.reportingToday.length === 0 && data.prevMovers.length === 0 && (
-            <div style={{ fontSize: 11, color: "#2a2a2a", textAlign: "center", padding: "8px 0" }}>No large cap earnings in this window</div>
-          )}
+          {!loading && agedCalls.map(call => (
+            <AgedWellCard
+              key={call.ticker}
+              call={call}
+              candles={results[call.ticker]?.candles}
+              outcome={results[call.ticker]?.outcome}
+              onDismiss={() => setDismissed(d => [...d, call.ticker])}
+            />
+          ))}
         </div>
       )}
     </div>
@@ -1460,28 +1614,6 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
   const [equityPostData, setEquityPostData] = React.useState(null);
   const [equityPostLoading, setEquityPostLoading] = React.useState(false);
   const [equityPostError, setEquityPostError] = React.useState(null);
-
-  // EarningsWatch: handle Brief Me tap - prefill ticker and run brief
-  const handleEarningsBriefMe = (ticker) => {
-    setQuery(ticker);
-    // scroll to top of stocks tab so user sees the result
-    const top = document.getElementById("stocks-top");
-    if (top) top.scrollIntoView({ behavior: "smooth", block: "start" });
-    // fire the brief after a tick so setQuery has propagated
-    setTimeout(async () => {
-      if (isScalper) {
-        setScalperLoading(true); setScalperError(null); setScalperData(null);
-        try { const r = await getEquityScalper(ticker); setScalperData(r); }
-        catch(e) { setScalperError(e.message || "Failed"); }
-        finally { setScalperLoading(false); }
-      } else {
-        setLoading(true); setError(null); setData(null);
-        try { const r = await getEquityBrief(ticker); setData(r); }
-        catch(e) { setError(e.message || "Failed"); }
-        finally { setLoading(false); }
-      }
-    }, 50);
-  };
 
   const runEquityPost = async () => {
     const q = query.trim();
@@ -1525,6 +1657,10 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
       try {
         const result = await getEquityBrief(q);
         setData(result);
+        // Store for Aged Well tracking
+        if (result?.sentiment && result?.ticker) {
+          awStoreCall(result.ticker || q, result.sentiment, result.headline_summary || "");
+        }
       } catch (e) { setError(e.message || "Fetch failed. Please try again."); }
       finally { setLoading(false); }
     }
@@ -1540,8 +1676,8 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
     <div>
       {/* Anchor for scroll-to-top when ticker is tapped */}
       <div id="stocks-top" style={{ height: 0 }} />
-      {/* ── EARNINGS WATCH ── */}
-      {!isScalper && <EarningsWatch onBriefMe={handleEarningsBriefMe} />}
+      {/* ── AGED WELL: TODAY'S CALLS ── */}
+      {!isScalper && <AgedWellSection />}
       {/* ── MACRO SECTOR IMPACT ── */}
       {!isScalper && macroContext && (
         <div style={{ marginBottom: 20 }}>
