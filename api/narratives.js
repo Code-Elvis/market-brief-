@@ -142,8 +142,14 @@ export default async function handler(req, res) {
       .filter(r => r.status === "fulfilled" && r.value)
       .map(r => r.value)
       .sort((a, b) => {
-        if (a.political_alert && !b.political_alert) return -1;
-        if (!a.political_alert && b.political_alert) return 1;
+        const TWO_HOURS = 2 * 60 * 60;
+        const now = Math.floor(Date.now() / 1000);
+        const aRecent = (now - a.published_at) < TWO_HOURS;
+        const bRecent = (now - b.published_at) < TWO_HOURS;
+        // Political alert only floats to top if it fired within the last 2 hours
+        if (a.political_alert && aRecent && !(b.political_alert && bRecent)) return -1;
+        if (b.political_alert && bRecent && !(a.political_alert && aRecent)) return 1;
+        // Otherwise pure recency
         return b.published_at - a.published_at;
       });
     cache = { narratives, fetched_at: Date.now(), ttl_ms: cache.ttl_ms };
