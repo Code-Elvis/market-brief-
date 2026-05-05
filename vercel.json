@@ -1,18 +1,19 @@
 {
   "rewrites": [
-    {
-      "source": "/app",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/",
-      "destination": "/landing.html"
-    }
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/app",      "destination": "/index.html" },
+    { "source": "/help",     "destination": "/help.html" },
+    { "source": "/",         "destination": "/landing.html" },
+    { "source": "/(.*)",     "destination": "/index.html" }
   ],
   "crons": [
     {
-      "path": "/api/narratives-cron",
-      "schedule": "0 8 * * *"
+      "path": "/api/auto-brief",
+      "schedule": "30 12 * * 1-5"
+    },
+    {
+      "path": "/api/narratives",
+      "schedule": "*/15 13-21 * * 1-5"
     }
   ]
 }
