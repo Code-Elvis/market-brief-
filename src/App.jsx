@@ -301,7 +301,7 @@ function LandingPage({ navigate }) {
     <text x="145" y="66" fontFamily="'Courier New', monospace" fontSize="7.5" fill="#4d8f8f" letterSpacing="3.5">BRIEF FIRST · TRADE AFTER</text>
   </svg>
 </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={() => navigate("/help")} style={{ fontSize: 11, fontWeight: 600, color: "#333", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>HELP</button><button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={() => navigate("/help")} style={{ fontSize: 11, fontWeight: 600, color: "#666", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>HELP</button><button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button></div>
       </nav>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "80px 32px 60px", textAlign: "center" }} className="fade-up">
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.05)", marginBottom: 28 }}>
@@ -3376,7 +3376,7 @@ function AppInner({ navigate }) {
                     TRIAL
                   </span>
                 )}
-                <span style={{ fontSize: 9, fontFamily: "monospace", color: "#555", letterSpacing: 1 }}>
+                <span style={{ fontSize: 9, fontFamily: "monospace", color: "#666", letterSpacing: 1 }}>
                   {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" }).toUpperCase()}
                 </span>
                 <button
@@ -3391,7 +3391,7 @@ function AppInner({ navigate }) {
                   style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "3px 7px", border: "1px solid rgba(0,212,255,.2)", borderRadius: 4, background: "rgba(0,212,255,.05)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
                 >⊕ GET APP</button>
                 <button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #2a2a2a", borderRadius: 4, background: "none", cursor: "pointer" }}>HELP</button>
-                <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #2a2a2a", borderRadius: 4, background: "none", cursor: "pointer" }}>SIGN OUT</button>
+                <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#666", padding: "3px 7px", border: "1px solid #444", borderRadius: 4, background: "none", cursor: "pointer" }}>SIGN OUT</button>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
@@ -3649,8 +3649,8 @@ function AppInner({ navigate }) {
                         : "Get notified for political alerts and high-impact breaking narratives."}
                     </div>
                   </div>
-                  {/* Toggle switch — tap or swipe right to enable, left to disable */}
-                  <div
+                  {/* Toggle switch */}
+                  <button
                     onClick={async () => {
                       if (alertsEnabled) {
                         // UNSUBSCRIBE
@@ -3712,6 +3712,10 @@ function AppInner({ navigate }) {
                       cursor: "pointer",
                       transition: "background .25s ease, border .25s ease",
                       flexShrink: 0,
+                      padding: 0,
+                      outline: "none",
+                      WebkitAppearance: "none",
+                      appearance: "none",
                     }}
                   >
                     {/* Thumb */}
@@ -3726,7 +3730,7 @@ function AppInner({ navigate }) {
                       boxShadow: "0 1px 4px rgba(0,0,0,.4)",
                       transition: "left .25s ease, background .25s ease",
                     }} />
-                  </div>
+                  </button>
                 </div>
               )}
               {/* ── LIVE FEED ── */}
