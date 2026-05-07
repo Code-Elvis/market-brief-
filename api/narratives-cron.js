@@ -169,7 +169,12 @@ export default async function handler(req, res) {
     // 3. Find genuinely new narratives
     const seenSet   = new Set(seenIds);
     const newOnes   = narratives.filter(n => !seenSet.has(n.id));
-    const newAlerts = newOnes.filter(n => n.political_alert === true);
+    // Fire for political alerts AND high-impact breaking narratives (CRITICAL or HIGH urgency)
+    const newAlerts = newOnes.filter(n =>
+      n.political_alert === true ||
+      n.urgency === "CRITICAL" ||
+      n.urgency === "HIGH"
+    );
 
     // Emergency keywords override quiet hours
     const EMERGENCY_KEYWORDS = [
@@ -211,7 +216,7 @@ export default async function handler(req, res) {
     const allIds = [...seenIds, ...newOnes.map(n => n.id)].slice(-200);
     if (kv) await kv.set(KV_SEEN_IDS_KEY, allIds);
 
-    console.log(`Done. ${narratives.length} narratives, ${newAlerts.length} new alerts`);
+    console.log(`Done. ${narratives.length} narratives, ${newAlerts.length} new alerts (political + high-impact)`);
 
     return res.status(200).json({
       ok: true,
