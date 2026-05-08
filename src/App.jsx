@@ -301,7 +301,7 @@ function LandingPage({ navigate }) {
     <text x="145" y="66" fontFamily="'Courier New', monospace" fontSize="7.5" fill="#4d8f8f" letterSpacing="3.5">BRIEF FIRST · TRADE AFTER</text>
   </svg>
 </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={() => navigate("/help")} style={{ fontSize: 11, fontWeight: 600, color: "#666", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>HELP</button><button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#666", padding: "3px 7px", border: "1px solid #444", borderRadius: 4, background: "none", cursor: "pointer" }}>HELP</button><button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button></div>
       </nav>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "80px 32px 60px", textAlign: "center" }} className="fade-up">
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.05)", marginBottom: 28 }}>
@@ -3107,6 +3107,64 @@ function LearnAsk() {
   );
 }
 
+
+// ── BRIEF CACHE ───────────────────────────────────────────────────────────────
+// Per-user, per-instrument, per-day localStorage cache.
+// Key: md:brief:{userId}:{instrumentKey}:{mode}:{date}
+const BC_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours max age within a day
+
+function bcKey(userId, instKey, mode) {
+  const today = new Date().toISOString().slice(0, 10);
+  return `md:brief:${userId}:${instKey}:${mode}:${today}`;
+}
+
+function bcSet(userId, instKey, mode, inst, data) {
+  try {
+    const payload = { inst, data, ts: Date.now() };
+    localStorage.setItem(bcKey(userId, instKey, mode), JSON.stringify(payload));
+    // Also maintain an index of today's briefed instruments
+    const today = new Date().toISOString().slice(0, 10);
+    const idxKey = `md:brief:index:${userId}:${today}`;
+    const existing = JSON.parse(localStorage.getItem(idxKey) || "[]");
+    const updated = existing.filter(e => !(e.key === instKey && e.mode === mode));
+    updated.unshift({ key: instKey, mode, label: inst.label, flag: inst.flag, color: inst.color, ts: Date.now() });
+    localStorage.setItem(idxKey, JSON.stringify(updated.slice(0, 12))); // max 12 per day
+  } catch(e) {}
+}
+
+function bcGet(userId, instKey, mode) {
+  try {
+    const raw = localStorage.getItem(bcKey(userId, instKey, mode));
+    if (!raw) return null;
+    const payload = JSON.parse(raw);
+    if (Date.now() - payload.ts > BC_TTL_MS) return null; // expired
+    return payload; // { inst, data, ts }
+  } catch(e) { return null; }
+}
+
+function bcGetIndex(userId) {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const idxKey = `md:brief:index:${userId}:${today}`;
+    return JSON.parse(localStorage.getItem(idxKey) || "[]");
+  } catch(e) { return []; }
+}
+
+function bcClearOld(userId) {
+  // Remove entries from previous days to keep localStorage clean
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(`md:brief:${userId}:`) && !k.includes(today)) {
+        keysToRemove.push(k);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+  } catch(e) {}
+}
+
 // ── APP INNER (authenticated) ─────────────────────────────────────────────────
 function AppInner({ navigate }) {
   const { user } = useUser();
@@ -3145,6 +3203,7 @@ function AppInner({ navigate }) {
   // Global macro context  -  set when any Full Brief is generated
   // Passed to Stocks tab for sector impact intelligence
   const [globalMacroContext, setGlobalMacroContext] = useState(null);
+  const [todaysBriefs, setTodaysBriefs] = useState(() => bcGetIndex(null)); // populated after user loads
   // EarningsWatch: fetched once at app level, survives tab switches
   const [ewData, setEwData] = useState(null);
   const [ewImplications, setEwImplications] = useState({});
@@ -3224,9 +3283,37 @@ function AppInner({ navigate }) {
     // ────────────────────────────────────────────────────────────────────────
 
     if (!found) { setError("Instrument not recognised. Try: ES, NQ, Euro, Gold, GBP, Oil, BTC"); return; }
-    setInst(found); setLoading(true); setError(null); setData(null);
+    setInst(found); setError(null); setData(null);
+
+    // ── Check brief cache ────────────────────────────────────────────────────
+    const cached = user?.id ? bcGet(user.id, found.key, mm) : null;
+    if (cached) {
+      setData(cached.data);
+      setDataCache(prev => ({ ...prev, [mm]: { inst: found, data: cached.data } }));
+      setTab("brief");
+      // For scalper mode: silently refresh calendar events in background
+      if (mm === "scalper") {
+        fetch("/api/calendar")
+          .then(r => r.json())
+          .then(calData => { setRawCalendarEvents(calData.events || []); })
+          .catch(() => {});
+      }
+      // Restore macro context for Stocks tab
+      if (mm === "full" && cached.data) {
+        setGlobalMacroContext({
+          instrument: found.label,
+          macro_theme: cached.data.macro_theme || cached.data.headline_summary || "",
+          geopolitical: cached.data.geopolitical_risks || "",
+          headline: cached.data.headline_summary || "",
+          timestamp: cached.ts,
+        });
+      }
+      return; // no Claude call, no usage increment
+    }
+
+    // ── No cache — run fresh brief ────────────────────────────────────────────
+    setLoading(true);
     try {
-      // For scalper mode, fetch live calendar first and inject into the brief
       let calendarEvents = [];
       if (mm === "scalper") {
         try {
@@ -3241,9 +3328,13 @@ function AppInner({ navigate }) {
       const result = await getBriefing(found, mm, calendarEvents);
       setData(result);
       setDataCache(prev => ({ ...prev, [mm]: { inst: found, data: result } }));
-      setTab("brief"); // Show brief results
+      setTab("brief");
       increment();
-      // Store macro context globally for Stocks tab sector intelligence
+      // Save to brief cache
+      if (user?.id) {
+        bcSet(user.id, found.key, mm, found, result);
+        setTodaysBriefs(bcGetIndex(user.id));
+      }
       if (mm === "full" && result) {
         setGlobalMacroContext({
           instrument: found.label,
@@ -3262,6 +3353,13 @@ function AppInner({ navigate }) {
     const supported = "serviceWorker" in navigator && "PushManager" in window;
     setPushSupported(supported);
   }, []);
+
+  // Brief cache: clear old days, load today's index
+  React.useEffect(() => {
+    if (!user?.id) return;
+    bcClearOld(user.id);
+    setTodaysBriefs(bcGetIndex(user.id));
+  }, [user?.id]);
 
   // EarningsWatch: fetch once on mount, never again for this session
   React.useEffect(() => {
@@ -3402,6 +3500,52 @@ function AppInner({ navigate }) {
                 </button>
               ))}
             </div>
+            {/* ── TODAY'S BRIEFS — cached instrument chips ── */}
+            {todaysBriefs.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6, fontFamily: "monospace" }}>TODAY'S BRIEFS</div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {todaysBriefs.map((b, i) => {
+                    const isActive = inst?.key === b.key && mode === b.mode;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => { setQuery(b.label); run(b.label, b.mode); }}
+                        style={{
+                          fontSize: 11, fontWeight: 700,
+                          padding: "5px 12px",
+                          borderRadius: 20,
+                          cursor: "pointer",
+                          fontFamily: "monospace",
+                          letterSpacing: 0.5,
+                          background: isActive
+                            ? (b.color || "#00d4ff") + "22"
+                            : "rgba(255,255,255,.04)",
+                          border: "1px solid " + (isActive ? (b.color || "#00d4ff") + "88" : "rgba(255,255,255,.12)"),
+                          color: isActive ? (b.color || "#00d4ff") : "#ccc",
+                          boxShadow: isActive ? "0 0 8px " + (b.color || "#00d4ff") + "33" : "none",
+                          transition: "all .15s",
+                          position: "relative",
+                        }}
+                      >
+                        {b.flag || b.label}
+                        {b.mode === "scalper" && (
+                          <span style={{ marginLeft: 4, fontSize: 8, color: "#f59e0b", opacity: 0.8 }}>⚡</span>
+                        )}
+                        {/* Cached indicator dot */}
+                        <span style={{
+                          position: "absolute", top: -2, right: -2,
+                          width: 6, height: 6, borderRadius: "50%",
+                          background: b.color || "#00d4ff",
+                          border: "1px solid #0a0c0f",
+                          opacity: 0.9,
+                        }} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <div style={{ display: "flex", gap: 7, marginBottom: 11 }}>
               <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && run(query.trim())} placeholder={mode === "scalper" ? "ES, NQ, CL, GC, 6E…" : "Euro, Gold, GBP, ES, NQ, Oil, BTC…"} style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.09)", borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }} />
               <button onClick={() => run(query.trim())} disabled={loading} style={{ padding: "12px 16px", minHeight: 44, borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", background: loading ? "rgba(255,255,255,.02)" : "rgba(0,212,255,.1)", color: loading ? "#2a2a2a" : "#00d4ff", border: "1px solid rgba(0,212,255,.2)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>{loading ? "…" : "BRIEF ME"}</button>
