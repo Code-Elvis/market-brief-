@@ -107,6 +107,14 @@ function HelpPage({ navigate }) {
       { q: "Does MarketDebriefs work offline?", a: "The app shell loads offline but generating briefs requires an internet connection since they are generated live on each request. The Learn to Fish section works fully offline once the app has loaded at least once." },
       { q: "The app feels slow  -  how can I improve performance?", a: "Brief generation typically takes 5 to 15 seconds. If slower: check your internet connection, try installing as a PWA, or clear your browser cache and reload. If consistently slow contact support@marketdebriefs.com with your device and browser details." },
     ]},
+    { id: "legal", icon: "⚖️", title: "Legal & Affiliate", color: "rgba(0,212,255,.06)", items: [
+      { q: "Is MarketDebriefs financial advice?", a: "No. MarketDebriefs is a macro intelligence and education platform. All briefs, narratives, and analyses are for informational purposes only and do not constitute financial advice, investment recommendations, or trading signals. You should seek independent financial advice from a qualified professional before making any trading decisions. Trading involves substantial risk of loss." },
+      { q: "What is the refund policy?", a: "Refunds are available within the first 7 days of a new paid subscription if you have not materially used the service. After 7 days of access, the service is considered rendered and no refund will be issued for that billing period. To request a refund, contact support@marketdebriefs.com with your account email." },
+      { q: "How does the 7-day free trial work?", a: "Your 7-day trial begins when you create your account and gives you full Pro access  -  no credit card required. After 7 days you can upgrade to Pro (€49/month) or continue on the free tier (3 Full Briefs per day). After your first 7 days, use of the platform is considered service rendered regardless of whether you upgrade." },
+      { q: "Do you have an affiliate programme?", a: "Yes. MarketDebriefs offers a 30% recurring commission on every monthly payment from users you refer  -  not just the first month, but every month they remain subscribed. We look for trading educators, content creators, and community managers with genuine trader audiences. To apply, email affiliates@marketdebriefs.com or visit our Affiliate Programme page." },
+      { q: "Where can I read the full Terms, Privacy Policy, and Risk Disclaimer?", a: "All legal documents are available at the bottom of the MarketDebriefs homepage: General Risk Disclaimer, Terms & Conditions, Privacy & Cookie Policy, and the Affiliate Programme. You can also access them directly via marketdebriefs.com/legal/terms, /legal/privacy, /legal/risk, and /legal/affiliate." },
+      { q: "Is my payment data secure?", a: "Yes. All payment processing is handled entirely by Stripe, a PCI-compliant payment processor. MarketDebriefs never stores your credit card details. Your account data is protected by Clerk, an enterprise-grade authentication provider, and all data is transmitted over HTTPS." },
+    ]},
   ];
   const filtered = sections.map(s => ({ ...s, items: s.items.filter(item => !search || item.q.toLowerCase().includes(search.toLowerCase()) || item.a.toLowerCase().includes(search.toLowerCase())) })).filter(s => s.items.length > 0);
   const toggle = (id) => setOpenItem(openItem === id ? null : id);
@@ -195,6 +203,10 @@ export default function App() {
   };
   if (path === "/app") return <><UpdateBanner /><AppShell navigate={navigate} /></>;
   if (path === "/help") return <HelpPage navigate={navigate} />;
+  if (path === "/legal/risk") return <RiskPage navigate={navigate} />;
+  if (path === "/legal/terms") return <TermsPage navigate={navigate} />;
+  if (path === "/legal/privacy") return <PrivacyPage navigate={navigate} />;
+  if (path === "/legal/affiliate") return <AffiliatePage navigate={navigate} />;
   return <><UpdateBanner /><LandingPage navigate={navigate} /></>;
 }
 
@@ -649,10 +661,299 @@ function LandingPage({ navigate }) {
         </div>
       </div>
 
-      <div style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "24px 32px", textAlign: "center", color: "#aaa", fontSize: 11 }}>
-        © {new Date().getFullYear()} MarketDebriefs · Not financial advice
+      {/* ── LEGAL FOOTER BAR ── */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,.06)", padding: "28px 32px", background: "rgba(0,0,0,.2)" }}>
+        {/* Risk disclaimer strip */}
+        <div style={{ maxWidth: 760, margin: "0 auto 16px", padding: "12px 16px", background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.1)", borderRadius: 8, textAlign: "center" }}>
+          <p style={{ fontSize: 11, color: "#888", lineHeight: 1.7, margin: 0 }}>
+            Trading financial instruments involves substantial risk and is not appropriate for all investors. Only risk capital should be used for trading.
+            MarketDebriefs provides macro intelligence and education only — not financial advice or trading signals.
+            Past performance is not indicative of future results.
+          </p>
+        </div>
+        {/* Legal links */}
+        <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "6px 16px" }}>
+          <span style={{ fontSize: 11, color: "#555" }}>© {new Date().getFullYear()} MarketDebriefs</span>
+          <span style={{ color: "#2a2a2a" }}>·</span>
+          {[
+            { label: "General Risk Disclaimer", path: "/legal/risk" },
+            { label: "Terms & Conditions",       path: "/legal/terms" },
+            { label: "Privacy & Cookie Policy",  path: "/legal/privacy" },
+            { label: "Affiliate Programme",       path: "/legal/affiliate" },
+          ].map(link => (
+            <a key={link.path} onClick={() => navigate(link.path)} style={{ fontSize: 11, color: "#666", cursor: "pointer", textDecoration: "none", transition: "color .15s" }}
+              onMouseOver={e => e.target.style.color="#00d4ff"}
+              onMouseOut={e => e.target.style.color="#666"}>
+              {link.label}
+            </a>
+          ))}
+          <span style={{ color: "#2a2a2a" }}>·</span>
+          <a href="mailto:support@marketdebriefs.com" style={{ fontSize: 11, color: "#666", textDecoration: "none" }}>support@marketdebriefs.com</a>
+        </div>
       </div>
     </div>
+  );
+}
+
+
+// ── LEGAL PAGE SHELL ──────────────────────────────────────────────────────────
+function LegalShell({ title, badge, children, navigate }) {
+  return (
+    <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
+      <style>{`
+        .legal-h2 { font-size: 13px; font-weight: 800; color: #00d4ff; letter-spacing: 1.5px; margin: 28px 0 10px; text-transform: uppercase; }
+        .legal-h3 { font-size: 12px; font-weight: 700; color: #e0e0e0; margin: 18px 0 6px; }
+        .legal-p  { font-size: 13px; color: #999; line-height: 1.85; margin: 0 0 10px; }
+        .legal-ul { padding-left: 18px; margin: 6px 0 12px; }
+        .legal-ul li { font-size: 13px; color: #999; line-height: 1.8; margin-bottom: 4px; }
+        .legal-highlight { background: rgba(0,212,255,.06); border: 1px solid rgba(0,212,255,.15); border-radius: 8px; padding: 14px 16px; margin: 16px 0; }
+        .legal-highlight p { color: #ccc; margin: 0; }
+        .legal-warning { background: rgba(255,71,87,.06); border: 1px solid rgba(255,71,87,.15); border-radius: 8px; padding: 14px 16px; margin: 16px 0; }
+        .legal-warning p { color: #ffb3b3; margin: 0; }
+        hr.legal { border: none; border-top: 1px solid rgba(255,255,255,.06); margin: 24px 0; }
+      `}</style>
+      <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 24px", borderBottom: "1px solid rgba(255,255,255,.06)", position: "sticky", top: 0, background: "rgba(10,12,15,.96)", backdropFilter: "blur(10px)", zIndex: 100 }}>
+        <div onClick={() => navigate("/")} style={{ cursor: "pointer", fontSize: 14, fontWeight: 800, color: "#fff" }}>
+          MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span>
+        </div>
+        <button onClick={() => navigate("/")} style={{ fontSize: 9, fontFamily: "monospace", color: "#e0e0e0", padding: "3px 7px", border: "1px solid rgba(255,255,255,.25)", borderRadius: 4, background: "rgba(255,255,255,.08)", cursor: "pointer", fontWeight: 700 }}>← BACK</button>
+      </nav>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 80px" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 12px", borderRadius: 20, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.05)", marginBottom: 16 }}>
+          <span style={{ fontSize: 9, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5 }}>{badge}</span>
+        </div>
+        <h1 style={{ fontSize: "clamp(22px,4vw,34px)", fontWeight: 900, color: "#fff", letterSpacing: -0.5, marginBottom: 6 }}>{title}</h1>
+        <div style={{ fontSize: 11, color: "#555", fontFamily: "monospace", marginBottom: 32 }}>Last updated: May 2026 · marketdebriefs.com</div>
+        {children}
+      </div>
+      <div style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "20px 24px", textAlign: "center", fontSize: 11, color: "#555" }}>
+        © {new Date().getFullYear()} MarketDebriefs · <a onClick={() => navigate("/legal/risk")} style={{ color: "#555", cursor: "pointer", textDecoration: "none" }}>Risk Disclaimer</a> · <a onClick={() => navigate("/legal/terms")} style={{ color: "#555", cursor: "pointer", textDecoration: "none" }}>Terms</a> · <a onClick={() => navigate("/legal/privacy")} style={{ color: "#555", cursor: "pointer", textDecoration: "none" }}>Privacy</a> · <a onClick={() => navigate("/legal/affiliate")} style={{ color: "#555", cursor: "pointer", textDecoration: "none" }}>Affiliate</a>
+      </div>
+    </div>
+  );
+}
+
+// ── RISK DISCLAIMER PAGE ──────────────────────────────────────────────────────
+function RiskPage({ navigate }) {
+  return (
+    <LegalShell title="General Risk Disclaimer" badge="RISK DISCLAIMER" navigate={navigate}>
+      <div className="legal-warning">
+        <p><strong>Trading financial instruments involves substantial risk of loss and is not appropriate for all investors. Only risk capital should be used for trading — never money you cannot afford to lose.</strong></p>
+      </div>
+      <p className="legal-p">MarketDebriefs is a macro intelligence platform designed to provide context and education around financial market events. The information provided through MarketDebriefs does not constitute financial advice, investment recommendations, or trading signals of any kind.</p>
+      <h2 className="legal-h2">No Investment Advice</h2>
+      <p className="legal-p">All content generated by MarketDebriefs — including Full Briefs, Events Briefs, Breaking Narratives, Equity Debriefs, and any other output — is for informational and educational purposes only. Nothing on this platform should be construed as a recommendation to buy, sell, or hold any financial instrument.</p>
+      <p className="legal-p">MarketDebriefs does not take into account your individual financial situation, investment objectives, or risk tolerance. You should seek independent financial advice from a qualified professional before making any trading or investment decisions.</p>
+      <h2 className="legal-h2">Risk of Loss</h2>
+      <p className="legal-p">Trading and investing in financial instruments — including but not limited to futures contracts, equities, forex, commodities, cryptocurrencies, and options — carries significant risk of loss. Past performance is not indicative of future results. Testimonials or examples of past market calls appearing on this platform are not a guarantee of future performance or success.</p>
+      <div className="legal-highlight">
+        <p>You may lose some or all of your invested capital. Do not trade with money you cannot afford to lose. MarketDebriefs accepts no responsibility for any trading losses incurred as a result of using this service.</p>
+      </div>
+      <h2 className="legal-h2">AI-Generated Content</h2>
+      <p className="legal-p">Briefs, narratives, and analyses on MarketDebriefs are generated using artificial intelligence. While we work to ensure accuracy and relevance, AI-generated content may contain errors, omissions, or outdated information. Markets move rapidly and conditions can change faster than any automated system can reflect.</p>
+      <p className="legal-p">MarketDebriefs does not guarantee the accuracy, completeness, timeliness, or suitability of any information provided. You are solely responsible for verifying information independently before acting on it.</p>
+      <h2 className="legal-h2">Market Volatility</h2>
+      <p className="legal-p">Financial markets are subject to rapid and unpredictable price movements. Geopolitical events, economic data releases, central bank policy decisions, and other macro factors can cause sudden, extreme market moves. The Events Brief and Breaking Narratives features are designed to help users understand these dynamics — they are not guarantees of market direction.</p>
+      <h2 className="legal-h2">Regulatory Disclaimer</h2>
+      <p className="legal-p">MarketDebriefs is not regulated by the Financial Conduct Authority (FCA), the Securities and Exchange Commission (SEC), the Commodity Futures Trading Commission (CFTC), or any other financial regulatory body. We are a technology and information service, not a financial institution or broker-dealer.</p>
+      <hr className="legal" />
+      <p className="legal-p" style={{ fontSize: 11 }}>By using MarketDebriefs you acknowledge that you have read, understood, and accept this General Risk Disclaimer in full. If you do not agree, please do not use the service.</p>
+    </LegalShell>
+  );
+}
+
+// ── TERMS & CONDITIONS PAGE ───────────────────────────────────────────────────
+function TermsPage({ navigate }) {
+  return (
+    <LegalShell title="Terms & Conditions" badge="LEGAL" navigate={navigate}>
+      <p className="legal-p">These Terms & Conditions ("Terms") govern your access to and use of MarketDebriefs ("the Service"), operated by MarketDebriefs ("we", "us", "our"). By accessing or using the Service, you agree to be bound by these Terms.</p>
+
+      <h2 className="legal-h2">1. Acceptance of Terms</h2>
+      <p className="legal-p">By creating an account or using any part of the Service, you confirm that you are at least 18 years of age, have the legal capacity to enter into a binding agreement, and accept these Terms in full. If you do not agree, you must not use the Service.</p>
+
+      <h2 className="legal-h2">2. Service Description</h2>
+      <p className="legal-p">MarketDebriefs is an AI-powered macro intelligence platform that provides market context, event analysis, and educational content for traders and investors. The Service includes Full Briefs, Events Briefs, Breaking Narratives, Equity Debriefs, and related features.</p>
+      <p className="legal-p">MarketDebriefs does not provide financial advice, investment recommendations, or trading signals. All content is for informational and educational purposes only.</p>
+
+      <h2 className="legal-h2">3. Subscription & Trial</h2>
+      <p className="legal-p">MarketDebriefs offers a 7-day free trial with full Pro access. No credit card is required to begin the trial. At the end of the trial period, continued use of Pro features requires an active paid subscription at the published rate (currently €49/month).</p>
+      <div className="legal-highlight">
+        <p><strong>Service Rendered Clause:</strong> By using any feature of the MarketDebriefs platform after the first 7 days following account creation — whether during a free trial or paid subscription — you acknowledge that the service has been rendered and no refund will be issued for that billing period. This mirrors industry-standard practices for digital information services where value is delivered upon access.</p>
+      </div>
+      <p className="legal-p">Subscriptions renew automatically on a monthly basis. You may cancel at any time before your renewal date to avoid the next charge. Upon cancellation, your access continues until the end of the current billing period.</p>
+
+      <h2 className="legal-h2">4. Refund Policy</h2>
+      <p className="legal-p">Refunds are available within the first 7 days of a new paid subscription if you have not materially used the service. After 7 days of access, the service is considered rendered and no refund will be issued. To request a refund, contact support@marketdebriefs.com with your account email and reason.</p>
+      <p className="legal-p">MarketDebriefs reserves the right to issue or deny refunds at its sole discretion based on usage patterns and circumstances.</p>
+
+      <h2 className="legal-h2">5. Acceptable Use</h2>
+      <p className="legal-p">You agree not to:</p>
+      <ul className="legal-ul">
+        <li>Reproduce, redistribute, or resell any content generated by the Service</li>
+        <li>Use the Service to train, fine-tune, or develop competing AI models or products</li>
+        <li>Attempt to reverse-engineer, scrape, or extract data from the platform programmatically</li>
+        <li>Share account credentials or allow multiple users to access a single subscription</li>
+        <li>Use the Service for any unlawful purpose or in violation of applicable regulations</li>
+      </ul>
+
+      <h2 className="legal-h2">6. Intellectual Property</h2>
+      <p className="legal-p">All content, branding, design, software, and AI-generated output on MarketDebriefs remains the intellectual property of MarketDebriefs. You are granted a limited, non-transferable, non-exclusive licence to access and use the Service for personal, non-commercial purposes only.</p>
+
+      <h2 className="legal-h2">7. Disclaimer of Warranties</h2>
+      <p className="legal-p">The Service is provided on an "as is" and "as available" basis without warranties of any kind. We do not warrant that the Service will be uninterrupted, error-free, or that the information provided will be accurate, complete, or timely.</p>
+
+      <h2 className="legal-h2">8. Limitation of Liability</h2>
+      <p className="legal-p">To the maximum extent permitted by law, MarketDebriefs shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from your use of, or inability to use, the Service — including but not limited to trading losses, lost profits, or data loss.</p>
+
+      <h2 className="legal-h2">9. Termination</h2>
+      <p className="legal-p">We reserve the right to suspend or terminate your account at any time for violation of these Terms, fraudulent activity, or at our sole discretion with reasonable notice. Upon termination, your access to the Service will cease and no refund will be issued for any unused subscription period where these Terms have been violated.</p>
+
+      <h2 className="legal-h2">10. Changes to Terms</h2>
+      <p className="legal-p">We may update these Terms from time to time. Continued use of the Service after changes are posted constitutes acceptance of the revised Terms. We will notify users of material changes by email where possible.</p>
+
+      <h2 className="legal-h2">11. Governing Law</h2>
+      <p className="legal-p">These Terms are governed by and construed in accordance with applicable law. Any disputes arising from these Terms or your use of the Service shall be subject to the exclusive jurisdiction of the relevant courts.</p>
+
+      <hr className="legal" />
+      <p className="legal-p" style={{ fontSize: 11 }}>Questions about these Terms? Contact us at support@marketdebriefs.com</p>
+    </LegalShell>
+  );
+}
+
+// ── PRIVACY POLICY PAGE ───────────────────────────────────────────────────────
+function PrivacyPage({ navigate }) {
+  return (
+    <LegalShell title="Privacy & Cookie Policy" badge="PRIVACY" navigate={navigate}>
+      <p className="legal-p">This Privacy & Cookie Policy explains how MarketDebriefs collects, uses, and protects your personal information when you use our Service. We are committed to protecting your privacy and handling your data transparently.</p>
+
+      <h2 className="legal-h2">1. Information We Collect</h2>
+      <h3 className="legal-h3">Account Information</h3>
+      <p className="legal-p">When you create an account, we collect your email address and authentication credentials via Clerk, our identity management provider. We do not store passwords directly — authentication is handled securely by Clerk.</p>
+      <h3 className="legal-h3">Usage Data</h3>
+      <p className="legal-p">We collect information about how you use the Service, including which instruments you brief, feature usage patterns, and session data. This helps us improve the platform and understand what our users find valuable.</p>
+      <h3 className="legal-h3">Payment Information</h3>
+      <p className="legal-p">Payment processing is handled entirely by Stripe. MarketDebriefs never stores your credit card details. Stripe's privacy policy governs how your payment data is handled.</p>
+      <h3 className="legal-h3">Technical Data</h3>
+      <p className="legal-p">We may collect standard technical information including your IP address, browser type, device type, and operating system for security and performance purposes.</p>
+
+      <h2 className="legal-h2">2. How We Use Your Information</h2>
+      <ul className="legal-ul">
+        <li>To provide, maintain, and improve the Service</li>
+        <li>To process payments and manage your subscription</li>
+        <li>To send transactional emails (account confirmations, billing receipts)</li>
+        <li>To send service updates and product announcements (you can opt out)</li>
+        <li>To detect and prevent fraud or abuse</li>
+        <li>To comply with legal obligations</li>
+      </ul>
+      <p className="legal-p">We do not sell your personal data to third parties. We do not allow third-party advertisers to target you based on your data through our platform.</p>
+
+      <h2 className="legal-h2">3. Data Sharing</h2>
+      <p className="legal-p">We share your data only with trusted service providers necessary to operate the platform:</p>
+      <ul className="legal-ul">
+        <li><strong>Clerk</strong> — identity and authentication management</li>
+        <li><strong>Stripe</strong> — payment processing and subscription management</li>
+        <li><strong>Vercel</strong> — hosting and infrastructure</li>
+        <li><strong>Anthropic</strong> — AI inference (brief generation). Prompts and responses are processed per Anthropic's data handling policies</li>
+        <li><strong>Finnhub</strong> — market data and financial news</li>
+      </ul>
+      <p className="legal-p">We may disclose your information if required by law, court order, or to protect the rights, property, or safety of MarketDebriefs, our users, or the public.</p>
+
+      <h2 className="legal-h2">4. Data Retention</h2>
+      <p className="legal-p">We retain your account data for as long as your account is active. If you delete your account, we will remove your personal data within 30 days, except where retention is required by law. Brief cache data is stored locally on your device and is not transmitted to our servers.</p>
+
+      <h2 className="legal-h2">5. Cookies</h2>
+      <p className="legal-p">MarketDebriefs uses the following cookies and local storage:</p>
+      <ul className="legal-ul">
+        <li><strong>Authentication cookies</strong> — set by Clerk to maintain your session. Essential for the Service to function.</li>
+        <li><strong>Preference storage</strong> — we store your brief cache and notification preferences in your browser's localStorage. This data stays on your device.</li>
+        <li><strong>Analytics</strong> — we may use privacy-respecting analytics to understand platform usage. No personally identifiable information is shared.</li>
+      </ul>
+      <p className="legal-p">You can clear cookies and localStorage through your browser settings at any time. Clearing authentication cookies will log you out of the Service.</p>
+
+      <h2 className="legal-h2">6. Your Rights</h2>
+      <p className="legal-p">Depending on your location, you may have the right to: access the personal data we hold about you; correct inaccurate data; request deletion of your data; object to or restrict certain processing; and data portability. To exercise any of these rights, contact support@marketdebriefs.com.</p>
+
+      <h2 className="legal-h2">7. Security</h2>
+      <p className="legal-p">We implement industry-standard security measures including HTTPS encryption, secure authentication via Clerk, and PCI-compliant payment processing via Stripe. However, no method of transmission over the internet is 100% secure and we cannot guarantee absolute security.</p>
+
+      <h2 className="legal-h2">8. Children's Privacy</h2>
+      <p className="legal-p">The Service is not directed at individuals under the age of 18. We do not knowingly collect personal data from minors. If you believe a minor has provided us with personal data, please contact us immediately.</p>
+
+      <h2 className="legal-h2">9. Changes to This Policy</h2>
+      <p className="legal-p">We may update this policy from time to time. We will notify you of significant changes by email or through the platform. Continued use of the Service after changes are posted constitutes your acceptance of the updated policy.</p>
+
+      <hr className="legal" />
+      <p className="legal-p" style={{ fontSize: 11 }}>Questions? Contact us at support@marketdebriefs.com</p>
+    </LegalShell>
+  );
+}
+
+// ── AFFILIATE PROGRAMME PAGE ──────────────────────────────────────────────────
+function AffiliatePage({ navigate }) {
+  return (
+    <LegalShell title="Affiliate Programme" badge="AFFILIATE" navigate={navigate}>
+      <div className="legal-highlight">
+        <p><strong>Earn recurring commission by introducing traders to MarketDebriefs.</strong> Our affiliate programme rewards you every month your referred users remain subscribed — not just on the first payment.</p>
+      </div>
+
+      <h2 className="legal-h2">Programme Overview</h2>
+      <p className="legal-p">MarketDebriefs operates an affiliate programme open to traders, educators, content creators, trading communities, and anyone with an audience that includes active market participants. If you believe in the value of macro intelligence for retail traders, this programme is for you.</p>
+
+      <h2 className="legal-h2">Commission Structure</h2>
+      <ul className="legal-ul">
+        <li><strong>30% recurring commission</strong> on every monthly payment made by users you refer</li>
+        <li>Commission is paid for the full lifetime of the referred subscription — not just the first month</li>
+        <li>Minimum payout threshold: €50</li>
+        <li>Payments processed monthly via bank transfer or PayPal within 30 days of the end of each calendar month</li>
+      </ul>
+      <div className="legal-highlight">
+        <p><strong>Example:</strong> You refer 10 traders who each subscribe at €49/month. You earn 30% = €14.70 per user per month = €147/month in recurring passive income, every month they remain subscribed.</p>
+      </div>
+
+      <h2 className="legal-h2">How It Works</h2>
+      <ul className="legal-ul">
+        <li>Apply via the form below or by emailing affiliates@marketdebriefs.com</li>
+        <li>Upon approval, you receive a unique referral link and affiliate dashboard access</li>
+        <li>Share your link on X/Twitter, YouTube, Discord, newsletters, or any channel you use</li>
+        <li>When someone clicks your link and subscribes, they are attributed to your account</li>
+        <li>Track your referrals, conversions, and earnings in real time from your dashboard</li>
+      </ul>
+
+      <h2 className="legal-h2">What We Look For</h2>
+      <p className="legal-p">We approve affiliates who are genuinely aligned with our audience — active traders, macro enthusiasts, trading educators, and finance content creators. We do not approve spam-based, incentivised traffic, or coupon/deal sites. Quality over quantity.</p>
+      <ul className="legal-ul">
+        <li>Trading-focused audience on any platform (X, YouTube, Discord, newsletters, Telegram)</li>
+        <li>Genuine engagement — not just follower counts</li>
+        <li>Content that aligns with the MarketDebriefs positioning: intelligent, macro-focused, professional</li>
+      </ul>
+
+      <h2 className="legal-h2">Affiliate Rules & Code of Conduct</h2>
+      <ul className="legal-ul">
+        <li>You must disclose your affiliate relationship when promoting MarketDebriefs, in accordance with FTC guidelines and applicable advertising standards</li>
+        <li>You may not bid on MarketDebriefs brand keywords in paid search advertising</li>
+        <li>You may not make false, misleading, or exaggerated claims about the Service</li>
+        <li>You may not use spam, unsolicited messaging, or deceptive traffic methods</li>
+        <li>Self-referrals are not permitted — you may not earn commission on your own subscription</li>
+        <li>MarketDebriefs reserves the right to withhold commission for traffic that violates these rules</li>
+      </ul>
+
+      <h2 className="legal-h2">Attribution & Cookies</h2>
+      <p className="legal-p">Referral attribution uses a 30-day cookie window. If a user clicks your link and subscribes within 30 days — even if they do not subscribe immediately — the conversion is attributed to you. Last-click attribution applies if a user clicks multiple affiliate links.</p>
+
+      <h2 className="legal-h2">Programme Modifications</h2>
+      <p className="legal-p">MarketDebriefs reserves the right to modify commission rates, payment terms, or programme rules at any time with 30 days' written notice to active affiliates. We are committed to maintaining a fair and sustainable programme for our affiliate partners.</p>
+
+      <h2 className="legal-h2">Apply Now</h2>
+      <p className="legal-p">Ready to join? Email <strong>affiliates@marketdebriefs.com</strong> with a brief introduction and a link to your primary channel or audience. We typically respond within 3 business days.</p>
+      <div style={{ marginTop: 20, padding: "20px 20px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 10, textAlign: "center" }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Become a MarketDebriefs Affiliate</div>
+        <div style={{ fontSize: 12, color: "#999", marginBottom: 16 }}>30% recurring commission · Monthly payouts · Real-time dashboard</div>
+        <a href="mailto:affiliates@marketdebriefs.com" style={{ display: "inline-block", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", padding: "11px 28px", borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: "none", fontFamily: "Inter, system-ui, sans-serif" }}>Apply via Email →</a>
+      </div>
+
+      <hr className="legal" />
+      <p className="legal-p" style={{ fontSize: 11 }}>For questions about the programme, contact affiliates@marketdebriefs.com. Commission rates and terms are subject to change with 30 days notice to active affiliates.</p>
+    </LegalShell>
   );
 }
 
@@ -2181,7 +2482,7 @@ function EquityScalperView({ ticker, data, loading, error }) {
             <div key={i} style={{ background: "rgba(245,158,11,.05)", border: "1px solid rgba(245,158,11,.15)", borderRadius: 8, padding: "11px 13px", marginBottom: 7, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600 }}>{ev.event}</div>
               <div style={{ textAlign: "right", marginLeft: 12 }}>
-                <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700 }}>in {ev.due_in}</div>
+                <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700 }}>{ev.due_in ? "~" + ev.due_in : ""}</div>
                 <div style={{ fontSize: 11, color: "#777", marginTop: 2 }}>{ev.expected_impact}</div>
               </div>
             </div>
@@ -2804,6 +3105,80 @@ function FullView({ inst, data }) {
   );
 }
 
+
+// ── LIVE COUNTDOWN ────────────────────────────────────────────────────────────
+// Computes real-time countdown from a time_est string (e.g. "08:30") in EST.
+// Re-renders every second so cached Events Briefs always show accurate time.
+function LiveCountdown({ timeEst, passed }) {
+  const [label, setLabel] = React.useState("");
+
+  React.useEffect(() => {
+    if (passed) { setLabel("released"); return; }
+    if (!timeEst) { setLabel(""); return; }
+
+    function compute() {
+      // Parse time_est into today's EST timestamp
+      const now = new Date();
+      // Get current EST date components
+      const estNow = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+      const [rawTime] = timeEst.trim().split(" "); // strip AM/PM suffix if present
+      const [hStr, mStr] = rawTime.split(":");
+      let h = parseInt(hStr, 10);
+      const m = parseInt(mStr || "0", 10);
+      // Handle AM/PM if embedded
+      if (timeEst.match(/pm/i) && h < 12) h += 12;
+      if (timeEst.match(/am/i) && h === 12) h = 0;
+
+      const eventEST = new Date(estNow);
+      eventEST.setHours(h, m, 0, 0);
+
+      const diffMs = eventEST - estNow;
+
+      if (diffMs <= 0) {
+        setLabel("released");
+        return;
+      }
+
+      const totalSec = Math.floor(diffMs / 1000);
+      const hrs  = Math.floor(totalSec / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = totalSec % 60;
+
+      if (hrs > 0) {
+        setLabel(`in ${hrs}h ${mins}m`);
+      } else if (mins > 0) {
+        setLabel(`in ${mins}m ${secs}s`);
+      } else {
+        setLabel(`in ${secs}s`);
+      }
+    }
+
+    compute();
+    const interval = setInterval(compute, 1000);
+    return () => clearInterval(interval);
+  }, [timeEst, passed]);
+
+  if (!label) return null;
+
+  const isImminent = label.includes("s") && !label.includes("m") && !label.includes("h");
+  const isVeryClose = label.match(/in [0-2]m/);
+
+  return (
+    <span style={{
+      color: label === "released" ? "#00d4ff"
+           : isImminent ? "#ff4757"
+           : isVeryClose ? "#f59e0b"
+           : "#ffd700",
+      fontWeight: 700,
+      fontFamily: "monospace",
+      fontSize: 11,
+      transition: "color .3s",
+    }}>
+      {label}
+    </span>
+  );
+}
+
 function ScalperView({ inst, data, rawCalendar = [] }) {
   const [postReads, setPostReads] = React.useState({});
   const [postLoading, setPostLoading] = React.useState({});
@@ -2967,8 +3342,8 @@ function ScalperView({ inst, data, rawCalendar = [] }) {
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
                   {ev.time_est && <div style={{ fontSize: 11, color: ev.passed ? "#00d4ff" : "#ffd700", fontWeight: 700 }}>{ev.time_est.replace(/ (EST|EDT|ET)$/i, "")} ET</div>}
-                  <div style={{ fontSize: 10, color: ev.passed ? "#00d4ff" : "#888", marginTop: 2, opacity: 0.6 }}>
-                    {ev.passed ? "released" : ev.due_in ? ev.due_in.replace(/^in\s+/i, "").replace(/^(\d)/, "in $1") : ""}
+                  <div style={{ fontSize: 10, marginTop: 2, opacity: 0.85 }}>
+                    <LiveCountdown timeEst={ev.time_est} passed={ev.passed} />
                   </div>
                 </div>
               </div>
