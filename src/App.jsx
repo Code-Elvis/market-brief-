@@ -301,7 +301,7 @@ function LandingPage({ navigate }) {
     <text x="145" y="66" fontFamily="'Courier New', monospace" fontSize="7.5" fill="#4d8f8f" letterSpacing="3.5">BRIEF FIRST · TRADE AFTER</text>
   </svg>
 </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#666", padding: "3px 7px", border: "1px solid #444", borderRadius: 4, background: "none", cursor: "pointer" }}>HELP</button><button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#aaa", padding: "3px 7px", border: "1px solid #666", borderRadius: 4, background: "rgba(255,255,255,.03)", cursor: "pointer" }}>HELP</button><button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button></div>
       </nav>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "80px 32px 60px", textAlign: "center" }} className="fade-up">
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.05)", marginBottom: 28 }}>
@@ -3146,7 +3146,19 @@ function bcGetIndex(userId) {
   try {
     const today = new Date().toISOString().slice(0, 10);
     const idxKey = `md:brief:index:${userId}:${today}`;
-    return JSON.parse(localStorage.getItem(idxKey) || "[]");
+    const all = JSON.parse(localStorage.getItem(idxKey) || "[]");
+    // One chip per instrument — keep most recent entry per key
+    // But track ALL modes available for that instrument
+    const byKey = {};
+    all.forEach(e => {
+      if (!byKey[e.key]) {
+        byKey[e.key] = { ...e, modes: [e.mode] };
+      } else {
+        if (!byKey[e.key].modes.includes(e.mode)) byKey[e.key].modes.push(e.mode);
+        if (e.ts > byKey[e.key].ts) byKey[e.key] = { ...byKey[e.key], ...e, modes: byKey[e.key].modes };
+      }
+    });
+    return Object.values(byKey).sort((a, b) => b.ts - a.ts);
   } catch(e) { return []; }
 }
 
@@ -3288,6 +3300,8 @@ function AppInner({ navigate }) {
     // ── Check brief cache ────────────────────────────────────────────────────
     const cached = user?.id ? bcGet(user.id, found.key, mm) : null;
     if (cached) {
+      setInst(found);
+      setMode(mm);
       setData(cached.data);
       setDataCache(prev => ({ ...prev, [mm]: { inst: found, data: cached.data } }));
       setTab("brief");
@@ -3489,7 +3503,7 @@ function AppInner({ navigate }) {
                   style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "3px 7px", border: "1px solid rgba(0,212,255,.2)", borderRadius: 4, background: "rgba(0,212,255,.05)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
                 >⊕ GET APP</button>
                 <button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#222", padding: "3px 7px", border: "1px solid #2a2a2a", borderRadius: 4, background: "none", cursor: "pointer" }}>HELP</button>
-                <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#666", padding: "3px 7px", border: "1px solid #444", borderRadius: 4, background: "none", cursor: "pointer" }}>SIGN OUT</button>
+                <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#aaa", padding: "3px 7px", border: "1px solid #666", borderRadius: 4, background: "rgba(255,255,255,.03)", cursor: "pointer" }}>SIGN OUT</button>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
@@ -3506,11 +3520,17 @@ function AppInner({ navigate }) {
                 <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6, fontFamily: "monospace" }}>TODAY'S BRIEFS</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {todaysBriefs.map((b, i) => {
-                    const isActive = inst?.key === b.key && mode === b.mode;
+                    const isActive = inst?.key === b.key;
                     return (
                       <button
                         key={i}
-                        onClick={() => { setQuery(b.label); run(b.label, b.mode); }}
+                        onClick={() => {
+                          setQuery(b.label);
+                          // Always load Full Brief first from cache
+                          // User can switch to Events Brief via the mode buttons
+                          const loadMode = b.modes?.includes("full") ? "full" : b.mode;
+                          run(b.label, loadMode);
+                        }}
                         style={{
                           fontSize: 11, fontWeight: 700,
                           padding: "5px 12px",
@@ -3529,7 +3549,7 @@ function AppInner({ navigate }) {
                         }}
                       >
                         {b.flag || b.label}
-                        {b.mode === "scalper" && (
+                        {b.modes?.includes("scalper") && (
                           <span style={{ marginLeft: 4, fontSize: 8, color: "#f59e0b", opacity: 0.8 }}>⚡</span>
                         )}
                         {/* Cached indicator dot */}
