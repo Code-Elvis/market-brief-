@@ -957,6 +957,341 @@ function AffiliatePage({ navigate }) {
   );
 }
 
+
+// ── WATCH LIST ────────────────────────────────────────────────────────────────
+// Up to 5 instruments saved per user. Feeds the Morning Dashboard and Push scoping.
+const WL_KEY = (userId) => `md:watchlist:${userId}`;
+const WL_MAX = 5;
+
+function wlGet(userId) {
+  try { return JSON.parse(localStorage.getItem(WL_KEY(userId)) || "[]"); }
+  catch(e) { return []; }
+}
+function wlAdd(userId, inst) {
+  try {
+    const list = wlGet(userId).filter(i => i.key !== inst.key);
+    list.unshift({ key: inst.key, label: inst.label, flag: inst.flag, color: inst.color });
+    localStorage.setItem(WL_KEY(userId), JSON.stringify(list.slice(0, WL_MAX)));
+  } catch(e) {}
+}
+function wlRemove(userId, instKey) {
+  try {
+    const list = wlGet(userId).filter(i => i.key !== instKey);
+    localStorage.setItem(WL_KEY(userId), JSON.stringify(list));
+  } catch(e) {}
+}
+function wlHas(userId, instKey) {
+  return wlGet(userId).some(i => i.key === instKey);
+}
+
+// ── TRACK RECORD HELPERS ──────────────────────────────────────────────────────
+// Extends brief cache to track outcomes per call.
+const TR_KEY = (userId) => `md:trackrecord:${userId}`;
+const TR_MAX = 90; // keep 90 days rolling
+
+function trGet(userId) {
+  try { return JSON.parse(localStorage.getItem(TR_KEY(userId)) || "[]"); }
+  catch(e) { return []; }
+}
+function trSave(userId, records) {
+  try { localStorage.setItem(TR_KEY(userId), JSON.stringify(records.slice(0, TR_MAX))); }
+  catch(e) {}
+}
+function trRecordCall(userId, instKey, instLabel, instFlag, instColor, mode, sentiment, headline) {
+  if (!userId || !sentiment || sentiment === "neutral" || sentiment === "mixed" || mode !== "full") return;
+  const records = trGet(userId);
+  const today   = new Date().toISOString().slice(0, 10);
+  // Dedupe same instrument same day
+  const filtered = records.filter(r => !(r.instKey === instKey && r.date === today));
+  filtered.unshift({
+    id: `tr-${Date.now()}`,
+    instKey, instLabel, instFlag, instColor,
+    sentiment, headline,
+    timestamp: Date.now(),
+    date: today,
+    outcome: null, // filled in later by price check
+    pct: null,
+  });
+  trSave(userId, filtered);
+}
+async function trCheckOutcomes(userId) {
+  // After 4pm EST, check price outcomes for today's unresolved calls
+  const now = new Date();
+  const est = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  if (est.getHours() < 16) return [];
+
+  const records = trGet(userId);
+  const today   = new Date().toISOString().slice(0, 10);
+  const todayUnresolved = records.filter(r => r.date === today && r.outcome === null);
+  if (!todayUnresolved.length) return records;
+
+  const updated = [...records];
+  await Promise.all(todayUnresolved.map(async r => {
+    try {
+      const now2  = Math.floor(Date.now() / 1000);
+      const from2 = now2 - 8 * 3600;
+      const res   = await fetch(`/api/candle?symbol=${r.instKey.toUpperCase()}&resolution=5&from=${from2}&to=${now2}`);
+      if (!res.ok) return;
+      const d = await res.json();
+      if (!d.c || d.c.length < 2) return;
+      const first = d.c[0]; const last = d.c[d.c.length - 1];
+      const pct   = ((last - first) / first) * 100;
+      const movedUp   = pct >= 1.5;
+      const movedDown = pct <= -1.5;
+      const correct =
+        (r.sentiment === "bullish" && movedUp) ||
+        (r.sentiment === "bearish" && movedDown);
+      const idx = updated.findIndex(u => u.id === r.id);
+      if (idx >= 0) { updated[idx] = { ...updated[idx], outcome: correct ? "correct" : "incorrect", pct }; }
+    } catch(e) {}
+  }));
+  trSave(userId, updated);
+  return updated;
+}
+
+
+// ── MORNING DASHBOARD ─────────────────────────────────────────────────────────
+// Appears at the top of the Brief tab when the user has a Watch List or Today's Briefs.
+// Shows today's high-impact events for their instruments + macro theme from last brief.
+function MorningDashboard({ watchList, todaysBriefs, calendarEvents, narrativeFeed, onRunInst, globalMacroContext }) {
+  const hasWatchList   = watchList && watchList.length > 0;
+  const hasBriefs      = todaysBriefs && todaysBriefs.length > 0;
+  const hasContext     = globalMacroContext && globalMacroContext.macro_theme;
+
+  if (!hasWatchList && !hasBriefs && !hasContext) return null;
+
+  // High-impact events from live calendar — filter to upcoming only
+  const upcomingHigh = (calendarEvents || [])
+    .filter(e => !e.passed && (e.impact === "high" || e.impact === "medium") && e.country === "US")
+    .slice(0, 4);
+
+  // Most recent political/critical narrative
+  const topNarrative = (narrativeFeed || []).find(n => n.political_alert || n.urgency === "CRITICAL");
+
+  const now = new Date().toLocaleString("en-US", {
+    timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: true
+  });
+
+  return (
+    <div style={{ marginBottom: 18 }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <div style={{ fontSize: 9, color: "#00d4ff", letterSpacing: 2, fontWeight: 700 }}>📊 MORNING BRIEF</div>
+        <div style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>{now} ET</div>
+      </div>
+
+      {/* Macro context strip — from last brief */}
+      {hasContext && (
+        <div style={{ padding: "9px 12px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.08)", borderRadius: 8, marginBottom: 8 }}>
+          <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>CURRENT MACRO THEME</div>
+          <div style={{ fontSize: 12, color: "#ccc", lineHeight: 1.5 }}>{globalMacroContext.macro_theme}</div>
+          {globalMacroContext.instrument && (
+            <div style={{ fontSize: 9, color: "#555", marginTop: 3 }}>from {globalMacroContext.instrument} brief</div>
+          )}
+        </div>
+      )}
+
+      {/* Today's high-impact events */}
+      {upcomingHigh.length > 0 && (
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>TODAY'S HIGH-IMPACT EVENTS</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {upcomingHigh.map((ev, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "rgba(255,215,0,.04)", border: "1px solid rgba(255,215,0,.1)", borderRadius: 6 }}>
+                <span style={{ fontSize: 11, color: "#e0e0e0", fontWeight: 600 }}>{ev.event}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  <span style={{ fontSize: 9, color: "#ffd700", fontFamily: "monospace" }}>{ev.time_est} ET</span>
+                  <span style={{ fontSize: 8, color: ev.impact === "high" ? "#ff4757" : "#f59e0b", fontWeight: 700, padding: "1px 5px", border: "1px solid " + (ev.impact === "high" ? "rgba(255,71,87,.3)" : "rgba(245,158,11,.3)"), borderRadius: 3 }}>{ev.impact?.toUpperCase()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Breaking political alert if any */}
+      {topNarrative && (
+        <div style={{ padding: "8px 10px", background: "rgba(255,71,87,.06)", border: "1px solid rgba(255,71,87,.2)", borderLeft: "3px solid #ff4757", borderRadius: "0 6px 6px 0", marginBottom: 8 }}>
+          <div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>
+            {topNarrative.political_alert ? "🔴 POLITICAL ALERT" : "⚡ BREAKING"}
+          </div>
+          <div style={{ fontSize: 11, color: "#ffb3b3", lineHeight: 1.4 }}>{topNarrative.headline}</div>
+        </div>
+      )}
+
+      {/* Watch List quick-brief row */}
+      {hasWatchList && (
+        <div>
+          <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>WATCH LIST — TAP TO BRIEF</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {watchList.map((inst, i) => (
+              <button key={i} onClick={() => onRunInst(inst.label)}
+                style={{ fontSize: 11, fontWeight: 700, padding: "6px 14px", borderRadius: 20, cursor: "pointer",
+                  fontFamily: "monospace", letterSpacing: 0.5,
+                  background: (inst.color || "#00d4ff") + "18",
+                  border: "1px solid " + (inst.color || "#00d4ff") + "55",
+                  color: inst.color || "#00d4ff",
+                  boxShadow: "0 0 6px " + (inst.color || "#00d4ff") + "22",
+                }}>
+                {inst.flag || inst.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ── TRACK RECORD TAB ──────────────────────────────────────────────────────────
+function TrackRecordTab({ trackRecord, userId, onShareRecord }) {
+  const [sharing, setSharing] = React.useState(false);
+  const [shared,  setShared]  = React.useState(false);
+  const cardRef = React.useRef(null);
+
+  if (!trackRecord || trackRecord.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "56px 20px" }}>
+        <div style={{ fontSize: 44, marginBottom: 14 }}>📈</div>
+        <div style={{ fontSize: 14, color: "#888", marginBottom: 6 }}>No calls tracked yet</div>
+        <div style={{ fontSize: 11, color: "#555", lineHeight: 1.7 }}>
+          Run Full Briefs on any instrument and MarketDebriefs will track whether the macro call aged well.<br/>
+          Check back after 4pm EST for today's outcomes.
+        </div>
+      </div>
+    );
+  }
+
+  // Stats
+  const resolved   = trackRecord.filter(r => r.outcome !== null);
+  const correct    = resolved.filter(r => r.outcome === "correct");
+  const winRate    = resolved.length > 0 ? Math.round((correct.length / resolved.length) * 100) : null;
+  const streak     = (() => {
+    let s = 0;
+    for (const r of trackRecord) {
+      if (r.outcome === "correct") s++;
+      else if (r.outcome === "incorrect") break;
+      else break;
+    }
+    return s;
+  })();
+
+  const handleShare = async () => {
+    if (!cardRef.current) return;
+    setSharing(true);
+    try {
+      if (!window.html2canvas) {
+        await new Promise((res, rej) => {
+          const sc = document.createElement("script");
+          sc.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+          sc.onload = res; sc.onerror = rej;
+          document.head.appendChild(sc);
+        });
+      }
+      const canvas = await window.html2canvas(cardRef.current, {
+        backgroundColor: "#0a0c0f", scale: 2, useCORS: true, logging: false,
+      });
+      const blob = await new Promise(r => canvas.toBlob(r, "image/png"));
+      const file = new File([blob], "marketdebriefs-track-record.png", { type: "image/png" });
+      const text = `${correct.length}/${resolved.length} macro calls correct (${winRate}% win rate) with MarketDebriefs.
+
+Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], text });
+        setShared(true); setTimeout(() => setShared(false), 3000);
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = file.name; a.click();
+        URL.revokeObjectURL(url); setShared(true); setTimeout(() => setShared(false), 3000);
+      }
+    } catch(e) { console.error("share failed", e); }
+    setSharing(false);
+  };
+
+  return (
+    <div>
+      {/* Shareable stats card */}
+      <div ref={cardRef} style={{ background: "#0a0c0f", border: "1px solid rgba(0,212,255,.15)", borderRadius: 12, padding: "16px", marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#00d4ff", letterSpacing: 1.5 }}>📊 TRACK RECORD</div>
+          <div style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>marketdebriefs.com</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
+          {[
+            { label: "WIN RATE", value: winRate !== null ? `${winRate}%` : "—", color: winRate >= 60 ? "#00d4aa" : winRate >= 40 ? "#ffd700" : "#ff4757" },
+            { label: "CORRECT",  value: `${correct.length}/${resolved.length}`, color: "#00d4aa" },
+            { label: "STREAK",   value: streak > 0 ? `${streak} 🔥` : "0", color: streak >= 3 ? "#ffd700" : "#888" },
+          ].map(stat => (
+            <div key={stat.label} style={{ textAlign: "center", padding: "10px 6px", background: "rgba(255,255,255,.02)", borderRadius: 8, border: "1px solid rgba(255,255,255,.06)" }}>
+              <div style={{ fontSize: 18, fontWeight: 900, color: stat.color, fontFamily: "monospace" }}>{stat.value}</div>
+              <div style={{ fontSize: 8, color: "#555", letterSpacing: 1, marginTop: 3 }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+        {/* Recent calls */}
+        <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>RECENT CALLS</div>
+        {trackRecord.slice(0, 6).map((r, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 10, fontWeight: 800, color: r.instColor || "#00d4ff", fontFamily: "monospace", minWidth: 30 }}>{r.instFlag || r.instKey?.toUpperCase()}</span>
+              <span style={{ fontSize: 9, color: r.sentiment === "bullish" ? "#00d4aa" : "#ff4757", fontWeight: 700, padding: "1px 5px", background: r.sentiment === "bullish" ? "rgba(0,212,170,.1)" : "rgba(255,71,87,.1)", borderRadius: 3 }}>
+                {r.sentiment?.toUpperCase()}
+              </span>
+              <span style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>{r.date}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              {r.pct !== null && (
+                <span style={{ fontSize: 9, color: r.pct >= 0 ? "#00d4aa" : "#ff4757", fontFamily: "monospace" }}>
+                  {r.pct >= 0 ? "+" : ""}{r.pct?.toFixed(1)}%
+                </span>
+              )}
+              {r.outcome === "correct"   && <span style={{ fontSize: 12 }}>✅</span>}
+              {r.outcome === "incorrect" && <span style={{ fontSize: 12 }}>❌</span>}
+              {r.outcome === null        && <span style={{ fontSize: 9, color: "#555" }}>pending</span>}
+            </div>
+          </div>
+        ))}
+        <div style={{ marginTop: 10, fontSize: 9, color: "#555", textAlign: "center" }}>Brief First, Trade After · marketdebriefs.com</div>
+      </div>
+
+      {/* Share button */}
+      {resolved.length > 0 && (
+        <button onClick={handleShare} disabled={sharing} style={{
+          width: "100%", padding: 12, borderRadius: 8, border: "none",
+          background: sharing ? "rgba(0,212,255,.05)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
+          color: sharing ? "#555" : "#000",
+          fontSize: 13, fontWeight: 800, cursor: sharing ? "wait" : "pointer", fontFamily: "inherit", marginBottom: 16,
+        }}>
+          {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share My Track Record"}
+        </button>
+      )}
+
+      {/* Full history */}
+      {trackRecord.length > 6 && (
+        <div>
+          <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 8 }}>FULL HISTORY ({trackRecord.length} calls)</div>
+          {trackRecord.slice(6).map((r, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: r.instColor || "#00d4ff", fontFamily: "monospace", minWidth: 30 }}>{r.instFlag || r.instKey?.toUpperCase()}</span>
+                <span style={{ fontSize: 9, color: r.sentiment === "bullish" ? "#00d4aa" : "#ff4757", fontWeight: 700 }}>{r.sentiment?.toUpperCase()}</span>
+                <span style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>{r.date}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {r.pct !== null && <span style={{ fontSize: 9, color: r.pct >= 0 ? "#00d4aa" : "#ff4757", fontFamily: "monospace" }}>{r.pct >= 0 ? "+" : ""}{r.pct?.toFixed(1)}%</span>}
+                {r.outcome === "correct"   && <span>✅</span>}
+                {r.outcome === "incorrect" && <span>❌</span>}
+                {r.outcome === null        && <span style={{ fontSize: 9, color: "#555" }}>pending</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── APP SHELL ─────────────────────────────────────────────────────────────────
 function AppShell({ navigate }) {
   const { isLoaded, userId } = useAuth();
@@ -3179,12 +3514,24 @@ function LiveCountdown({ timeEst, passed }) {
   );
 }
 
-function ScalperView({ inst, data, rawCalendar = [] }) {
+function ScalperView({ inst, data, rawCalendar = [], onCalendarRefresh }) {
   const [postReads, setPostReads] = React.useState({});
   const [postLoading, setPostLoading] = React.useState({});
   const [postErrors, setPostErrors] = React.useState({});
   const [openReads, setOpenReads] = React.useState({});
   const [autoFetched, setAutoFetched] = React.useState({});
+
+  // Auto-refresh calendar every 60 seconds so released events auto-populate
+  React.useEffect(() => {
+    if (!onCalendarRefresh) return;
+    const interval = setInterval(() => {
+      fetch("/api/calendar")
+        .then(r => r.json())
+        .then(d => { if (d.events) onCalendarRefresh(d.events); })
+        .catch(() => {});
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchPostRead = async (ev, i) => {
     setPostLoading(p => ({ ...p, [i]: true }));
@@ -3591,6 +3938,8 @@ function AppInner({ navigate }) {
   // Passed to Stocks tab for sector impact intelligence
   const [globalMacroContext, setGlobalMacroContext] = useState(null);
   const [todaysBriefs, setTodaysBriefs] = useState(() => bcGetIndex(null)); // populated after user loads
+  const [watchList, setWatchList] = useState([]); // populated after user.id loads
+  const [trackRecord, setTrackRecord] = useState([]); // populated after user.id loads
   // EarningsWatch: fetched once at app level, survives tab switches
   const [ewData, setEwData] = useState(null);
   const [ewImplications, setEwImplications] = useState({});
@@ -3719,10 +4068,15 @@ function AppInner({ navigate }) {
       setDataCache(prev => ({ ...prev, [mm]: { inst: found, data: result } }));
       setTab("brief");
       increment();
-      // Save to brief cache
+      // Save to brief cache + track record
       if (user?.id) {
         bcSet(user.id, found.key, mm, found, result);
         setTodaysBriefs(bcGetIndex(user.id));
+        // Track record — only for Full Brief with clear sentiment
+        if (mm === "full" && result?.sentiment && result?.ticker) {
+          trRecordCall(user.id, found.key, found.label, found.flag, found.color, mm, result.sentiment, result.headline_summary || "");
+          setTrackRecord(trGet(user.id));
+        }
       }
       if (mm === "full" && result) {
         setGlobalMacroContext({
@@ -3743,11 +4097,20 @@ function AppInner({ navigate }) {
     setPushSupported(supported);
   }, []);
 
-  // Brief cache: clear old days, load today's index
+  // Brief cache + watch list + track record: init on user load
   React.useEffect(() => {
     if (!user?.id) return;
     bcClearOld(user.id);
     setTodaysBriefs(bcGetIndex(user.id));
+    setWatchList(wlGet(user.id));
+    setTrackRecord(trGet(user.id));
+    // Check outcomes after 4pm
+    const est = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+    if (est.getHours() >= 16) {
+      trCheckOutcomes(user.id).then(updated => {
+        if (updated.length) setTrackRecord(updated);
+      });
+    }
   }, [user?.id]);
 
   // EarningsWatch: fetch once on mount, never again for this session
@@ -3806,6 +4169,7 @@ function AppInner({ navigate }) {
   const TABS = [
     { id: "stocks",   label: "Stocks" },
     { id: "breaking", label: "⚡ Breaking", pro: true },
+    { id: "record",   label: "📊 Record" },
     { id: "learn",    label: "Learn" }
   ];
 
@@ -4008,7 +4372,18 @@ function AppInner({ navigate }) {
             );
           })()}
           {/* Brief results always visible above other tabs */}
-          <div style={{ display: tab === "stocks" || tab === "breaking" || tab === "learn" ? "none" : "block" }}>
+          <div style={{ display: tab === "stocks" || tab === "breaking" || tab === "learn" || tab === "record" ? "none" : "block" }}>
+            {/* ── MORNING DASHBOARD ── */}
+            {!loading && !data && (
+              <MorningDashboard
+                watchList={watchList}
+                todaysBriefs={todaysBriefs}
+                calendarEvents={rawCalendarEvents}
+                narrativeFeed={narrativeFeed}
+                globalMacroContext={globalMacroContext}
+                onRunInst={(label) => { setQuery(label); run(label); }}
+              />
+            )}
             {loading && <Loader />}
             {error && <div style={{ color: "#ff4757", padding: "16px 0", fontSize: 13 }}>{error}</div>}
             {!loading && !error && !data && !inst && (
@@ -4019,9 +4394,26 @@ function AppInner({ navigate }) {
               </div>
             )}
             {!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}
-            {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} rawCalendar={rawCalendarEvents} />}
+            {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} rawCalendar={rawCalendarEvents} onCalendarRefresh={setRawCalendarEvents} />}
             {!loading && data && inst && (
               <div style={{ marginTop: 20, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                {/* Watch List toggle */}
+                {user?.id && inst && (() => {
+                  const inList = wlHas(user.id, inst.key);
+                  return (
+                    <button onClick={() => {
+                      if (inList) { wlRemove(user.id, inst.key); }
+                      else { wlAdd(user.id, inst); }
+                      setWatchList(wlGet(user.id));
+                    }} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 8,
+                      border: "1px solid " + (inList ? "rgba(255,71,87,.3)" : "rgba(0,212,255,.2)"),
+                      background: inList ? "rgba(255,71,87,.06)" : "rgba(0,212,255,.06)",
+                      color: inList ? "#ff4757" : "#00d4ff",
+                      fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                      {inList ? "✕ Remove from Watch List" : "+ Add to Watch List"}
+                    </button>
+                  );
+                })()}
                 <button onClick={() => { setPostSessionData(null); setShowShareCard(true); }} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 8, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.06)", color: "#00d4ff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                   {mode === "scalper" ? "📋 Upcoming Events Card" : "☀️ Pre-Session Card"}
                 </button>
@@ -4575,6 +4967,12 @@ function AppInner({ navigate }) {
               mode={mode}
               cardType={equityShareData.cardType}
               onClose={() => { setShowShareCard(false); setEquityShareData(null); }}
+            />
+          )}
+          {tab === "record" && (
+            <TrackRecordTab
+              trackRecord={trackRecord}
+              userId={user?.id}
             />
           )}
           {tab === "learn" && <Learn />}
