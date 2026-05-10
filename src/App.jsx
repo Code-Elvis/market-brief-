@@ -3096,36 +3096,20 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
   // Fetch price move data when switching to post-session
   useEffect(() => {
     if (!isPostSession) { setPriceMove(null); return; }
-    // Use live Finnhub candle data via /api/candle for accurate same-day price
-    // Ticker mapping for major instruments to their Finnhub-compatible symbols
-    const TICKER_MAP = {
-      "EUR/USD": "EURUSD", "GBP/USD": "GBPUSD", "USD/JPY": "USDJPY",
-      "AUD/USD": "AUDUSD", "USD/CAD": "USDCAD", "USD/CHF": "USDCHF",
-      "NZD/USD": "NZDUSD", "DXY": "DX1!", "Gold XAU/USD": "XAUUSD",
-      "Silver XAG/USD": "XAGUSD", "WTI Crude Oil": "USOIL", "Brent Crude": "UKOIL",
-      "Natural Gas": "NGAS", "ES S&P 500": "ES1!", "NQ NASDAQ 100": "NQ1!",
-      "RTY Russell 2000": "RTY1!", "YM Dow Jones": "YM1!", "Bitcoin": "BTCUSD",
-      "Ethereum": "ETHUSD", "10Y Treasury Note": "US10Y",
-    };
-    const symbol = TICKER_MAP[inst.label] || inst.label.replace(/\s/g, "").replace("/","").toUpperCase();
-    const now   = Math.floor(Date.now() / 1000);
-    const from  = now - 2 * 24 * 3600; // last 2 days — catches yesterday and today
-    fetch(`/api/candle?symbol=${encodeURIComponent(symbol)}&resolution=D&from=${from}&to=${now}`)
-      .then(r => r.json())
+    // Fetch live session close via Claude web search — no training data
+    // This ensures accuracy across all instrument types (forex, futures, commodities)
+    const sys = "You are a financial data assistant. Respond ONLY with valid JSON. No markdown. Schema: {\"direction\":\"up|down\",\"changePct\":\"string\",\"sessionDate\":\"string\"}. Use the MOST RECENT completed trading session close vs previous close. changePct format: \"+0.31%\" or \"-0.26%\". If you cannot find real data, return null.";
+    const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    const msg = `Today is ${today}. What was ${inst.label} session close vs previous session? Give me the actual percentage change from the most recently completed trading session. Search for current market data.`;
+    callClaude(sys, msg, 150)
       .then(d => {
-        if (!d.c || d.c.length < 2 || d.s === "no_data") return;
-        // Use last two daily candles — most recent session vs previous
-        const last = d.c[d.c.length - 1];
-        const prev = d.c[d.c.length - 2];
-        const change    = last - prev;
-        const changePct = (change / prev) * 100;
-        const isLarge   = Math.abs(last) > 1000;
-        const fmt       = (n) => isLarge ? n.toFixed(2) : n.toFixed(4);
+        if (!d || !d.changePct || !d.direction) return;
         setPriceMove({
-          close:     fmt(last),
-          change:    (change >= 0 ? "+" : "") + fmt(change),
-          changePct: (changePct >= 0 ? "+" : "") + changePct.toFixed(2) + "%",
-          up:        change >= 0,
+          close:     "",
+          change:    d.changePct,
+          changePct: d.changePct,
+          up:        d.direction === "up",
+          sessionDate: d.sessionDate || "",
         });
       })
       .catch(() => setPriceMove(null));
@@ -4198,32 +4182,10 @@ function AppInner({ navigate }) {
     finally { setLoading(false); }
   };
 
-  // Check push support + notification permission state on mount
-  const [notifPermission, setNotifPermission] = React.useState(
-    typeof Notification !== "undefined" ? Notification.permission : "default"
-  );
+  // Check push support on mount
   React.useEffect(() => {
     const supported = "serviceWorker" in navigator && "PushManager" in window;
     setPushSupported(supported);
-    // Sync alertsEnabled with actual subscription state
-    if (supported && typeof Notification !== "undefined") {
-      if (Notification.permission === "denied") {
-        // Permission blocked — force off regardless of localStorage
-        setAlertsEnabled(false);
-        try { localStorage.setItem("md_alerts_enabled", "false"); } catch(e) {}
-      }
-      setNotifPermission(Notification.permission);
-      // Also verify subscription still exists
-      navigator.serviceWorker.ready.then(reg => {
-        reg.pushManager.getSubscription().then(sub => {
-          if (!sub && alertsEnabled) {
-            // Subscription was removed externally (phone settings)
-            setAlertsEnabled(false);
-            try { localStorage.setItem("md_alerts_enabled", "false"); } catch(e) {}
-          }
-        });
-      }).catch(() => {});
-    }
   }, []);
 
   // Brief cache + watch list + track record: init on user load
@@ -4625,24 +4587,15 @@ function AppInner({ navigate }) {
                         return;
                       }
                       // Full Brief mode: fetch price and generate macro post-session
+                      // Get live session price via Claude web search — no training data
                       let priceContext = null;
                       try {
-                        const pd = await fetch(`/api/chart-data?instrument=${encodeURIComponent(inst.label)}&days=7`).then(r => r.json());
-                        if (pd.candles?.length >= 2) {
-                          // Filter to weekdays only (Mon=1 to Fri=5)
-                          const weekdayCandles = pd.candles.filter(c => {
-                            const d = new Date(c.t * 1000).getDay();
-                            return d >= 1 && d <= 5;
-                          });
-                          if (weekdayCandles.length >= 2) {
-                            const last = weekdayCandles[weekdayCandles.length - 1];
-                            const prev = weekdayCandles[weekdayCandles.length - 2];
-                            const pct = ((last.c - prev.c) / prev.c * 100).toFixed(2);
-                            priceContext = {
-                              pct: (pct >= 0 ? "+" : "") + pct + "%",
-                              direction: pct >= 0 ? "UP" : "DOWN",
-                            };
-                          }
+                        const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+                        const priceSys = "You are a financial data assistant. Respond ONLY with valid JSON. No markdown. Schema: {\"direction\":\"up|down\",\"pct\":\"string\"}. Use the MOST RECENT completed trading session. pct format: \"+0.31%\" or \"-0.26%\". Return null if no real data available.";
+                        const priceMsg = `Today is ${today}. What was the ${inst.label} session close percentage change vs the previous session? Provide real current market data only.`;
+                        const pd = await callClaude(priceSys, priceMsg, 100);
+                        if (pd?.direction && pd?.pct) {
+                          priceContext = { pct: pd.pct, direction: pd.direction === "up" ? "UP" : "DOWN" };
                         }
                       } catch(e) { /* price fetch optional */ }
                       const result = await getPostSessionBrief(inst, priceContext);
@@ -4755,22 +4708,18 @@ function AppInner({ navigate }) {
                 <div style={{ marginBottom: 14, padding: "12px 14px", background: alertsEnabled ? "rgba(0,212,255,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (alertsEnabled ? "rgba(0,212,255,.2)" : "rgba(255,255,255,.07)"), borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
                   {/* Text */}
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: notifPermission === "denied" ? "#ff4757" : alertsEnabled ? "#00d4ff" : "#888", marginBottom: 2 }}>
-                      {notifPermission === "denied" ? "🚫 Notifications blocked" : alertsEnabled ? "🔔 Breaking alerts ON" : "🔕 Breaking alerts OFF"}
+                    <div style={{ fontSize: 11, fontWeight: 700, color: alertsEnabled ? "#00d4ff" : "#888", marginBottom: 2 }}>
+                      {alertsEnabled ? "🔔 Breaking alerts ON" : "🔕 Breaking alerts OFF"}
                     </div>
                     <div style={{ fontSize: 10, color: "#555", lineHeight: 1.4 }}>
-                      {notifPermission === "denied"
-                        ? "Blocked in your browser settings. To enable: Settings → Notifications → marketdebriefs.com → Allow."
-                        : alertsEnabled
+                      {alertsEnabled
                         ? "You'll be notified for political alerts and high-impact breaking narratives."
                         : "Get notified for political alerts and high-impact breaking narratives."}
                     </div>
                   </div>
                   {/* Toggle switch */}
                   <button
-                    disabled={notifPermission === "denied"}
                     onClick={async () => {
-                      if (notifPermission === "denied") return;
                       if (alertsEnabled) {
                         // UNSUBSCRIBE
                         try {
@@ -4791,12 +4740,8 @@ function AppInner({ navigate }) {
                         // SUBSCRIBE
                         try {
                           const permission = await Notification.requestPermission();
-                          setNotifPermission(permission);
-                          if (permission === "denied") {
-                            // Don't alert — the toggle label now shows instructions
-                            return;
-                          }
                           if (permission !== "granted") {
+                            alert("To receive alerts, enable notifications for this site in your browser or phone settings.");
                             return;
                           }
                           const reg = await navigator.serviceWorker.ready;
@@ -4849,9 +4794,10 @@ function AppInner({ navigate }) {
                       width: 20,
                       height: 20,
                       borderRadius: "50%",
-                      background: alertsEnabled ? "#000" : "#555",
+                      background: alertsEnabled ? "#fff" : "#555",
                       boxShadow: "0 1px 4px rgba(0,0,0,.4)",
                       transition: "left .25s ease, background .25s ease",
+                      pointerEvents: "none",
                     }} />
                   </button>
                 </div>
