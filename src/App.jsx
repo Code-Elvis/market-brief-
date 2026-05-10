@@ -3003,40 +3003,56 @@ function BreakingShareCard({ data, onClose }) {
             </div>
 
             {/* Headline */}
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#e0e0e0", lineHeight: 1.45, marginBottom: 10, fontFamily: "Georgia, serif" }}>
-              "{truncate(data.headline, 120)}"
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#e0e0e0", lineHeight: 1.5, marginBottom: 10, fontFamily: "Georgia, serif" }}>
+              "{data.headline}"
             </div>
 
-            {/* Narrative summary */}
-            <div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6, opacity: 0.7 }}>MACRO INTERPRETATION</div>
-            <div style={{ fontSize: 11, color: "#888", lineHeight: 1.6, marginBottom: 14, fontStyle: "italic" }}>
-              {firstSentence(data.narrative_summary)}
+            {/* Narrative summary — full */}
+            <div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>MACRO INTERPRETATION</div>
+            <div style={{ fontSize: 12, color: "#ccc", lineHeight: 1.65, marginBottom: 12 }}>
+              {data.narrative_summary}
             </div>
 
-            {/* Top 3 instrument impacts */}
+            {/* All instrument impacts — no truncation */}
             {data.instruments && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
-                {data.instruments.slice(0, 3).map((inst, i) => {
+              <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 12 }}>
+                {data.instruments.map((inst, i) => {
                   const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
                   const c = FC[inst.flow] || "#555";
                   return (
-                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 9px", background: "rgba(255,255,255,.02)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0", marginBottom: 5 }}>
-                      <div style={{ flexShrink: 0, minWidth: 42 }}>
-                        <div style={{ fontSize: 10, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
-                        <div style={{ fontSize: 7, color: c, fontWeight: 700, letterSpacing: 0 }}>{inst.flow || "WATCH"}</div>
+                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "7px 10px", background: "rgba(255,255,255,.03)", borderLeft: "2px solid " + c, borderRadius: "0 6px 6px 0" }}>
+                      <div style={{ flexShrink: 0, minWidth: 48 }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
+                        <div style={{ fontSize: 8, color: c, fontWeight: 700 }}>{inst.flow || "WATCH"}</div>
                       </div>
-                      <div style={{ fontSize: 9, color: "#555", lineHeight: 1.4 }}>{truncate(inst.impact, 70)}</div>
+                      <div style={{ fontSize: 11, color: "#aaa", lineHeight: 1.5 }}>{inst.impact}</div>
                     </div>
                   );
                 })}
               </div>
             )}
 
-            {/* Watch for */}
+            {/* Tensions */}
+            {data.tensions && (
+              <div style={{ padding: "7px 10px", borderRadius: 6, background: "rgba(255,165,0,.05)", border: "1px solid rgba(255,165,0,.2)", marginBottom: 8 }}>
+                <div style={{ fontSize: 8, color: "#ffa500", letterSpacing: 1.2, fontWeight: 700, marginBottom: 3 }}>⚡ CONFLICTING FORCES</div>
+                <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.tensions}</div>
+              </div>
+            )}
+
+            {/* Watch for — full */}
             {data.watch_for && (
-              <div style={{ padding: "6px 9px", borderRadius: 6, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)", marginBottom: 14 }}>
-                <div style={{ fontSize: 7, color: "#00d4ff", letterSpacing: 1, fontWeight: 700, marginBottom: 2, opacity: 0.7 }}>WATCH FOR</div>
-                <div style={{ fontSize: 9, color: "#555", lineHeight: 1.4 }}>{firstSentence(data.watch_for)}</div>
+              <div style={{ padding: "7px 10px", borderRadius: 6, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.12)", marginBottom: 8 }}>
+                <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.2, fontWeight: 700, marginBottom: 3 }}>WATCH FOR</div>
+                <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.watch_for}</div>
+              </div>
+            )}
+
+            {/* Fades when */}
+            {data.fades_when && (
+              <div style={{ padding: "7px 10px", borderRadius: 6, background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.07)", marginBottom: 8 }}>
+                <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.2, fontWeight: 700, marginBottom: 3 }}>FADES WHEN</div>
+                <div style={{ fontSize: 11, color: "#888", lineHeight: 1.5 }}>{data.fades_when}</div>
               </div>
             )}
 
@@ -3080,24 +3096,33 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
   // Fetch price move data when switching to post-session
   useEffect(() => {
     if (!isPostSession) { setPriceMove(null); return; }
-    fetch(`/api/chart-data?instrument=${encodeURIComponent(inst.label)}&days=7`)
+    // Use live Finnhub candle data via /api/candle for accurate same-day price
+    // Ticker mapping for major instruments to their Finnhub-compatible symbols
+    const TICKER_MAP = {
+      "EUR/USD": "EURUSD", "GBP/USD": "GBPUSD", "USD/JPY": "USDJPY",
+      "AUD/USD": "AUDUSD", "USD/CAD": "USDCAD", "USD/CHF": "USDCHF",
+      "NZD/USD": "NZDUSD", "DXY": "DX1!", "Gold XAU/USD": "XAUUSD",
+      "Silver XAG/USD": "XAGUSD", "WTI Crude Oil": "USOIL", "Brent Crude": "UKOIL",
+      "Natural Gas": "NGAS", "ES S&P 500": "ES1!", "NQ NASDAQ 100": "NQ1!",
+      "RTY Russell 2000": "RTY1!", "YM Dow Jones": "YM1!", "Bitcoin": "BTCUSD",
+      "Ethereum": "ETHUSD", "10Y Treasury Note": "US10Y",
+    };
+    const symbol = TICKER_MAP[inst.label] || inst.label.replace(/\s/g, "").replace("/","").toUpperCase();
+    const now   = Math.floor(Date.now() / 1000);
+    const from  = now - 2 * 24 * 3600; // last 2 days — catches yesterday and today
+    fetch(`/api/candle?symbol=${encodeURIComponent(symbol)}&resolution=D&from=${from}&to=${now}`)
       .then(r => r.json())
-      .then(data => {
-        if (data.error || !data.candles?.length) return;
-        // Filter to weekdays only  -  ignore weekend thin trading
-        const candles = data.candles.filter(c => {
-          const day = new Date(c.t * 1000).getDay();
-          return day >= 1 && day <= 5;
-        });
-        const last = candles[candles.length - 1];
-        const prev = candles[candles.length - 2];
-        if (!last || !prev) return;
-        const change    = last.c - prev.c;
-        const changePct = (change / prev.c) * 100;
-        const isLarge   = Math.abs(last.c) > 1000;
-        const fmt       = (n) => isLarge ? n.toFixed(0) : n.toFixed(4);
+      .then(d => {
+        if (!d.c || d.c.length < 2 || d.s === "no_data") return;
+        // Use last two daily candles — most recent session vs previous
+        const last = d.c[d.c.length - 1];
+        const prev = d.c[d.c.length - 2];
+        const change    = last - prev;
+        const changePct = (change / prev) * 100;
+        const isLarge   = Math.abs(last) > 1000;
+        const fmt       = (n) => isLarge ? n.toFixed(2) : n.toFixed(4);
         setPriceMove({
-          close:     fmt(last.c),
+          close:     fmt(last),
           change:    (change >= 0 ? "+" : "") + fmt(change),
           changePct: (changePct >= 0 ? "+" : "") + changePct.toFixed(2) + "%",
           up:        change >= 0,
@@ -3975,6 +4000,16 @@ function AppInner({ navigate }) {
   const { user } = useUser();
   const { signOut } = useClerk();
   const [isPro, setIsPro] = useState(false);
+  // Splash screen — shows "Brief First, Trade After" on first open each session
+  const [showSplash, setShowSplash] = useState(() => {
+    try { return !sessionStorage.getItem("md_splash_shown"); } catch(e) { return false; }
+  });
+  React.useEffect(() => {
+    if (showSplash) {
+      try { sessionStorage.setItem("md_splash_shown", "1"); } catch(e) {}
+      setTimeout(() => setShowSplash(false), 2200);
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -4163,10 +4198,32 @@ function AppInner({ navigate }) {
     finally { setLoading(false); }
   };
 
-  // Check push support on mount
+  // Check push support + notification permission state on mount
+  const [notifPermission, setNotifPermission] = React.useState(
+    typeof Notification !== "undefined" ? Notification.permission : "default"
+  );
   React.useEffect(() => {
     const supported = "serviceWorker" in navigator && "PushManager" in window;
     setPushSupported(supported);
+    // Sync alertsEnabled with actual subscription state
+    if (supported && typeof Notification !== "undefined") {
+      if (Notification.permission === "denied") {
+        // Permission blocked — force off regardless of localStorage
+        setAlertsEnabled(false);
+        try { localStorage.setItem("md_alerts_enabled", "false"); } catch(e) {}
+      }
+      setNotifPermission(Notification.permission);
+      // Also verify subscription still exists
+      navigator.serviceWorker.ready.then(reg => {
+        reg.pushManager.getSubscription().then(sub => {
+          if (!sub && alertsEnabled) {
+            // Subscription was removed externally (phone settings)
+            setAlertsEnabled(false);
+            try { localStorage.setItem("md_alerts_enabled", "false"); } catch(e) {}
+          }
+        });
+      }).catch(() => {});
+    }
   }, []);
 
   // Brief cache + watch list + track record: init on user load
@@ -4277,6 +4334,25 @@ function AppInner({ navigate }) {
 
   return (
     <>
+      {/* ── SPLASH SCREEN ── */}
+      {showSplash && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 99999,
+          background: "#0a0c0f",
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          gap: 16,
+          animation: "splashFadeOut 0.5s ease 1.7s both",
+        }}>
+          <style>{`@keyframes splashFadeOut { from { opacity: 1; } to { opacity: 0; pointer-events: none; } } @keyframes splashUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#00d4ff", letterSpacing: 4, fontFamily: "monospace", animation: "splashUp .5s ease .1s both" }}>MARKETDEBRIEFS</div>
+          <div style={{ fontSize: "clamp(22px,6vw,40px)", fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1.15, textAlign: "center", animation: "splashUp .5s ease .25s both" }}>
+            Brief First.<br /><span style={{ color: "#00d4ff" }}>Trade After.</span>
+          </div>
+          <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,transparent,#00d4ff,transparent)", borderRadius: 2, animation: "splashUp .5s ease .4s both" }} />
+          <div style={{ fontSize: 11, color: "#555", letterSpacing: 2, fontFamily: "monospace", animation: "splashUp .5s ease .5s both" }}>KNOW THE MACRO</div>
+        </div>
+      )}
       <style>{`*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: #0a0c0f; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }`}</style>
       {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} isOnTrial={isOnTrial} trialExpired={!isPro && !isOnTrial && !!user?.publicMetadata?.signup_at} />}
 
@@ -4315,36 +4391,34 @@ function AppInner({ navigate }) {
         <div className="header-inner safe-top" style={{ background: "linear-gradient(180deg,#0d1117,#0a0c0f)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "16px 20px 0", position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ maxWidth: 860, margin: "0 auto", width: "100%" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 13 }}>
-              <div onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-                <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff" }}>MARKET BRIEF</div>
-                <div style={{ fontSize: 9, color: "#555", letterSpacing: 2, fontFamily: "monospace" }}>INTELLIGENCE  -  EVENTS  -  BREAKING  -  STOCKS</div>
+              {/* ── TOP NAV ── */}
+              {/* Brand */}
+              <div onClick={() => navigate("/")} style={{ cursor: "pointer", display: "flex", flexDirection: "column", gap: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: -0.5, color: "#fff", lineHeight: 1 }}>
+                  MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span>
+                </div>
+                <div style={{ fontSize: 8, color: "#444", letterSpacing: 2.5, fontFamily: "monospace" }}>BRIEF FIRST · TRADE AFTER</div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {!isPro && <button onClick={() => triggerUpgrade("limit")} style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: remaining <= 1 ? "rgba(255,71,87,.1)" : "rgba(255,255,255,.03)", border: "1px solid " + (remaining <= 1 ? "rgba(255,71,87,.3)" : "rgba(255,255,255,.07)"), color: remaining <= 1 ? "#ff4757" : "#333", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>{remaining} left</button>}
-                {isPro && !isOnTrial && <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: "rgba(0,212,255,.08)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontWeight: 700 }}>PRO</span>}
-                {isOnTrial && (
-                  <span
-                    onClick={() => triggerUpgrade("trial")}
-                    style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.3)", color: "#f59e0b", fontWeight: 700, cursor: "pointer" }}>
-                    TRIAL
-                  </span>
-                )}
-                <span style={{ fontSize: 9, fontFamily: "monospace", color: "#666", letterSpacing: 1 }}>
+              {/* Right actions */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 8, fontFamily: "monospace", color: "#444", letterSpacing: 1 }}>
                   {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" }).toUpperCase()}
                 </span>
-                <button
-                  onClick={() => {
-                    if (window.matchMedia("(display-mode: standalone)").matches) return;
-                    if (window._deferredInstallPrompt) {
-                      window._deferredInstallPrompt.prompt();
-                    } else {
-                      alert("To add to home screen:\n\niOS Safari: tap Share → Add to Home Screen\nAndroid Chrome: tap Menu → Add to Home Screen");
-                    }
-                  }}
-                  style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "3px 7px", border: "1px solid rgba(0,212,255,.2)", borderRadius: 4, background: "rgba(0,212,255,.05)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
-                >⊕ GET APP</button>
-                <button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#e0e0e0", padding: "3px 7px", border: "1px solid rgba(255,255,255,.25)", borderRadius: 4, background: "rgba(255,255,255,.08)", cursor: "pointer", fontWeight: 700 }}>HELP</button>
-                <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 9, fontFamily: "monospace", color: "#aaa", padding: "3px 7px", border: "1px solid #666", borderRadius: 4, background: "rgba(255,255,255,.03)", cursor: "pointer" }}>SIGN OUT</button>
+                {!isPro && (
+                  <button onClick={() => triggerUpgrade("limit")} style={{ fontSize: 9, padding: "4px 9px", borderRadius: 5, background: remaining <= 1 ? "rgba(255,71,87,.12)" : "rgba(255,255,255,.04)", border: "1px solid " + (remaining <= 1 ? "rgba(255,71,87,.35)" : "rgba(255,255,255,.1)"), color: remaining <= 1 ? "#ff4757" : "#666", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>{remaining} left</button>
+                )}
+                {isPro && !isOnTrial && <span style={{ fontSize: 9, padding: "4px 9px", borderRadius: 5, background: "rgba(0,212,255,.08)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontWeight: 700 }}>PRO</span>}
+                {isOnTrial && <span onClick={() => triggerUpgrade("trial")} style={{ fontSize: 9, padding: "4px 9px", borderRadius: 5, background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.3)", color: "#f59e0b", fontWeight: 700, cursor: "pointer" }}>TRIAL</span>}
+                <button onClick={() => {
+                  if (window.matchMedia("(display-mode: standalone)").matches) return;
+                  if (window._deferredInstallPrompt) { window._deferredInstallPrompt.prompt(); }
+                  else { alert("iOS Safari: Share → Add to Home Screen
+Android Chrome: Menu → Add to Home Screen"); }
+                }} style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "4px 9px", border: "1px solid rgba(0,212,255,.25)", borderRadius: 5, background: "rgba(0,212,255,.06)", cursor: "pointer", fontWeight: 700 }}>⊕ APP</button>
+                <div style={{ display: "flex", alignItems: "center", border: "1px solid rgba(255,255,255,.12)", borderRadius: 6, overflow: "hidden" }}>
+                  <button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#ccc", padding: "5px 10px", background: "rgba(255,255,255,.04)", border: "none", borderRight: "1px solid rgba(255,255,255,.1)", cursor: "pointer", fontWeight: 700 }}>HELP</button>
+                  <button onClick={() => signOut({ redirectUrl: "/" })} title="Sign out" style={{ fontSize: 12, fontFamily: "monospace", color: "#666", padding: "4px 9px", background: "transparent", border: "none", cursor: "pointer", lineHeight: 1 }}>↩</button>
+                </div>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
@@ -4682,18 +4756,22 @@ function AppInner({ navigate }) {
                 <div style={{ marginBottom: 14, padding: "12px 14px", background: alertsEnabled ? "rgba(0,212,255,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (alertsEnabled ? "rgba(0,212,255,.2)" : "rgba(255,255,255,.07)"), borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
                   {/* Text */}
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: alertsEnabled ? "#00d4ff" : "#888", marginBottom: 2 }}>
-                      {alertsEnabled ? "🔔 Breaking alerts ON" : "🔕 Breaking alerts OFF"}
+                    <div style={{ fontSize: 11, fontWeight: 700, color: notifPermission === "denied" ? "#ff4757" : alertsEnabled ? "#00d4ff" : "#888", marginBottom: 2 }}>
+                      {notifPermission === "denied" ? "🚫 Notifications blocked" : alertsEnabled ? "🔔 Breaking alerts ON" : "🔕 Breaking alerts OFF"}
                     </div>
                     <div style={{ fontSize: 10, color: "#555", lineHeight: 1.4 }}>
-                      {alertsEnabled
+                      {notifPermission === "denied"
+                        ? "Blocked in your browser settings. To enable: Settings → Notifications → marketdebriefs.com → Allow."
+                        : alertsEnabled
                         ? "You'll be notified for political alerts and high-impact breaking narratives."
                         : "Get notified for political alerts and high-impact breaking narratives."}
                     </div>
                   </div>
                   {/* Toggle switch */}
                   <button
+                    disabled={notifPermission === "denied"}
                     onClick={async () => {
+                      if (notifPermission === "denied") return;
                       if (alertsEnabled) {
                         // UNSUBSCRIBE
                         try {
@@ -4714,8 +4792,12 @@ function AppInner({ navigate }) {
                         // SUBSCRIBE
                         try {
                           const permission = await Notification.requestPermission();
+                          setNotifPermission(permission);
+                          if (permission === "denied") {
+                            // Don't alert — the toggle label now shows instructions
+                            return;
+                          }
                           if (permission !== "granted") {
-                            alert("To receive alerts, enable notifications for this site in your browser or phone settings.");
                             return;
                           }
                           const reg = await navigator.serviceWorker.ready;
@@ -5073,10 +5155,15 @@ function AppInner({ navigate }) {
           )}
           {showShareCard && equityShareData && tab === "stocks" && (
             <ShareCard
-              inst={{ label: equityShareData.query, color: "#f59e0b", flag: "STOCK" }}
+              inst={{
+                label: equityShareData.data?.ticker || equityShareData.data?.instrument || equityShareData.query,
+                color: "#f59e0b",
+                flag: equityShareData.data?.ticker || equityShareData.query?.toUpperCase()?.slice(0,4) || "STOCK",
+              }}
               data={equityShareData.data}
               mode={mode}
               cardType={equityShareData.cardType}
+              isPostSessionBrief={equityShareData.cardType === "equity-post"}
               onClose={() => { setShowShareCard(false); setEquityShareData(null); }}
             />
           )}
