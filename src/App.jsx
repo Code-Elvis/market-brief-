@@ -1401,10 +1401,17 @@ const STOCK_HINTS = [
   "lucid","lcid","nio","xpeng","xpev","stock","shares","equity","ticker"
 ];
 
+// All known instrument aliases — used to prevent short tickers like xag/si/gc
+// from being misidentified as stocks
+const ALL_INSTRUMENT_ALIASES = new Set(
+  Object.values(INSTRUMENTS).flatMap(v => v.aliases)
+);
+
 function isLikelyStock(q) {
-  // Matches known stock names/tickers OR looks like a short ticker (2-5 uppercase-ish chars)
+  // Never intercept known instrument aliases as stocks
+  if (ALL_INSTRUMENT_ALIASES.has(q)) return false;
   if (STOCK_HINTS.some(h => q === h || q.includes(h))) return true;
-  // Pure alphabetic query 2-5 chars that isn't a known instrument alias  -  likely a ticker
+  // Pure alphabetic query 2-5 chars that isn't a known instrument alias
   if (/^[a-z]{2,5}$/.test(q)) return true;
   return false;
 }
@@ -2479,10 +2486,31 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
       } catch (e) { setScalperError(e.message || "Fetch failed. Please try again."); }
       finally { setScalperLoading(false); }
     } else {
+      // Check brief cache first (same as instrument watchlist)
+      const cacheKey = q.toLowerCase();
+      const cached = userId ? bcGet(userId, cacheKey, "full") : null;
+      if (cached) {
+        setData(cached.data);
+        setError(null);
+        // Silently refresh in background if cache is older than 3 hours
+        const age = Date.now() - cached.ts;
+        if (age > 3 * 60 * 60 * 1000) {
+          getEquityBrief(q).then(result => {
+            if (result) {
+              setData(result);
+              bcSet(userId, cacheKey, "full", { key: cacheKey, label: q, flag: q.toUpperCase().slice(0,4), color: "#f59e0b" }, result);
+            }
+          }).catch(() => {});
+        }
+        return;
+      }
+      // No cache — run fresh
       setLoading(true); setError(null); setData(null);
       try {
         const result = await getEquityBrief(q);
         setData(result);
+        // Save to cache
+        if (userId) bcSet(userId, cacheKey, "full", { key: cacheKey, label: q, flag: q.toUpperCase().slice(0,4), color: "#f59e0b" }, result);
         // Store for Aged Well tracking
         if (result?.sentiment && result?.ticker) {
           awStoreCall(result.ticker || q, result.sentiment, result.headline_summary || "");
@@ -4312,7 +4340,7 @@ function AppInner({ navigate }) {
           <div style={{ fontSize: 11, color: "#555", letterSpacing: 2, fontFamily: "monospace", animation: "splashUp .5s ease .5s both" }}>KNOW THE MACRO</div>
         </div>
       )}
-      <style>{`*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: #0a0c0f; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }`}</style>
+      <style>{`*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: #0a0c0f; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (min-width: 768px) { .header-inner { padding: 18px 40px 0 !important; } .main-content { padding: 28px 40px 80px !important; max-width: 960px !important; } .md-app-root { display: flex; flex-direction: column; } } @media (min-width: 1100px) { .main-content { max-width: 1080px !important; padding: 32px 48px 80px !important; } .header-inner { padding: 18px 48px 0 !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }`}</style>
       {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} isOnTrial={isOnTrial} trialExpired={!isPro && !isOnTrial && !!user?.publicMetadata?.signup_at} />}
 
       {/* ── BRIEF LOADING OVERLAY  -  keeps user in app during fetch ── */}
@@ -4346,9 +4374,9 @@ function AppInner({ navigate }) {
           </div>
         </div>
       )}
-      <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
+      <div className="md-app-root" style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
         <div className="header-inner safe-top" style={{ background: "linear-gradient(180deg,#0d1117,#0a0c0f)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "16px 20px 0", position: "sticky", top: 0, zIndex: 100 }}>
-          <div style={{ maxWidth: 860, margin: "0 auto", width: "100%" }}>
+          <div style={{ maxWidth: 1080, margin: "0 auto", width: "100%" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 13 }}>
               {/* ── TOP NAV ── */}
               {/* Brand */}
@@ -4375,7 +4403,7 @@ function AppInner({ navigate }) {
                 }} style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "4px 9px", border: "1px solid rgba(0,212,255,.25)", borderRadius: 5, background: "rgba(0,212,255,.06)", cursor: "pointer", fontWeight: 700 }}>⊕ APP</button>
                 <div style={{ display: "flex", alignItems: "center", border: "1px solid rgba(255,255,255,.12)", borderRadius: 6, overflow: "hidden" }}>
                   <button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#ccc", padding: "5px 10px", background: "rgba(255,255,255,.04)", border: "none", borderRight: "1px solid rgba(255,255,255,.1)", cursor: "pointer", fontWeight: 700 }}>HELP</button>
-                  <button onClick={() => signOut({ redirectUrl: "/" })} title="Sign out" style={{ fontSize: 12, fontFamily: "monospace", color: "#666", padding: "4px 9px", background: "transparent", border: "none", cursor: "pointer", lineHeight: 1 }}>↩</button>
+                  <button onClick={() => signOut({ redirectUrl: "/" })} title="Sign out" style={{ fontSize: 11, fontFamily: "monospace", color: "#888", padding: "6px 12px", background: "transparent", border: "none", cursor: "pointer", minHeight: 32, minWidth: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>↩</button>
                 </div>
               </div>
             </div>
@@ -4487,7 +4515,7 @@ function AppInner({ navigate }) {
             </div>
           </div>
         </div>
-        <div className="main-content safe-bottom" style={{ maxWidth: 860, margin: "0 auto", padding: "20px 20px 60px", width: "100%" }}>
+        <div className="main-content safe-bottom" style={{ maxWidth: 960, margin: "0 auto", padding: "20px 20px 60px", width: "100%" }}>
           {/* Trial expiry banner - shows once per session when trial just ended */}
           {!isPro && !isOnTrial && user?.publicMetadata?.signup_at && (() => {
             const dismissed = (() => { try { return sessionStorage.getItem("md_trial_banner_dismissed") === "true"; } catch(e) { return false; } })();
