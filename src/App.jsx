@@ -4412,8 +4412,7 @@ function AppInner({ navigate }) {
                 <button onClick={() => {
                   if (window.matchMedia("(display-mode: standalone)").matches) return;
                   if (window._deferredInstallPrompt) { window._deferredInstallPrompt.prompt(); }
-                  else { alert("iOS Safari: Share → Add to Home Screen
-Android Chrome: Menu → Add to Home Screen"); }
+                  else { alert("iOS Safari: tap Share → Add to Home Screen\nAndroid Chrome: tap Menu → Add to Home Screen"); }
                 }} style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "4px 9px", border: "1px solid rgba(0,212,255,.25)", borderRadius: 5, background: "rgba(0,212,255,.06)", cursor: "pointer", fontWeight: 700 }}>⊕ APP</button>
                 <div style={{ display: "flex", alignItems: "center", border: "1px solid rgba(255,255,255,.12)", borderRadius: 6, overflow: "hidden" }}>
                   <button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#ccc", padding: "5px 10px", background: "rgba(255,255,255,.04)", border: "none", borderRight: "1px solid rgba(255,255,255,.1)", cursor: "pointer", fontWeight: 700 }}>HELP</button>
