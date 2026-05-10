@@ -4403,7 +4403,7 @@ function AppInner({ navigate }) {
                 }} style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "4px 9px", border: "1px solid rgba(0,212,255,.25)", borderRadius: 5, background: "rgba(0,212,255,.06)", cursor: "pointer", fontWeight: 700 }}>⊕ APP</button>
                 <div style={{ display: "flex", alignItems: "center", border: "1px solid rgba(255,255,255,.12)", borderRadius: 6, overflow: "hidden" }}>
                   <button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#ccc", padding: "5px 10px", background: "rgba(255,255,255,.04)", border: "none", borderRight: "1px solid rgba(255,255,255,.1)", cursor: "pointer", fontWeight: 700 }}>HELP</button>
-                  <button onClick={() => signOut({ redirectUrl: "/" })} title="Sign out" style={{ fontSize: 11, fontFamily: "monospace", color: "#888", padding: "6px 12px", background: "transparent", border: "none", cursor: "pointer", minHeight: 32, minWidth: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>↩</button>
+                  <button onClick={() => signOut({ redirectUrl: "/" })} title="Sign out" style={{ fontSize: 13, fontWeight: 700, color: "#ff4757", padding: "0", background: "rgba(255,71,87,.08)", border: "none", borderLeft: "1px solid rgba(255,255,255,.1)", cursor: "pointer", height: "100%", minHeight: 32, minWidth: 44, display: "flex", alignItems: "center", justifyContent: "center", letterSpacing: 0 }}>⏻</button>
                 </div>
               </div>
             </div>
