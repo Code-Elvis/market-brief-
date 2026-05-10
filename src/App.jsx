@@ -961,7 +961,7 @@ function AffiliatePage({ navigate }) {
 // ── WATCH LIST ────────────────────────────────────────────────────────────────
 // Up to 5 instruments saved per user. Feeds the Morning Dashboard and Push scoping.
 const WL_KEY = (userId) => `md:watchlist:${userId}`;
-const WL_MAX = 5;
+const WL_MAX = 7;
 
 function wlGet(userId) {
   try { return JSON.parse(localStorage.getItem(WL_KEY(userId)) || "[]"); }
@@ -982,6 +982,29 @@ function wlRemove(userId, instKey) {
 }
 function wlHas(userId, instKey) {
   return wlGet(userId).some(i => i.key === instKey);
+}
+
+
+// ── STOCK WATCH LIST ─────────────────────────────────────────────────────────
+const SWL_KEY = (userId) => `md:stockwatchlist:${userId}`;
+const SWL_MAX = 7;
+function swlGet(userId) {
+  try { return JSON.parse(localStorage.getItem(SWL_KEY(userId)) || "[]"); } catch(e) { return []; }
+}
+function swlAdd(userId, ticker, name) {
+  try {
+    const list = swlGet(userId).filter(i => i.ticker !== ticker.toUpperCase());
+    list.unshift({ ticker: ticker.toUpperCase(), name: name || ticker, ts: Date.now() });
+    localStorage.setItem(SWL_KEY(userId), JSON.stringify(list.slice(0, SWL_MAX)));
+  } catch(e) {}
+}
+function swlRemove(userId, ticker) {
+  try {
+    localStorage.setItem(SWL_KEY(userId), JSON.stringify(swlGet(userId).filter(i => i.ticker !== ticker.toUpperCase())));
+  } catch(e) {}
+}
+function swlHas(userId, ticker) {
+  return swlGet(userId).some(i => i.ticker === ticker.toUpperCase());
 }
 
 // ── TRACK RECORD HELPERS ──────────────────────────────────────────────────────
@@ -1053,20 +1076,23 @@ async function trCheckOutcomes(userId) {
 // ── MORNING DASHBOARD ─────────────────────────────────────────────────────────
 // Appears at the top of the Brief tab when the user has a Watch List or Today's Briefs.
 // Shows today's high-impact events for their instruments + macro theme from last brief.
-function MorningDashboard({ watchList, todaysBriefs, calendarEvents, narrativeFeed, onRunInst, globalMacroContext }) {
+function MorningDashboard({ watchList, stockWatchList, todaysBriefs, calendarEvents, narrativeFeed, onRunInst, onRunStock, globalMacroContext }) {
   const hasWatchList   = watchList && watchList.length > 0;
   const hasBriefs      = todaysBriefs && todaysBriefs.length > 0;
   const hasContext     = globalMacroContext && globalMacroContext.macro_theme;
 
-  if (!hasWatchList && !hasBriefs && !hasContext) return null;
+  const hasStockWL = stockWatchList && stockWatchList.length > 0;
+  if (!hasWatchList && !hasStockWL && !hasBriefs && !hasContext) return null;
 
   // High-impact events from live calendar — filter to upcoming only
   const upcomingHigh = (calendarEvents || [])
     .filter(e => !e.passed && (e.impact === "high" || e.impact === "medium") && e.country === "US")
     .slice(0, 4);
 
-  // Most recent political/critical narrative
-  const topNarrative = (narrativeFeed || []).find(n => n.political_alert || n.urgency === "CRITICAL");
+  // HIGH + CRITICAL + political narratives — up to 2
+  const topNarratives = (narrativeFeed || [])
+    .filter(n => n.political_alert || n.urgency === "CRITICAL" || n.urgency === "HIGH")
+    .slice(0, 2);
 
   const now = new Date().toLocaleString("en-US", {
     timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: true
@@ -1109,31 +1135,48 @@ function MorningDashboard({ watchList, todaysBriefs, calendarEvents, narrativeFe
         </div>
       )}
 
-      {/* Breaking political alert if any */}
-      {topNarrative && (
-        <div style={{ padding: "8px 10px", background: "rgba(255,71,87,.06)", border: "1px solid rgba(255,71,87,.2)", borderLeft: "3px solid #ff4757", borderRadius: "0 6px 6px 0", marginBottom: 8 }}>
-          <div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>
-            {topNarrative.political_alert ? "🔴 POLITICAL ALERT" : "⚡ BREAKING"}
-          </div>
-          <div style={{ fontSize: 11, color: "#ffb3b3", lineHeight: 1.4 }}>{topNarrative.headline}</div>
+      {/* HIGH impact + political alerts */}
+      {topNarratives.length > 0 && (
+        <div style={{ marginBottom: 8 }}>
+          {topNarratives.map((n, i) => (
+            <div key={i} style={{ padding: "8px 10px", background: n.political_alert ? "rgba(255,71,87,.06)" : "rgba(255,165,0,.05)", border: "1px solid " + (n.political_alert ? "rgba(255,71,87,.2)" : "rgba(255,165,0,.2)"), borderLeft: "3px solid " + (n.political_alert ? "#ff4757" : "#ffa500"), borderRadius: "0 6px 6px 0", marginBottom: 5 }}>
+              <div style={{ fontSize: 8, color: n.political_alert ? "#ff4757" : "#ffa500", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>
+                {n.political_alert ? "🔴 POLITICAL ALERT" : n.urgency === "CRITICAL" ? "🔴 CRITICAL" : "🟠 HIGH IMPACT"}
+              </div>
+              <div style={{ fontSize: 11, color: n.political_alert ? "#ffb3b3" : "#ffd4a0", lineHeight: 1.4, marginBottom: 3 }}>{n.headline}</div>
+              {n.narrative_summary && <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, fontStyle: "italic" }}>{n.narrative_summary.slice(0, 120)}{n.narrative_summary.length > 120 ? "..." : ""}</div>}
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Watch List quick-brief row */}
+      {/* Instrument Watch List */}
       {hasWatchList && (
-        <div>
-          <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>WATCH LIST — TAP TO BRIEF</div>
+        <div style={{ marginBottom: hasStockWL ? 8 : 0 }}>
+          <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>INSTRUMENTS</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {watchList.map((inst, i) => (
               <button key={i} onClick={() => onRunInst(inst.label)}
                 style={{ fontSize: 11, fontWeight: 700, padding: "6px 14px", borderRadius: 20, cursor: "pointer",
-                  fontFamily: "monospace", letterSpacing: 0.5,
-                  background: (inst.color || "#00d4ff") + "18",
-                  border: "1px solid " + (inst.color || "#00d4ff") + "55",
-                  color: inst.color || "#00d4ff",
-                  boxShadow: "0 0 6px " + (inst.color || "#00d4ff") + "22",
-                }}>
+                  fontFamily: "monospace", background: (inst.color || "#00d4ff") + "18",
+                  border: "1px solid " + (inst.color || "#00d4ff") + "55", color: inst.color || "#00d4ff" }}>
                 {inst.flag || inst.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Stock Watch List */}
+      {hasStockWL && (
+        <div>
+          <div style={{ fontSize: 8, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>STOCKS</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {stockWatchList.map((item, i) => (
+              <button key={i} onClick={() => onRunStock && onRunStock(item.ticker)}
+                style={{ fontSize: 11, fontWeight: 700, padding: "6px 14px", borderRadius: 20, cursor: "pointer",
+                  fontFamily: "monospace", background: "rgba(245,158,11,.15)",
+                  border: "1px solid rgba(245,158,11,.4)", color: "#f59e0b" }}>
+                {item.ticker}
               </button>
             ))}
           </div>
@@ -2368,7 +2411,7 @@ function EarningsWatch({ onBriefMe, ewData, ewImplications, ewLoading }) {
 }
 
 
-function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError, onShareCard, macroContext, onPostSession, ewData, ewImplications, ewLoading }) {
+function StocksTab({ query, setQuery, data, setData, loading, setLoading, error, setError, mode, scalperData, setScalperData, scalperLoading, setScalperLoading, scalperError, setScalperError, onShareCard, macroContext, onPostSession, ewData, ewImplications, ewLoading, userId, stockWatchList, onStockWLChange }) {
   const isScalper = mode === "scalper";
   const [sectorData, setSectorData] = React.useState(null);
   const [sectorLoading, setSectorLoading] = React.useState(false);
@@ -2463,6 +2506,30 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
       {!isScalper && <EarningsWatch onBriefMe={handleEarningsBriefMe} ewData={ewData} ewImplications={ewImplications} ewLoading={ewLoading} />}
       {/* ── AGED WELL: TODAY'S CALLS ── */}
       {!isScalper && <AgedWellSection />}
+      {/* ── MY STOCKS watch list ── */}
+      {!isScalper && userId && stockWatchList && stockWatchList.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ fontSize: 10, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700 }}>⭐ MY STOCKS</div>
+            <div style={{ fontSize: 9, color: "#555" }}>up to 7 · tap to brief</div>
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {stockWatchList.map((item, i) => {
+              const isActive = (query || "").toUpperCase().trim() === item.ticker;
+              return (
+                <button key={i} onClick={() => { setQuery(item.ticker); setTimeout(() => document.getElementById("stocks-brief-btn")?.click(), 50); }}
+                  style={{ fontSize: 11, fontWeight: 800, padding: "5px 13px", borderRadius: 20, cursor: "pointer", fontFamily: "monospace",
+                    background: isActive ? "rgba(245,158,11,.2)" : "rgba(245,158,11,.08)",
+                    border: "1px solid " + (isActive ? "rgba(245,158,11,.6)" : "rgba(245,158,11,.25)"),
+                    color: "#f59e0b", boxShadow: isActive ? "0 0 8px rgba(245,158,11,.3)" : "none", position: "relative" }}>
+                  {item.ticker}
+                  <span style={{ position: "absolute", top: -2, right: -2, width: 6, height: 6, borderRadius: "50%", background: "#f59e0b", border: "1px solid #0a0c0f" }} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {/* ── MACRO SECTOR IMPACT ── */}
       {!isScalper && macroContext && (
         <div style={{ marginBottom: 20 }}>
@@ -2615,6 +2682,24 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
       {/* Session cards  -  Pre and Post  -  shown after equity brief loads */}
       {!isScalper && !loading && data && (
         <div style={{ marginTop: 20 }}>
+          {/* Stock Watch List toggle */}
+          {userId && query && (() => {
+            const ticker = (data?.ticker || query).toUpperCase().trim();
+            const inList = swlHas(userId, ticker);
+            return (
+              <button onClick={() => {
+                if (inList) { swlRemove(userId, ticker); }
+                else { swlAdd(userId, ticker, data?.instrument || ticker); }
+                onStockWLChange && onStockWLChange();
+              }} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 16px", borderRadius: 8,
+                border: "1px solid " + (inList ? "rgba(255,71,87,.3)" : "rgba(245,158,11,.3)"),
+                background: inList ? "rgba(255,71,87,.06)" : "rgba(245,158,11,.06)",
+                color: inList ? "#ff4757" : "#f59e0b",
+                fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginBottom: 8 }}>
+                {inList ? "✕ Remove from My Stocks" : "⭐ Add to My Stocks"}
+              </button>
+            );
+          })()}
           {/* Pre-session share */}
           <button onClick={() => onShareCard(data, "equity", query, "pre")}
             style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 8, border: "1px solid rgba(245,158,11,.25)", background: "rgba(245,158,11,.08)", color: "#f59e0b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginBottom: 8 }}>
@@ -3056,10 +3141,10 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
 
   let line1, line2, line3, biasReason;
   if (isEquity) {
-    line1      = truncate(data.earnings_context, 80);
-    line2      = truncate(data.macro_tailwinds || data.macro_headwinds, 80);
-    line3      = truncate(data.catalyst_events?.[0]?.title, 80);
-    biasReason = truncate(data.headline_summary, 70);
+    line1      = data.earnings_context || "";
+    line2      = data.macro_tailwinds || "";
+    line3      = data.macro_headwinds || "";
+    biasReason = data.headline_summary || "";
   } else if (isScalper) {
     line1      = truncate(data.risk_reason, 80);
     line2      = truncate(data.scalper_note, 80);
@@ -3077,20 +3162,14 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
     // line1 = primary macro driver (geopolitical if exists, else headline)
     // line2 = first event's why_it_moves_price OR macro_context if distinct from line1
     // line3 = next scheduled event on the calendar
-    const geo = data.geopolitical_risks;
+    const geo = data.geopolitical_risks || "";
     const hs  = data.headline_summary || "";
     const mc  = data.macro_context || "";
     const ev0 = data.events?.[0];
-    line1      = truncate(geo || hs, 80);
-    // Use first event's why_it_moves_price as line2  -  always distinct from line1
-    // Fall back to macro_context only if it differs meaningfully from line1
-    const why  = ev0?.why_it_moves_price || "";
-    const mcDistinct = mc && mc.slice(0,35) !== (geo || hs).slice(0,35);
-    line2      = truncate(why || (mcDistinct ? mc : ""), 80);
-    // line3 = next event on the calendar (skip ev0 if we used its why above)
-    const calEv = ev0 ? ev0 : data.events?.[1];
-    line3      = calEv ? truncate(calEv.title + " · " + calEv.time, 80) : "";
-    biasReason = truncate(hs, 70);
+    line1      = hs;
+    line2      = geo || mc || "";
+    line3      = ev0 ? ev0.title + (ev0.time ? " · " + ev0.time : "") : "";
+    biasReason = hs;
   }
 
   const lineIcons = isEquity
@@ -3138,11 +3217,11 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
           files: [file],
           text: (() => {
             const name = inst.label;
-            if (isEventSummary) return name + "  -  Session Summary\n\nThis is a snapshot of today's session  -  not the full picture.\nMarketDebriefs gives you the full read: what every release means for your trade, before and after it fires.\n\nGet your full briefs @ marketdebriefs.com";
-            if (isPostSession || isPostSessionBrief) return name + "  -  Post-Session Brief\n\nWhat drove today's move. What it signals. What to watch next session.\nBrief First, Trade After. marketdebriefs.com";
-            if (isScalper) return name + "  -  Event Impact Check\n\nThis is a snapshot  -  not the full picture.\nThe full brief tells you exactly what each scheduled event means for the instrument you're trading, in real time.\n\nGet your full briefs @ marketdebriefs.com";
-            if (isEquity) return name + "  -  Equity Brief\n\nThis is a snapshot  -  not the full picture.\nThe full brief gives you the complete macro context: sector rotation, institutional flow, catalyst events and what they mean for your trade.\n\nGet your full briefs @ marketdebriefs.com";
-            return name + "  -  Full Brief\n\nThis is a snapshot  -  not the full picture.\nThe full brief covers what's driving price, every high-impact event, geopolitical risk, and what it all means for your trade.\n\nGet your full briefs @ marketdebriefs.com";
+            if (isEventSummary) return name + " Session Debrief — MarketDebriefs\n\nEvery high-impact event today and what it meant for this instrument. Full analysis, nothing held back.\n\nBrief First, Trade After. marketdebriefs.com";
+            if (isPostSession || isPostSessionBrief) return name + " Post-Session Debrief — MarketDebriefs\n\nWhat drove the move. What it signals. What to watch next session. Complete picture.\n\nBrief First, Trade After. marketdebriefs.com";
+            if (isScalper) return name + " Event Risk Check — MarketDebriefs\n\nFull event impact analysis: every scheduled release, every macro risk, what to watch.\n\nBrief First, Trade After. marketdebriefs.com";
+            if (isEquity) return name + " Equity Debrief — MarketDebriefs\n\nFull macro context: earnings, tailwinds, headwinds, institutional flow, next catalyst. Nothing held back.\n\nBrief First, Trade After. marketdebriefs.com";
+            return name + " Macro Brief — MarketDebriefs\n\nFull pre-session intelligence: macro theme, geopolitical risks, upcoming events and exactly why they matter for this instrument.\n\nBrief First, Trade After. marketdebriefs.com";
           })(),
         });
         setShared(true);
@@ -3306,56 +3385,48 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
                 )}
               </div>
             ) : isPostSession ? (
-              // POST-SESSION  -  fresh AI brief looking backwards at the day
-              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                {data.session_summary && (
-                  <div style={{ fontSize: 8, color: "#888", lineHeight: 1.4, fontStyle: "italic", marginBottom: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                    "{firstSentence(data.session_summary)}"
-                  </div>
-                )}
-                {data.primary_driver && (
-                  <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 10, flexShrink: 0, marginTop: 1 }}>📌</span>
-                    <span style={{ fontSize: 8, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.primary_driver)}</span>
-                  </div>
-                )}
-                {data.what_it_revealed && (
-                  <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 10, flexShrink: 0, marginTop: 1 }}>🔍</span>
-                    <span style={{ fontSize: 8, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.what_it_revealed)}</span>
-                  </div>
-                )}
+              // POST-SESSION — full story, nothing held back
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {data.session_summary && <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 700, lineHeight: 1.5, marginBottom: 2 }}>{data.session_summary}</div>}
+                {data.primary_driver && <div><div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>PRIMARY DRIVER</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.primary_driver}</div></div>}
+                {data.secondary_driver && <div><div style={{ fontSize: 8, color: "#888", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>SECONDARY</div><div style={{ fontSize: 11, color: "#aaa", lineHeight: 1.5 }}>{data.secondary_driver}</div></div>}
+                {data.what_it_revealed && <div><div style={{ fontSize: 8, color: "#c084fc", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WHAT IT SIGNALS</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.what_it_revealed}</div></div>}
                 {(data.watch_tomorrow || data.next_event?.title) && (
-                  <div style={{ marginTop: 2, padding: "5px 8px", borderRadius: 5, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)" }}>
-                    <div style={{ fontSize: 7, color: "#00d4ff", fontFamily: "monospace", letterSpacing: 1, marginBottom: 2, opacity: 0.7 }}>WATCH TOMORROW</div>
-                    <div style={{ fontSize: 8, color: "#666", lineHeight: 1.4 }}>{firstSentence(data.watch_tomorrow || data.next_event?.title)}</div>
-                    {data.next_event?.time && (
-                      <div style={{ fontSize: 7, color: "#888", fontFamily: "monospace", marginTop: 1 }}>{data.next_event.time}</div>
-                    )}
+                  <div style={{ padding: "7px 9px", background: "rgba(0,212,255,.05)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 6 }}>
+                    <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH NEXT{data.next_event?.time ? " · " + data.next_event.time : ""}</div>
+                    <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.watch_tomorrow || data.next_event?.title}</div>
                   </div>
                 )}
               </div>
-            ) : (
-              // PRE-SESSION  -  standard macro context
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {line1 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                  {lineIcons[0] === "CAL" ? <DynamicCalendar size={15} /> : <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[0]}</span>}
-                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line1}</span>
-                </div>}
-                {line2 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                  {lineIcons[1] === "CAL" ? <DynamicCalendar size={15} /> : <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[1]}</span>}
-                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line2}</span>
-                </div>}
-                {line3 && <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                  {lineIcons[2] === "CAL" ? <DynamicCalendar size={15} /> : <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{lineIcons[2]}</span>}
-                  <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{line3}</span>
-                </div>}
-                {data.macro_context && data.macro_context !== data.headline_summary && data.macro_context.slice(0,40) !== data.headline_summary?.slice(0,40) && (
-                  <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>🔍</span>
-                    <span style={{ fontSize: 11, color: "#666", lineHeight: 1.45 }}>{truncate(data.macro_context, 80)}</span>
+            ) : isEquity ? (
+              // EQUITY PRE-SESSION — full content
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {data.headline_summary && <div style={{ fontSize: 12, color: "#e0e0e0", fontWeight: 600, lineHeight: 1.5 }}>{data.headline_summary}</div>}
+                {data.earnings_context && <div><div style={{ fontSize: 8, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>EARNINGS</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.earnings_context}</div></div>}
+                {data.macro_tailwinds && <div><div style={{ fontSize: 8, color: "#00d4aa", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>TAILWINDS</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.macro_tailwinds}</div></div>}
+                {data.macro_headwinds && <div><div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>HEADWINDS</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.macro_headwinds}</div></div>}
+                {data.catalyst_events?.[0] && (
+                  <div style={{ padding: "6px 9px", background: "rgba(245,158,11,.06)", border: "1px solid rgba(245,158,11,.15)", borderRadius: 5 }}>
+                    <div style={{ fontSize: 8, color: "#f59e0b", letterSpacing: 1.2, fontWeight: 700, marginBottom: 2 }}>NEXT CATALYST{data.catalyst_events[0].time ? " · " + data.catalyst_events[0].time : ""}</div>
+                    <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.4 }}>{data.catalyst_events[0].title}</div>
+                    {data.catalyst_events[0].why_it_moves_price && <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, marginTop: 3 }}>{data.catalyst_events[0].why_it_moves_price}</div>}
                   </div>
                 )}
+                {data.institutional_flow && <div><div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>INSTITUTIONAL FLOW</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.institutional_flow}</div></div>}
+              </div>
+            ) : (
+              // MACRO PRE-SESSION — full picture
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {data.headline_summary && <div style={{ fontSize: 12, color: "#e0e0e0", fontWeight: 600, lineHeight: 1.5 }}>{data.headline_summary}</div>}
+                {data.geopolitical_risks && <div><div style={{ fontSize: 8, color: "#ff8c00", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>GEOPOLITICAL</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.geopolitical_risks}</div></div>}
+                {data.macro_context && data.macro_context !== data.headline_summary && <div><div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.macro_context}</div></div>}
+                {data.events && data.events.slice(0, 2).map((ev, i) => (
+                  <div key={i} style={{ padding: "6px 9px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.12)", borderRadius: 5 }}>
+                    <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.2, fontWeight: 700, marginBottom: 2 }}>{ev.time}{ev.impact ? " · " + ev.impact.toUpperCase() : ""}</div>
+                    <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.4 }}>{ev.title}</div>
+                    {ev.why_it_moves_price && <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, marginTop: 3 }}>{ev.why_it_moves_price}</div>}
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -3939,6 +4010,7 @@ function AppInner({ navigate }) {
   const [globalMacroContext, setGlobalMacroContext] = useState(null);
   const [todaysBriefs, setTodaysBriefs] = useState(() => bcGetIndex(null)); // populated after user loads
   const [watchList, setWatchList] = useState([]); // populated after user.id loads
+  const [stockWatchList, setStockWatchList] = useState([]);
   const [trackRecord, setTrackRecord] = useState([]); // populated after user.id loads
   // EarningsWatch: fetched once at app level, survives tab switches
   const [ewData, setEwData] = useState(null);
@@ -4103,6 +4175,7 @@ function AppInner({ navigate }) {
     bcClearOld(user.id);
     setTodaysBriefs(bcGetIndex(user.id));
     setWatchList(wlGet(user.id));
+    setStockWatchList(swlGet(user.id));
     setTrackRecord(trGet(user.id));
     // Check outcomes after 4pm
     const est = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
@@ -4110,6 +4183,35 @@ function AppInner({ navigate }) {
       trCheckOutcomes(user.id).then(updated => {
         if (updated.length) setTrackRecord(updated);
       });
+    }
+    // Pre-load instrument watch list briefs silently
+    const savedWL = wlGet(user.id);
+    if (savedWL.length > 0) {
+      (async () => {
+        for (const inst of savedWL) {
+          if (bcGet(user.id, inst.key, "full")) continue;
+          try {
+            const result = await getBriefing(inst, "full", []);
+            if (result) { bcSet(user.id, inst.key, "full", inst, result); setTodaysBriefs(bcGetIndex(user.id)); }
+          } catch(e) {}
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      })();
+    }
+    // Pre-load stock watch list equity briefs silently
+    const savedSWL = swlGet(user.id);
+    if (savedSWL.length > 0) {
+      (async () => {
+        for (const item of savedSWL) {
+          const key = item.ticker.toLowerCase();
+          if (bcGet(user.id, key, "full")) continue;
+          try {
+            const result = await getEquityBrief(item.ticker);
+            if (result) bcSet(user.id, key, "full", { key, label: item.ticker, flag: item.ticker, color: "#f59e0b" }, result);
+          } catch(e) {}
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      })();
     }
   }, [user?.id]);
 
@@ -4377,11 +4479,17 @@ function AppInner({ navigate }) {
             {!loading && !data && (
               <MorningDashboard
                 watchList={watchList}
+                stockWatchList={stockWatchList}
                 todaysBriefs={todaysBriefs}
                 calendarEvents={rawCalendarEvents}
                 narrativeFeed={narrativeFeed}
                 globalMacroContext={globalMacroContext}
                 onRunInst={(label) => { setQuery(label); run(label); }}
+                onRunStock={(ticker) => {
+                  setStockQuery(ticker);
+                  setTab("stocks");
+                  setTimeout(() => document.getElementById("stocks-brief-btn")?.click(), 100);
+                }}
               />
             )}
             {loading && <Loader />}
@@ -4508,6 +4616,9 @@ function AppInner({ navigate }) {
                     scalperLoading={scalperStockLoading} setScalperLoading={setScalperStockLoading}
                     scalperError={scalperStockError} setScalperError={setScalperStockError}
                     ewData={ewData} ewImplications={ewImplications} ewLoading={ewLoading}
+                    userId={user?.id}
+                    stockWatchList={stockWatchList}
+                    onStockWLChange={() => setStockWatchList(swlGet(user?.id || ""))}
                     onShareCard={async (d, ct, q, sessionType) => {
                       if (sessionType === "post") {
                         // Generate post-session brief for the equity
