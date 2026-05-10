@@ -3096,19 +3096,16 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
   // Fetch price move data when switching to post-session
   useEffect(() => {
     if (!isPostSession) { setPriceMove(null); return; }
-    // Fetch live session close via Claude web search — no training data
-    // This ensures accuracy across all instrument types (forex, futures, commodities)
-    const sys = "You are a financial data assistant. Respond ONLY with valid JSON. No markdown. Schema: {\"direction\":\"up|down\",\"changePct\":\"string\",\"sessionDate\":\"string\"}. Use the MOST RECENT completed trading session close vs previous close. changePct format: \"+0.31%\" or \"-0.26%\". If you cannot find real data, return null.";
-    const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-    const msg = `Today is ${today}. What was ${inst.label} session close vs previous session? Give me the actual percentage change from the most recently completed trading session. Search for current market data.`;
-    callClaude(sys, msg, 150)
+    // Fetch live session price from /api/live-price (Yahoo Finance — no training data)
+    fetch(`/api/live-price?instrument=${encodeURIComponent(inst.label)}`)
+      .then(r => r.json())
       .then(d => {
-        if (!d || !d.changePct || !d.direction) return;
+        if (!d || d.error || !d.changePctStr) return;
         setPriceMove({
-          close:     "",
-          change:    d.changePct,
-          changePct: d.changePct,
-          up:        d.direction === "up",
+          close:       "",
+          change:      d.changePctStr,
+          changePct:   d.changePctStr,
+          up:          d.direction === "up",
           sessionDate: d.sessionDate || "",
         });
       })
@@ -4587,15 +4584,16 @@ function AppInner({ navigate }) {
                         return;
                       }
                       // Full Brief mode: fetch price and generate macro post-session
-                      // Get live session price via Claude web search — no training data
+                      // Fetch live session price from Yahoo Finance — grounded in real data
                       let priceContext = null;
                       try {
-                        const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-                        const priceSys = "You are a financial data assistant. Respond ONLY with valid JSON. No markdown. Schema: {\"direction\":\"up|down\",\"pct\":\"string\"}. Use the MOST RECENT completed trading session. pct format: \"+0.31%\" or \"-0.26%\". Return null if no real data available.";
-                        const priceMsg = `Today is ${today}. What was the ${inst.label} session close percentage change vs the previous session? Provide real current market data only.`;
-                        const pd = await callClaude(priceSys, priceMsg, 100);
-                        if (pd?.direction && pd?.pct) {
-                          priceContext = { pct: pd.pct, direction: pd.direction === "up" ? "UP" : "DOWN" };
+                        const pr = await fetch(`/api/live-price?instrument=${encodeURIComponent(inst.label)}`);
+                        const pd = await pr.json();
+                        if (pd && !pd.error && pd.changePctStr) {
+                          priceContext = {
+                            pct:       pd.changePctStr,
+                            direction: pd.direction === "up" ? "UP" : "DOWN",
+                          };
                         }
                       } catch(e) { /* price fetch optional */ }
                       const result = await getPostSessionBrief(inst, priceContext);
