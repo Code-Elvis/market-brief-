@@ -1362,7 +1362,7 @@ const INSTRUMENTS = {
   nikkei: { label: "Nikkei 225",        aliases: ["nikkei","nk","n225","nikkei225","japan","japanese index","nk225"], color: "#f97316", flag: "NIK", optionsTicker: null },
   ftse:   { label: "FTSE 100",          aliases: ["ftse","ftse100","ftse 100","uk index","uk100"], color: "#60a5fa", flag: "UK",  optionsTicker: null },
   cac:    { label: "CAC 40",            aliases: ["cac","cac40","cac 40","france","french index"], color: "#e879f9", flag: "CAC", optionsTicker: null },
-  gold:   { label: "Gold XAU/USD",      aliases: ["gold","xauusd","xau","gc","gc1","xag/usd","gold futures"], color: "#ffd700", flag: "XAU", optionsTicker: "GLD" },
+  gold:   { label: "Gold XAU/USD",      aliases: ["gold","xauusd","xau","gc","gc1","xau/usd","gold futures"], color: "#ffd700", flag: "XAU", optionsTicker: "GLD" },
   silver: { label: "Silver XAG/USD",    aliases: ["silver","xagusd","xag","si","si1","silver futures"], color: "#c0c0c0", flag: "XAG", optionsTicker: "SLV" },
   copper: { label: "Copper HG",         aliases: ["copper","hg","hg1","copper futures","cu"], color: "#b87333", flag: "HG",  optionsTicker: "CPER" },
   oil:    { label: "WTI Crude Oil",     aliases: ["oil","crude","wti","usoil","cl","cl1","crude oil","wti oil","light crude"], color: "#ff8c42", flag: "OIL", optionsTicker: "USO" },
@@ -1419,13 +1419,30 @@ function isLikelyStock(q) {
 function detect(query) {
   const q = query.toLowerCase().trim();
   if (!q) return null;
+  // Pass 1: exact alias match
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
     if (val.aliases.some(a => a === q)) return { key, ...val };
   }
+  // Pass 2: exact instrument label match (e.g. "Silver XAG/USD")
   for (const [key, val] of Object.entries(INSTRUMENTS)) {
-    // For short aliases (1-2 chars), only match if they are the ENTIRE query  -  no substring matching
-    if (val.aliases.some(a => a.length <= 2 ? a === q : (q.includes(a) || a.includes(q)))) return { key, ...val };
+    if (val.label.toLowerCase() === q) return { key, ...val };
   }
+  // Pass 3: substring — but ONLY if the matching alias is the LONGEST match
+  // This prevents shorter aliases from one instrument overriding longer ones in another
+  let bestMatch = null;
+  let bestLen = 0;
+  for (const [key, val] of Object.entries(INSTRUMENTS)) {
+    for (const a of val.aliases) {
+      if (a.length <= 2) {
+        if (a === q && a.length > bestLen) { bestMatch = { key, ...val }; bestLen = a.length; }
+      } else {
+        if ((q.includes(a) || a.includes(q)) && a.length > bestLen) {
+          bestMatch = { key, ...val }; bestLen = a.length;
+        }
+      }
+    }
+  }
+  if (bestMatch) return bestMatch;
   // Flag as equity so the run() function can redirect instead of running a broken brief
   if (isLikelyStock(q)) return { key: "equity", label: query.trim(), aliases: [], color: "#f59e0b", flag: "STOCK", optionsTicker: null };
   return null;
@@ -4427,11 +4444,13 @@ function AppInner({ navigate }) {
                       <button
                         key={i}
                         onClick={() => {
-                          setQuery(b.label);
-                          // Always load Full Brief first from cache
-                          // User can switch to Events Brief via the mode buttons
+                          // Use the instrument key to find the exact instrument
+                          // Avoids any substring matching ambiguity in detect()
+                          const chipInst = Object.values(INSTRUMENTS).find(i => i.aliases.includes(b.key) || b.key === Object.keys(INSTRUMENTS).find(k => INSTRUMENTS[k] === i));
+                          const chipLabel = chipInst ? chipInst.label : b.label;
+                          setQuery(chipLabel);
                           const loadMode = b.modes?.includes("full") ? "full" : b.mode;
-                          run(b.label, loadMode);
+                          run(chipLabel, loadMode);
                         }}
                         style={{
                           fontSize: 11, fontWeight: 700,
