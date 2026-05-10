@@ -4135,7 +4135,8 @@ function AppInner({ navigate }) {
     // ────────────────────────────────────────────────────────────────────────
 
     if (!found) { setError("Instrument not recognised. Try: ES, NQ, Euro, Gold, GBP, Oil, BTC"); return; }
-    setInst(found); setError(null); setData(null);
+    // Clear immediately so previous brief never shows while new one loads
+    setData(null); setError(null); setInst(found);
 
     // ── Check brief cache ────────────────────────────────────────────────────
     const cached = user?.id ? bcGet(user.id, found.key, mm) : null;
@@ -4340,7 +4341,7 @@ function AppInner({ navigate }) {
           <div style={{ fontSize: 11, color: "#555", letterSpacing: 2, fontFamily: "monospace", animation: "splashUp .5s ease .5s both" }}>KNOW THE MACRO</div>
         </div>
       )}
-      <style>{`*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: #0a0c0f; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (min-width: 768px) { .header-inner { padding: 18px 40px 0 !important; } .main-content { padding: 28px 40px 80px !important; max-width: 960px !important; } .md-app-root { display: flex; flex-direction: column; } } @media (min-width: 1100px) { .main-content { max-width: 1080px !important; padding: 32px 48px 80px !important; } .header-inner { padding: 18px 48px 0 !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }`}</style>
+      <style>{`*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: #0a0c0f; } #root { width: 100%; min-height: 100vh; background: #0a0c0f; } .md-app-root { width: 100%; min-height: 100vh; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (min-width: 768px) { .header-inner { padding: 18px 40px 0 !important; max-width: 100% !important; } .main-content { padding: 28px 40px 80px !important; max-width: 100% !important; } .header-inner > div { max-width: 1200px; margin: 0 auto; width: 100%; } .md-app-root { display: flex; flex-direction: column; } } @media (min-width: 1100px) { .main-content { padding: 32px 60px 80px !important; max-width: 100% !important; } .main-content > * { max-width: 1100px; margin-left: auto; margin-right: auto; } .header-inner { padding: 18px 60px 0 !important; max-width: 100% !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }`}</style>
       {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} isOnTrial={isOnTrial} trialExpired={!isPro && !isOnTrial && !!user?.publicMetadata?.signup_at} />}
 
       {/* ── BRIEF LOADING OVERLAY  -  keeps user in app during fetch ── */}
@@ -4376,7 +4377,7 @@ function AppInner({ navigate }) {
       )}
       <div className="md-app-root" style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
         <div className="header-inner safe-top" style={{ background: "linear-gradient(180deg,#0d1117,#0a0c0f)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "16px 20px 0", position: "sticky", top: 0, zIndex: 100 }}>
-          <div style={{ maxWidth: 1080, margin: "0 auto", width: "100%" }}>
+          <div style={{ maxWidth: "100%", margin: "0 auto", width: "100%" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 13 }}>
               {/* ── TOP NAV ── */}
               {/* Brand */}
@@ -4515,7 +4516,7 @@ function AppInner({ navigate }) {
             </div>
           </div>
         </div>
-        <div className="main-content safe-bottom" style={{ maxWidth: 960, margin: "0 auto", padding: "20px 20px 60px", width: "100%" }}>
+        <div className="main-content safe-bottom" style={{ maxWidth: "100%", margin: "0 auto", padding: "20px 20px 60px", width: "100%", boxSizing: "border-box" }}>
           {/* Trial expiry banner - shows once per session when trial just ended */}
           {!isPro && !isOnTrial && user?.publicMetadata?.signup_at && (() => {
             const dismissed = (() => { try { return sessionStorage.getItem("md_trial_banner_dismissed") === "true"; } catch(e) { return false; } })();
