@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.22.0",
-    "stripe": "^14.0.0",
+    "@vercel/kv": "^3.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "svix": "^1.15.0"
+    "stripe": "^14.0.0",
+    "svix": "^1.15.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
