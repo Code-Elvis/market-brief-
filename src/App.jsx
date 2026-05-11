@@ -3026,7 +3026,18 @@ function BreakingShareCard({ data, onClose }) {
     const m = s.match(/^.*?[.!?](?:\s|$)/);
     return m ? m[0].trim() : s.length > 110 ? s.slice(0, 109) + "." : s;
   };
-  const cap80 = (s) => s && s.length > 80 ? s.slice(0, 79) + "…" : (s || "");
+  // Complete the sentence rather than hard-cutting mid-word
+  const capSentence = (s) => {
+    if (!s || s.length <= 100) return s || "";
+    // Try to end at a sentence boundary within first 130 chars
+    const chunk = s.slice(0, 130);
+    const m = chunk.match(/^.*?[.!?](?:\s|$)/);
+    if (m) return m[0].trim();
+    // Fall back to last word boundary within 110 chars
+    const words = s.slice(0, 110).split(" ");
+    words.pop();
+    return words.join(" ") + "…";
+  };
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.92)", zIndex: 2000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", padding: "0 0 0 0" }} onClick={onClose}>
@@ -3084,7 +3095,7 @@ function BreakingShareCard({ data, onClose }) {
                           <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{inst.name}</div>
                           <div style={{ fontSize: 7, color: c, fontWeight: 700, letterSpacing: 0.5 }}>{inst.flow}</div>
                         </div>
-                        <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, flex: 1 }}>{cap80(inst.impact)}</div>
+                        <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, flex: 1 }}>{capSentence(inst.impact)}</div>
                       </div>
                     );
                   })}
@@ -4461,7 +4472,7 @@ function AppInner({ navigate }) {
                   setMode(prev.mode);
                   setTab("brief");
                   setShowShareCard(false);
-                }} style={{ padding: "10px 11px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", color: "#888", fontSize: 14, flexShrink: 0 }} title="Back">←</button>
+                }} style={{ padding: "10px 11px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: "rgba(0,212,255,.06)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontSize: 14, flexShrink: 0, opacity: 0.75 }} title="Back">←</button>
               )}
               {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Events Brief", sub: effectivelyPro ? "Event impact before you enter" : "Pro only 🔒" }].map(m => (
                 <button key={m.id} onClick={() => switchMode(m.id)} style={{ flex: 1, padding: "10px 10px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: mode === m.id ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.02)", border: mode === m.id ? "1px solid rgba(0,212,255,.25)" : "1px solid rgba(255,255,255,.05)", color: mode === m.id ? "#00d4ff" : (m.id === "scalper" && !effectivelyPro ? "#2a2a2a" : "#444") }}>
@@ -4480,7 +4491,7 @@ function AppInner({ navigate }) {
                   setMode(next.mode);
                   setTab("brief");
                   setShowShareCard(false);
-                }} style={{ padding: "10px 11px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", color: "#888", fontSize: 14, flexShrink: 0 }} title="Forward">→</button>
+                }} style={{ padding: "10px 11px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: "rgba(0,212,255,.06)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontSize: 14, flexShrink: 0, opacity: 0.75 }} title="Forward">→</button>
               )}
             </div>
             {/* ── TODAY'S BRIEFS — cached instrument chips ── */}
