@@ -3020,103 +3020,114 @@ function BreakingShareCard({ data, onClose }) {
     setSharing(false);
   };
 
+  // Compact helpers
+  const oneLine = (s) => {
+    if (!s) return "";
+    const m = s.match(/^.*?[.!?](?:\s|$)/);
+    return m ? m[0].trim() : s.length > 110 ? s.slice(0, 109) + "." : s;
+  };
+  const cap80 = (s) => s && s.length > 80 ? s.slice(0, 79) + "…" : (s || "");
+
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.92)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, width: "100%", maxWidth: 400 }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.92)", zIndex: 2000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", padding: "0 0 0 0" }} onClick={onClose}>
+      {/* Scrollable sheet — slides up from bottom, always shows buttons */}
+      <div onClick={e => e.stopPropagation()}
+        style={{ width: "100%", maxWidth: 480, maxHeight: "92vh", display: "flex", flexDirection: "column",
+          background: "#0a0c0f", borderRadius: "20px 20px 0 0", overflow: "hidden",
+          boxShadow: "0 -8px 40px rgba(0,0,0,.7)" }}>
 
-        {/* CARD */}
-        <div id="breaking-card-el" style={{ background: "#0a0c0f", borderRadius: 20, padding: 22, width: "100%", position: "relative", overflow: "hidden", boxShadow: "0 12px 60px rgba(0,0,0,.6)" }}>
-          {/* Grid */}
-          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,71,87,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,71,87,.025) 1px,transparent 1px)", backgroundSize: "36px 36px" }} />
-          {/* Glow */}
-          <div style={{ position: "absolute", top: -60, left: -60, width: 220, height: 220, pointerEvents: "none", background: "radial-gradient(circle,rgba(255,71,87,.08),transparent 70%)" }} />
+        {/* Drag handle + close */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px 0", flexShrink: 0 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,.15)", margin: "0 auto" }} />
+          <button onClick={onClose} style={{ position: "absolute", right: 16, top: 12, background: "none", border: "none", color: "#555", fontSize: 18, cursor: "pointer", padding: "4px 8px", lineHeight: 1 }}>✕</button>
+        </div>
 
-          <div style={{ position: "relative", zIndex: 1 }}>
-            {/* Logo + badge */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 900, color: "#fff" }}>MARKET<span style={{ color: "#ff4757" }}>DEBRIEFS</span></div>
-              <div style={{ fontSize: 9, color: "#ff4757", fontFamily: "monospace", letterSpacing: 1.5, opacity: 0.7 }}>BREAKING NARRATIVE</div>
-            </div>
+        {/* Scrollable card content */}
+        <div style={{ overflowY: "auto", padding: "10px 16px 0", flexGrow: 1 }}>
+          {/* CARD — captured by html2canvas */}
+          <div id="breaking-card-el" style={{ background: "#0a0c0f", borderRadius: 14, padding: 16, position: "relative", overflow: "hidden", marginBottom: 12 }}>
+            <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,71,87,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,71,87,.02) 1px,transparent 1px)", backgroundSize: "32px 32px" }} />
+            <div style={{ position: "absolute", top: -40, left: -40, width: 160, height: 160, pointerEvents: "none", background: "radial-gradient(circle,rgba(255,71,87,.07),transparent 70%)" }} />
 
-            {/* Urgency + date */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 20, background: urgencyBg, border: "1px solid " + urgencyColor + "44" }}>
-                <span style={{ fontSize: 10 }}>{data.urgency === "CRITICAL" ? "🔴" : data.urgency === "HIGH" ? "🟠" : "🟡"}</span>
-                <span style={{ fontSize: 10, fontWeight: 800, color: urgencyColor, letterSpacing: 1 }}>{data.urgency}</span>
+            <div style={{ position: "relative", zIndex: 1 }}>
+              {/* Logo + badge */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ fontSize: 12, fontWeight: 900, color: "#fff" }}>MARKET<span style={{ color: "#ff4757" }}>DEBRIEFS</span></div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, background: urgencyBg, border: "1px solid " + urgencyColor + "44" }}>
+                    <span style={{ fontSize: 9 }}>{data.urgency === "CRITICAL" ? "🔴" : data.urgency === "HIGH" ? "🟠" : "🟡"}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, color: urgencyColor }}>{data.urgency}</span>
+                  </div>
+                  <span style={{ fontSize: 8, color: "#555", fontFamily: "monospace" }}>{date}</span>
+                </div>
               </div>
-              <span style={{ fontSize: 9, color: "#888", fontFamily: "monospace" }}>{date}</span>
-            </div>
 
-            {/* Headline */}
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#e0e0e0", lineHeight: 1.5, marginBottom: 10, fontFamily: "Georgia, serif" }}>
-              "{data.headline}"
-            </div>
+              {/* Headline — compact */}
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#e0e0e0", lineHeight: 1.45, marginBottom: 8 }}>
+                {data.headline}
+              </div>
 
-            {/* Narrative summary — full */}
-            <div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>MACRO INTERPRETATION</div>
-            <div style={{ fontSize: 12, color: "#ccc", lineHeight: 1.65, marginBottom: 12 }}>
-              {data.narrative_summary}
-            </div>
+              {/* Narrative — one sentence */}
+              <div style={{ fontSize: 11, color: "#aaa", lineHeight: 1.55, marginBottom: 10, fontStyle: "italic" }}>
+                {oneLine(data.narrative_summary)}
+              </div>
 
-            {/* All instrument impacts — no truncation */}
-            {data.instruments && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 12 }}>
-                {data.instruments.map((inst, i) => {
-                  const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
-                  const c = FC[inst.flow] || "#555";
-                  return (
-                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "7px 10px", background: "rgba(255,255,255,.03)", borderLeft: "2px solid " + c, borderRadius: "0 6px 6px 0" }}>
-                      <div style={{ flexShrink: 0, minWidth: 48 }}>
-                        <div style={{ fontSize: 11, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
-                        <div style={{ fontSize: 8, color: c, fontWeight: 700 }}>{inst.flow || "WATCH"}</div>
+              {/* Instruments — compact rows: name + flow + one-line impact */}
+              {data.instruments && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 10 }}>
+                  {data.instruments.slice(0, 4).map((inst, i) => {
+                    const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
+                    const c = FC[inst.flow] || "#555";
+                    return (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", background: "rgba(255,255,255,.02)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0" }}>
+                        <div style={{ flexShrink: 0, width: 52 }}>
+                          <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{inst.name}</div>
+                          <div style={{ fontSize: 7, color: c, fontWeight: 700, letterSpacing: 0.5 }}>{inst.flow}</div>
+                        </div>
+                        <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, flex: 1 }}>{cap80(inst.impact)}</div>
                       </div>
-                      <div style={{ fontSize: 11, color: "#aaa", lineHeight: 1.5 }}>{inst.impact}</div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Watch + Fades — combined single row */}
+              {(data.watch_for || data.fades_when) && (
+                <div style={{ display: "grid", gridTemplateColumns: data.watch_for && data.fades_when ? "1fr 1fr" : "1fr", gap: 6, marginBottom: 10 }}>
+                  {data.watch_for && (
+                    <div style={{ padding: "5px 8px", borderRadius: 5, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)" }}>
+                      <div style={{ fontSize: 7, color: "#00d4ff", fontWeight: 700, letterSpacing: 1, marginBottom: 2 }}>WATCH</div>
+                      <div style={{ fontSize: 9, color: "#888", lineHeight: 1.4 }}>{oneLine(data.watch_for)}</div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                  )}
+                  {data.fades_when && (
+                    <div style={{ padding: "5px 8px", borderRadius: 5, background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.07)" }}>
+                      <div style={{ fontSize: 7, color: "#555", fontWeight: 700, letterSpacing: 1, marginBottom: 2 }}>FADES</div>
+                      <div style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{oneLine(data.fades_when)}</div>
+                    </div>
+                  )}
+                </div>
+              )}
 
-            {/* Tensions */}
-            {data.tensions && (
-              <div style={{ padding: "7px 10px", borderRadius: 6, background: "rgba(255,165,0,.05)", border: "1px solid rgba(255,165,0,.2)", marginBottom: 8 }}>
-                <div style={{ fontSize: 8, color: "#ffa500", letterSpacing: 1.2, fontWeight: 700, marginBottom: 3 }}>⚡ CONFLICTING FORCES</div>
-                <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.tensions}</div>
+              {/* Footer */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTop: "1px solid rgba(255,255,255,.05)" }}>
+                <span style={{ fontSize: 8, color: "#ff4757", fontFamily: "monospace", opacity: 0.7 }}>Brief First, Trade After · marketdebriefs.com</span>
+                <span style={{ fontSize: 8, color: "#333", fontFamily: "monospace" }}>BREAKING NARRATIVE</span>
               </div>
-            )}
-
-            {/* Watch for — full */}
-            {data.watch_for && (
-              <div style={{ padding: "7px 10px", borderRadius: 6, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.12)", marginBottom: 8 }}>
-                <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.2, fontWeight: 700, marginBottom: 3 }}>WATCH FOR</div>
-                <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.watch_for}</div>
-              </div>
-            )}
-
-            {/* Fades when */}
-            {data.fades_when && (
-              <div style={{ padding: "7px 10px", borderRadius: 6, background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.07)", marginBottom: 8 }}>
-                <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.2, fontWeight: 700, marginBottom: 3 }}>FADES WHEN</div>
-                <div style={{ fontSize: 11, color: "#888", lineHeight: 1.5 }}>{data.fades_when}</div>
-              </div>
-            )}
-
-            {/* Footer */}
-            <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 10 }} />
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 9, color: "#ff4757", fontFamily: "monospace", opacity: 0.7 }}>Brief First, Trade After · marketdebriefs.com</span>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div style={{ display: "flex", gap: 10, width: "100%" }}>
-          <button onClick={handleShare} disabled={sharing} style={{ flex: 1, padding: "12px", borderRadius: 8, border: "none", cursor: sharing ? "wait" : "pointer", background: sharing ? "rgba(255,71,87,.05)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: sharing ? "#333" : "#fff", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>
-            {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share Card"}
-          </button>
-          <button onClick={onClose} style={{ padding: "12px 20px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#555", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Done</button>
+        {/* Action buttons — always visible, never scrolled away */}
+        <div style={{ padding: "10px 16px 20px", flexShrink: 0, borderTop: "1px solid rgba(255,255,255,.06)", background: "#0a0c0f" }}>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={handleShare} disabled={sharing} style={{ flex: 1, padding: "12px", borderRadius: 8, border: "none", cursor: sharing ? "wait" : "pointer", background: sharing ? "rgba(255,71,87,.05)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: sharing ? "#333" : "#fff", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>
+              {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share Card"}
+            </button>
+            <button onClick={onClose} style={{ padding: "12px 20px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Done</button>
+          </div>
+          <div style={{ fontSize: 10, color: "#333", textAlign: "center", marginTop: 8 }}>Mobile — shares to any app · Desktop — downloads as PNG</div>
         </div>
-        <div style={{ fontSize: 11, color: "#555", textAlign: "center" }}>Mobile  -  shares to any app · Desktop  -  downloads as PNG</div>
       </div>
     </div>
   );
@@ -4095,6 +4106,9 @@ function AppInner({ navigate }) {
   const [pushSupported, setPushSupported] = useState(false);
   const [postSessionLoading, setPostSessionLoading] = useState(false);
   const [postSessionError, setPostSessionError] = useState(null);
+  // Navigation history — back/forward through briefs
+  const [navHistory, setNavHistory] = useState([]); // [{inst, data, mode}]
+  const [navForward, setNavForward] = useState([]); // forward stack
   const [breakingHeadline, setBreakingHeadline] = useState("");
   const [breakingData, setBreakingData] = useState(null);
   const [breakingLoading, setBreakingLoading] = useState(false);
@@ -4158,6 +4172,11 @@ function AppInner({ navigate }) {
     // ── Check brief cache ────────────────────────────────────────────────────
     const cached = user?.id ? bcGet(user.id, found.key, mm) : null;
     if (cached) {
+      // Push current state to back history before loading new brief
+      if (inst && data) {
+        setNavHistory(h => [...h.slice(-9), { inst, data, mode }]);
+        setNavForward([]); // clear forward stack on new navigation
+      }
       setInst(found);
       setMode(mm);
       setData(cached.data);
@@ -4198,6 +4217,11 @@ function AppInner({ navigate }) {
         }
       }
       const result = await getBriefing(found, mm, calendarEvents);
+      // Push current state to back history before loading new brief
+      if (inst && data) {
+        setNavHistory(h => [...h.slice(-9), { inst, data, mode }]);
+        setNavForward([]);
+      }
       setData(result);
       setDataCache(prev => ({ ...prev, [mm]: { inst: found, data: result } }));
       setTab("brief");
@@ -4425,13 +4449,39 @@ function AppInner({ navigate }) {
                 </div>
               </div>
             </div>
-            <div style={{ display: "flex", gap: 6, marginBottom: 11 }}>
+            <div style={{ display: "flex", gap: 6, marginBottom: 11, alignItems: "center" }}>
+              {/* Back button */}
+              {navHistory.length > 0 && (
+                <button onClick={() => {
+                  const prev = navHistory[navHistory.length - 1];
+                  setNavHistory(h => h.slice(0, -1));
+                  setNavForward(f => [{ inst, data, mode }, ...f.slice(0, 9)]);
+                  setInst(prev.inst);
+                  setData(prev.data);
+                  setMode(prev.mode);
+                  setTab("brief");
+                  setShowShareCard(false);
+                }} style={{ padding: "10px 11px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", color: "#888", fontSize: 14, flexShrink: 0 }} title="Back">←</button>
+              )}
               {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Events Brief", sub: effectivelyPro ? "Event impact before you enter" : "Pro only 🔒" }].map(m => (
                 <button key={m.id} onClick={() => switchMode(m.id)} style={{ flex: 1, padding: "10px 10px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: mode === m.id ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.02)", border: mode === m.id ? "1px solid rgba(0,212,255,.25)" : "1px solid rgba(255,255,255,.05)", color: mode === m.id ? "#00d4ff" : (m.id === "scalper" && !effectivelyPro ? "#2a2a2a" : "#444") }}>
                   <div style={{ fontSize: 11, fontWeight: 700 }}>{m.label}</div>
                   <div style={{ fontSize: 9, marginTop: 2, opacity: 0.7 }}>{m.sub}</div>
                 </button>
               ))}
+              {/* Forward button */}
+              {navForward.length > 0 && (
+                <button onClick={() => {
+                  const next = navForward[0];
+                  setNavForward(f => f.slice(1));
+                  setNavHistory(h => [...h.slice(-9), { inst, data, mode }]);
+                  setInst(next.inst);
+                  setData(next.data);
+                  setMode(next.mode);
+                  setTab("brief");
+                  setShowShareCard(false);
+                }} style={{ padding: "10px 11px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", color: "#888", fontSize: 14, flexShrink: 0 }} title="Forward">→</button>
+              )}
             </div>
             {/* ── TODAY'S BRIEFS — cached instrument chips ── */}
             {todaysBriefs.length > 0 && (
