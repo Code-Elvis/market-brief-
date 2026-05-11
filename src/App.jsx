@@ -3090,12 +3090,12 @@ function BreakingShareCard({ data, onClose }) {
                     const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
                     const c = FC[inst.flow] || "#555";
                     return (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", background: "rgba(255,255,255,.02)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0" }}>
-                        <div style={{ flexShrink: 0, width: 52 }}>
+                      <div key={i} style={{ display: "flex", flexDirection: "column", gap: 3, padding: "6px 9px", background: "rgba(255,255,255,.02)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{inst.name}</div>
-                          <div style={{ fontSize: 7, color: c, fontWeight: 700, letterSpacing: 0.5 }}>{inst.flow}</div>
+                          <div style={{ fontSize: 7, color: c, fontWeight: 700, letterSpacing: 0.5, padding: "1px 5px", background: c + "18", borderRadius: 3 }}>{inst.flow}</div>
                         </div>
-                        <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, flex: 1 }}>{capSentence(inst.impact)}</div>
+                        <div style={{ fontSize: 10, color: "#888", lineHeight: 1.45 }}>{capSentence(inst.impact)}</div>
                       </div>
                     );
                   })}
