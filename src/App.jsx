@@ -41,13 +41,13 @@ function UpdateBanner() {
   return (
     <div style={{
       position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)",
-      zIndex: 9999, background: "#0d1117", border: "1px solid rgba(0,212,255,.3)",
+      zIndex: 9999, background: "var(--bg2)", border: "1px solid rgba(0,212,255,.3)",
       borderRadius: 10, padding: "12px 18px", display: "flex", alignItems: "center",
       gap: 14, boxShadow: "0 4px 24px rgba(0,0,0,.6)", maxWidth: 340, width: "calc(100% - 40px)"
     }}>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: "#e0e0e0", marginBottom: 2 }}>Update available</div>
-        <div style={{ fontSize: 11, color: "#444" }}>New version of MarketDebriefs is ready</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text1)", marginBottom: 2 }}>Update available</div>
+        <div style={{ fontSize: 11, color: "var(--text5)" }}>New version of MarketDebriefs is ready</div>
       </div>
       <button onClick={applyUpdate} style={{
         background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000",
@@ -55,7 +55,7 @@ function UpdateBanner() {
         fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap"
       }}>Update Now</button>
       <button onClick={() => setShow(false)} style={{
-        background: "none", border: "none", color: "#333", cursor: "pointer",
+        background: "none", border: "none", color: "var(--textdim)", cursor: "pointer",
         fontSize: 16, padding: "0 2px", lineHeight: 1
       }}>✕</button>
     </div>
@@ -119,9 +119,9 @@ function HelpPage({ navigate }) {
   const filtered = sections.map(s => ({ ...s, items: s.items.filter(item => !search || item.q.toLowerCase().includes(search.toLowerCase()) || item.a.toLowerCase().includes(search.toLowerCase())) })).filter(s => s.items.length > 0);
   const toggle = (id) => setOpenItem(openItem === id ? null : id);
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)", fontFamily: "Inter, system-ui, sans-serif" }}>
       <style>{`@keyframes helpFade{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}} @keyframes helpPulse{0%,100%{opacity:1}50%{opacity:.3}} .help-ans{animation:helpFade .18s ease} .help-item:hover{border-color:rgba(255,255,255,.1)!important} .help-open{border-color:rgba(0,212,255,.25)!important}`}</style>
-      <nav style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 24px", borderBottom:"1px solid rgba(255,255,255,.06)", position:"sticky", top:0, background:"rgba(10,12,15,.96)", backdropFilter:"blur(10px)", zIndex:100 }}>
+      <nav style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 24px", borderBottom:"1px solid var(--surface3)", position:"sticky", top:0, background:"rgba(10,12,15,.96)", backdropFilter:"blur(10px)", zIndex:100 }}>
         <div onClick={() => navigate("/")} style={{ cursor:"pointer", display:"flex", alignItems:"center" }}>
   <svg width="148" height="26" viewBox="0 0 460 72" fill="none" xmlns="http://www.w3.org/2000/svg">
     <polyline points="0,36 16,36 23,14 32,58 40,20 49,52 56,36 70,36" stroke="#00e5ff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
@@ -137,7 +137,7 @@ function HelpPage({ navigate }) {
   </svg>
 </div>
         <div style={{ display:"flex", gap:10 }}>
-          <button onClick={() => navigate("/")} style={{ fontSize:11, fontFamily:"monospace", color:"#444", padding:"4px 10px", border:"1px solid #1a1a1a", borderRadius:5, background:"none", cursor:"pointer" }}>← HOME</button>
+          <button onClick={() => navigate("/")} style={{ fontSize:11, fontFamily:"monospace", color:"var(--text5)", padding:"4px 10px", border:"1px solid #1a1a1a", borderRadius:5, background:"none", cursor:"pointer" }}>← HOME</button>
           <button onClick={() => navigate("/app")} style={{ fontSize:11, fontFamily:"monospace", color:"#00d4ff", padding:"4px 10px", border:"1px solid rgba(0,212,255,.2)", borderRadius:5, background:"rgba(0,212,255,.06)", cursor:"pointer" }}>LAUNCH APP</button>
         </div>
       </nav>
@@ -147,29 +147,29 @@ function HelpPage({ navigate }) {
           <span style={{ fontSize:10, color:"#00d4ff", fontWeight:700, letterSpacing:1.5 }}>HELP CENTRE</span>
         </div>
         <h1 style={{ fontSize:"clamp(24px,5vw,40px)", fontWeight:900, color:"#fff", letterSpacing:"-1px", lineHeight:1.1, marginBottom:10 }}>How can we <span style={{ color:"#00d4ff" }}>help you?</span></h1>
-        <p style={{ fontSize:13, color:"#555", lineHeight:1.7, marginBottom:24 }}>Everything you need to know about MarketDebriefs.</p>
+        <p style={{ fontSize:13, color:"var(--text4)", lineHeight:1.7, marginBottom:24 }}>Everything you need to know about MarketDebriefs.</p>
         <div style={{ position:"relative", maxWidth:460, margin:"0 auto" }}>
-          <input value={search} onChange={e => { setSearch(e.target.value); setOpenItem(null); }} placeholder="Search questions…" style={{ width:"100%", padding:"11px 42px 11px 15px", background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.1)", borderRadius:9, color:"#e0e0e0", fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
-          <span style={{ position:"absolute", right:13, top:"50%", transform:"translateY(-50%)", color:"#333", fontSize:15, pointerEvents:"none" }}>⌕</span>
+          <input value={search} onChange={e => { setSearch(e.target.value); setOpenItem(null); }} placeholder="Search questions…" style={{ width:"100%", padding:"11px 42px 11px 15px", background:"var(--surface2)", border:"1px solid rgba(255,255,255,.1)", borderRadius:9, color:"var(--text1)", fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
+          <span style={{ position:"absolute", right:13, top:"50%", transform:"translateY(-50%)", color:"var(--textdim)", fontSize:15, pointerEvents:"none" }}>⌕</span>
         </div>
       </div>
       <div style={{ maxWidth:680, margin:"0 auto", padding:"0 24px 80px" }}>
-        {filtered.length === 0 && <div style={{ textAlign:"center", padding:"48px 0", color:"#444", fontSize:13 }}>No results for "{search}"  -  <button onClick={() => setSearch("")} style={{ background:"none", border:"none", color:"#00d4ff", cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>clear search</button></div>}
+        {filtered.length === 0 && <div style={{ textAlign:"center", padding:"48px 0", color:"var(--text5)", fontSize:13 }}>No results for "{search}"  -  <button onClick={() => setSearch("")} style={{ background:"none", border:"none", color:"#00d4ff", cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>clear search</button></div>}
         {filtered.map(section => (
           <div key={section.id} style={{ marginBottom:40 }}>
             <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, paddingBottom:11, borderBottom:"1px solid rgba(255,255,255,.05)" }}>
               <div style={{ width:32, height:32, borderRadius:8, background:section.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>{section.icon}</div>
               <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{section.title}</div>
-              <div style={{ marginLeft:"auto", fontSize:10, fontFamily:"monospace", color:"#555" }}>{section.items.length} articles</div>
+              <div style={{ marginLeft:"auto", fontSize:10, fontFamily:"monospace", color:"var(--text4)" }}>{section.items.length} articles</div>
             </div>
             {section.items.map((item, i) => {
               const id = section.id + "-" + i;
               const isOpen = openItem === id;
               return (
-                <div key={id} className={"help-item" + (isOpen ? " help-open" : "")} onClick={() => toggle(id)} style={{ background:"rgba(255,255,255,.02)", border:"1px solid rgba(255,255,255,.06)", borderRadius:10, marginBottom:6, overflow:"hidden", transition:"border-color .2s", cursor:"pointer" }}>
+                <div key={id} className={"help-item" + (isOpen ? " help-open" : "")} onClick={() => toggle(id)} style={{ background:"var(--surface1)", border:"1px solid var(--surface3)", borderRadius:10, marginBottom:6, overflow:"hidden", transition:"border-color .2s", cursor:"pointer" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"13px 15px", gap:10 }}>
-                    <div style={{ fontSize:13, fontWeight:600, color:isOpen ? "#00d4ff" : "#e0e0e0", flex:1, lineHeight:1.4 }}>{item.q}</div>
-                    <div style={{ width:20, height:20, borderRadius:4, background:isOpen ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.03)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:isOpen ? "#00d4ff" : "#333", flexShrink:0, transform:isOpen ? "rotate(180deg)" : "none", transition:"all .2s" }}>▾</div>
+                    <div style={{ fontSize:13, fontWeight:600, color:isOpen ? "#00d4ff" : "var(--text1)", flex:1, lineHeight:1.4 }}>{item.q}</div>
+                    <div style={{ width:20, height:20, borderRadius:4, background:isOpen ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.03)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:isOpen ? "#00d4ff" : "var(--textdim)", flexShrink:0, transform:isOpen ? "rotate(180deg)" : "none", transition:"all .2s" }}>▾</div>
                   </div>
                   {isOpen && <div className="help-ans" style={{ padding:"0 15px 14px", fontSize:13, color:"#777", lineHeight:1.8, borderTop:"1px solid rgba(255,255,255,.05)" }}><div style={{ paddingTop:11 }}>{item.a}</div></div>}
                 </div>
@@ -179,9 +179,9 @@ function HelpPage({ navigate }) {
         ))}
         <div style={{ marginTop:16, padding:"26px 22px", background:"linear-gradient(135deg,rgba(0,212,255,.06),transparent)", border:"1px solid rgba(0,212,255,.15)", borderRadius:14, textAlign:"center" }}>
           <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:7 }}>Still need help?</div>
-          <div style={{ fontSize:13, color:"#555", lineHeight:1.7, marginBottom:18, maxWidth:360, margin:"0 auto 18px" }}>Can't find what you're looking for? We read every message and reply within 24 hours.</div>
+          <div style={{ fontSize:13, color:"var(--text4)", lineHeight:1.7, marginBottom:18, maxWidth:360, margin:"0 auto 18px" }}>Can't find what you're looking for? We read every message and reply within 24 hours.</div>
           <a href="mailto:support@marketdebriefs.com" style={{ display:"inline-block", background:"linear-gradient(135deg,#00d4ff,#0099cc)", color:"#000", padding:"11px 26px", borderRadius:8, fontSize:13, fontWeight:800, fontFamily:"inherit", textDecoration:"none" }}>✉ EMAIL SUPPORT</a>
-          <div style={{ marginTop:10, fontSize:11, color:"#555", fontFamily:"monospace" }}>support@marketdebriefs.com · 24-hour response</div>
+          <div style={{ marginTop:10, fontSize:11, color:"var(--text4)", fontFamily:"monospace" }}>support@marketdebriefs.com · 24-hour response</div>
         </div>
       </div>
     </div>
@@ -246,7 +246,7 @@ function EmailCapture() {
       <div style={{ padding: "16px 20px", background: "rgba(0,212,170,.08)", border: "1px solid rgba(0,212,170,.2)", borderRadius: 10, textAlign: "center" }}>
         <div style={{ fontSize: 20, marginBottom: 8 }}>✓</div>
         <div style={{ fontSize: 14, color: "#00d4aa", fontWeight: 700, marginBottom: 4 }}>You're subscribed.</div>
-        <div style={{ fontSize: 12, color: "#444" }}>{msg}</div>
+        <div style={{ fontSize: 12, color: "var(--text5)" }}>{msg}</div>
       </div>
     );
   }
@@ -254,7 +254,7 @@ function EmailCapture() {
   const inputStyle = {
     display: "block", width: "100%", padding: "13px 16px",
     borderRadius: 8, border: "1px solid rgba(0,212,255,.2)",
-    background: "rgba(0,0,0,.3)", color: "#e0e0e0", fontSize: 14,
+    background: "rgba(0,0,0,.3)", color: "var(--text1)", fontSize: 14,
     fontFamily: "inherit", outline: "none", boxSizing: "border-box",
     marginBottom: 10,
   };
@@ -265,7 +265,7 @@ function EmailCapture() {
     fontSize: 14, fontWeight: 800, fontFamily: "inherit",
     letterSpacing: 0.3,
     background: status === "loading" ? "rgba(0,212,255,.1)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
-    color: status === "loading" ? "#333" : "#000",
+    color: status === "loading" ? "var(--textdim)" : "#000",
   };
 
   return (
@@ -287,7 +287,7 @@ function EmailCapture() {
       {status === "error" && (
         <div style={{ marginTop: 8, fontSize: 12, color: "#ff4757", textAlign: "center" }}>{msg}</div>
       )}
-      <div style={{ marginTop: 10, fontSize: 11, color: "#555", textAlign: "center" }}>
+      <div style={{ marginTop: 10, fontSize: 11, color: "var(--text4)", textAlign: "center" }}>
         Free forever · No spam · Unsubscribe anytime
       </div>
     </div>
@@ -296,7 +296,7 @@ function EmailCapture() {
 
 function LandingPage({ navigate }) {
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif", margin: 0 }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)", fontFamily: "Inter, system-ui, sans-serif", margin: 0 }}>
       <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } body { background: #0a0c0f; } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } } @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } } .fade-up { animation: fadeUp 0.7s ease forwards; } .cta-btn:hover { opacity: 0.85; transform: translateY(-1px); } .cta-btn { transition: all 0.15s; } .chip:hover { border-color: rgba(0,212,255,.4) !important; color: #00d4ff !important; } .chip { transition: all 0.15s; cursor: default; }`}</style>
       <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 32px", borderBottom: "1px solid rgba(255,255,255,.05)", position: "sticky", top: 0, background: "rgba(10,12,15,.95)", backdropFilter: "blur(10px)", zIndex: 100 }}>
         <div style={{ display:"flex", alignItems:"center" }}>
@@ -313,7 +313,7 @@ function LandingPage({ navigate }) {
     <text x="145" y="66" fontFamily="'Courier New', monospace" fontSize="7.5" fill="#4d8f8f" letterSpacing="3.5">BRIEF FIRST · TRADE AFTER</text>
   </svg>
 </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#e0e0e0", padding: "3px 7px", border: "1px solid rgba(255,255,255,.25)", borderRadius: 4, background: "rgba(255,255,255,.08)", cursor: "pointer", fontWeight: 700 }}>HELP</button><button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "var(--text1)", padding: "3px 7px", border: "1px solid rgba(255,255,255,.25)", borderRadius: 4, background: "var(--border)", cursor: "pointer", fontWeight: 700 }}>HELP</button><button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "rgba(0,212,255,.1)", border: "1px solid rgba(0,212,255,.25)", color: "#00d4ff", padding: "8px 18px", borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>LAUNCH APP</button></div>
       </nav>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "80px 32px 60px", textAlign: "center" }} className="fade-up">
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.05)", marginBottom: 28 }}>
@@ -321,7 +321,7 @@ function LandingPage({ navigate }) {
           <span style={{ fontSize: 11, color: "#00d4ff", fontWeight: 600, letterSpacing: 1 }}>INSTITUTIONAL INTELLIGENCE · INDEPENDENT TRADERS</span>
         </div>
         <h1 style={{ fontSize: "clamp(32px, 6vw, 58px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-1.5px", color: "#fff", marginBottom: 20 }}>Know the macro<br /><span style={{ color: "#00d4ff" }}>before you trade.</span></h1>
-        <p style={{ fontSize: "clamp(14px, 2vw, 17px)", color: "#aaa", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 36px" }}>Bloomberg tells you what happened.<br /><span style={{ color: "#888" }}>Market Debriefs tells you what it means.</span></p>
+        <p style={{ fontSize: "clamp(14px, 2vw, 17px)", color: "#aaa", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 36px" }}>Bloomberg tells you what happened.<br /><span style={{ color: "var(--text3)" }}>Market Debriefs tells you what it means.</span></p>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.3)", borderRadius: 20, padding: "4px 14px", marginBottom: 16 }}>
           <span style={{ fontSize: 10, color: "#f59e0b", fontWeight: 800, letterSpacing: 1 }}>7-DAY FREE TRIAL</span>
           <span style={{ fontSize: 10, color: "#aaa" }}>Stop missing moves while you sleep</span>
@@ -332,7 +332,7 @@ function LandingPage({ navigate }) {
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", padding: "0 32px 60px", maxWidth: 600, margin: "0 auto" }}>
         {["ES S&P 500","NQ NASDAQ","Gold XAU","WTI Oil","EUR/USD","GBP/USD","Bitcoin","VIX","USD/JPY","Russell 2000"].map(t => (
-          <span key={t} className="chip" style={{ fontSize: 11, padding: "5px 12px", borderRadius: 5, border: "1px solid rgba(255,255,255,.07)", color: "#888", background: "rgba(255,255,255,.02)" }}>{t}</span>
+          <span key={t} className="chip" style={{ fontSize: 11, padding: "5px 12px", borderRadius: 5, border: "1px solid rgba(255,255,255,.07)", color: "var(--text3)", background: "var(--surface1)" }}>{t}</span>
         ))}
       </div>
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "0 32px 80px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
@@ -342,9 +342,9 @@ function LandingPage({ navigate }) {
           { icon: "📈", title: "Stocks Brief", desc: "Earnings context, macro tailwinds & headwinds, sector rotation, and institutional flow for any stock. Pro feature." },
 
         ].map(f => (
-          <div key={f.title} style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 12, padding: 22 }}>
+          <div key={f.title} style={{ background: "var(--surface1)", border: "1px solid var(--surface3)", borderRadius: 12, padding: 22 }}>
             <div style={{ fontSize: 24, marginBottom: 10 }}>{f.icon}</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#e0e0e0", marginBottom: 7 }}>{f.title}</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text1)", marginBottom: 7 }}>{f.title}</div>
             <div style={{ fontSize: 13, color: "#999", lineHeight: 1.65 }}>{f.desc}</div>
           </div>
         ))}
@@ -380,8 +380,8 @@ function LandingPage({ navigate }) {
               <div style={{ fontSize: 16, fontWeight: 900, color: "#ff4757", marginBottom: 6, letterSpacing: -0.5 }}>Data</div>
               <div style={{ fontSize: 11, color: "#999", marginBottom: 12, lineHeight: 1.5 }}>The number. The release. The headline.</div>
               {[["NFP:", "+180k"], ["CPI:", "+3.2% YoY"], ["Fed Rate:", "5.25 - 5.50%"]].map(([k, v]) => (
-                <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#aaa", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
-                  <span style={{ color: "#888" }}>{k}</span><span>{v}</span>
+                <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#aaa", padding: "5px 0", borderBottom: "1px solid var(--surface2)" }}>
+                  <span style={{ color: "var(--text3)" }}>{k}</span><span>{v}</span>
                 </div>
               ))}
               <div style={{ marginTop: 12, display: "inline-block", padding: "3px 9px", borderRadius: 4, fontSize: 9, fontWeight: 700, letterSpacing: 1, background: "rgba(255,71,87,.1)", color: "#ff4757", border: "1px solid rgba(255,71,87,.2)" }}>RAW. UNINTERPRETED.</div>
@@ -400,7 +400,7 @@ function LandingPage({ navigate }) {
               <div style={{ fontSize: 16, fontWeight: 900, color: "#00e5ff", marginBottom: 6, letterSpacing: -0.5 }}>Answers</div>
               <div style={{ fontSize: 11, color: "#999", marginBottom: 12, lineHeight: 1.5 }}>The interpretation. The implication. The edge.</div>
               {["Fed pivot pushed back  -  Dollar bullish", "Gold faces headwinds next 48hrs", "Yields pricing in higher-for-longer"].map(a => (
-                <div key={a} style={{ fontSize: 11, color: "#666", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,.04)", lineHeight: 1.4 }}>{a}</div>
+                <div key={a} style={{ fontSize: 11, color: "#666", padding: "5px 0", borderBottom: "1px solid var(--surface2)", lineHeight: 1.4 }}>{a}</div>
               ))}
               <div style={{ marginTop: 12, display: "inline-block", padding: "3px 9px", borderRadius: 4, fontSize: 9, fontWeight: 700, letterSpacing: 1, background: "rgba(0,229,255,.1)", color: "#00e5ff", border: "1px solid rgba(0,229,255,.2)" }}>ACTIONABLE. IMMEDIATE.</div>
             </div>
@@ -409,7 +409,7 @@ function LandingPage({ navigate }) {
 
         {/* 4 things data requires */}
         <div style={{ marginBottom: 56 }}>
-          <div style={{ textAlign: "center", fontSize: 11, color: "#888", letterSpacing: 2, marginBottom: 20 }}>DATA REQUIRES YOU TO:</div>
+          <div style={{ textAlign: "center", fontSize: 11, color: "var(--text3)", letterSpacing: 2, marginBottom: 20 }}>DATA REQUIRES YOU TO:</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }} className="dva-req-grid">
           <style>{`@media (max-width: 480px) { .dva-req-grid { grid-template-columns: 1fr !important; } }`}</style>
             {[
@@ -418,7 +418,7 @@ function LandingPage({ navigate }) {
               ["03", "Form a view under pressure"],
               ["04", "Decide  -  while the market is already moving"],
             ].map(([n, t]) => (
-              <div key={n} style={{ display: "flex", gap: 12, padding: "14px 16px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 8, alignItems: "flex-start" }}>
+              <div key={n} style={{ display: "flex", gap: 12, padding: "14px 16px", background: "var(--surface1)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 8, alignItems: "flex-start" }}>
                 <span style={{ fontSize: 10, color: "#00e5ff", opacity: 0.4, fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{n}</span>
                 <span style={{ fontSize: 12, color: "#aaa", lineHeight: 1.5 }}>{t}</span>
               </div>
@@ -431,13 +431,13 @@ function LandingPage({ navigate }) {
           <div style={{ height: 1, background: "linear-gradient(to right, transparent, rgba(0,229,255,.15), transparent)", marginBottom: 28 }} />
           <p style={{ fontSize: 15, color: "#999", lineHeight: 1.9, fontFamily: "Georgia, serif" }}>
             Most retail traders don't lose because they lacked data.<br />
-            They lose because they had <span style={{ color: "#e0e0e0", fontWeight: 600 }}>too much uninterpreted data</span> and not enough time or expertise to turn it into a clear position.
+            They lose because they had <span style={{ color: "var(--text1)", fontWeight: 600 }}>too much uninterpreted data</span> and not enough time or expertise to turn it into a clear position.
           </p>
           <div style={{ height: 1, background: "linear-gradient(to right, transparent, rgba(0,229,255,.15), transparent)", marginTop: 28 }} />
         </div>
 
         {/* Gap statement */}
-        <div style={{ textAlign: "center", fontSize: "clamp(18px, 3vw, 32px)", fontWeight: 800, color: "#888", lineHeight: 1.3, letterSpacing: -0.5, marginBottom: 56, fontFamily: "Georgia, serif" }}>
+        <div style={{ textAlign: "center", fontSize: "clamp(18px, 3vw, 32px)", fontWeight: 800, color: "var(--text3)", lineHeight: 1.3, letterSpacing: -0.5, marginBottom: 56, fontFamily: "Georgia, serif" }}>
           The gap between data and a decision<br />
           <span style={{ color: "#ff4757" }}>is where most traders bleed.</span>
         </div>
@@ -451,7 +451,7 @@ function LandingPage({ navigate }) {
             Not another data feed.<br />
             A <span style={{ color: "#00e5ff", fontWeight: 600 }}>macro interpreter</span> sitting between the news and your trade.
           </p>
-          <p style={{ fontSize: 13, color: "#888", lineHeight: 1.7, marginBottom: 28, fontFamily: "Georgia, serif" }}>
+          <p style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.7, marginBottom: 28, fontFamily: "Georgia, serif" }}>
             Bloomberg charges $30,000/year to give you data.<br />
             We give you answers. <span style={{ color: "#00e5ff" }}>Free to start.</span>
           </p>
@@ -464,7 +464,7 @@ function LandingPage({ navigate }) {
       {/* ── THE TRADER WORKFLOW ── */}
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 32px 80px" }}>
         <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div style={{ fontSize: 11, color: "#888", letterSpacing: 2, fontWeight: 700, marginBottom: 12 }}>THE TRADER WORKFLOW</div>
+          <div style={{ fontSize: 11, color: "var(--text3)", letterSpacing: 2, fontWeight: 700, marginBottom: 12 }}>THE TRADER WORKFLOW</div>
           <div style={{ fontSize: "clamp(20px, 3.5vw, 28px)", fontWeight: 900, color: "#fff", letterSpacing: -0.5, lineHeight: 1.2 }}>
             Five steps. Every session.<br/>
             <span style={{ color: "#00d4ff" }}>Brief First, Trade After.</span>
@@ -530,7 +530,7 @@ function LandingPage({ navigate }) {
               {i < 4 && <div style={{ position: "absolute", left: 19, top: 52, width: 2, height: "calc(100% - 20px)", background: "linear-gradient(to bottom, rgba(0,212,255,.15), rgba(0,212,255,.05))", zIndex: 0 }} />}
 
               {/* Step number circle */}
-              <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: "50%", background: "#0a0c0f", border: "1px solid rgba(0,212,255,.2)", display: "flex", alignItems: "center", justifyContent: "center", marginRight: 16, marginTop: 4, zIndex: 1 }}>
+              <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: "50%", background: "var(--bg)", border: "1px solid rgba(0,212,255,.2)", display: "flex", alignItems: "center", justifyContent: "center", marginRight: 16, marginTop: 4, zIndex: 1 }}>
                 <span style={{ fontSize: 11, fontWeight: 800, color: "#00d4ff", opacity: 0.7 }}>{s.step}</span>
               </div>
 
@@ -553,20 +553,20 @@ function LandingPage({ navigate }) {
         {/* Bottom CTA */}
         <div style={{ marginTop: 8, padding: "20px 24px", background: "rgba(0,212,255,.03)", border: "1px solid rgba(0,212,255,.08)", borderRadius: 12 }}>
           <p style={{ fontSize: 13, color: "#aaa", lineHeight: 1.8, margin: 0, textAlign: "center" }}>
-            Most retail traders lose not because of bad entries  -  but because they trade <em style={{ color: "#888" }}>against</em> the macro tide.<br/>
+            Most retail traders lose not because of bad entries  -  but because they trade <em style={{ color: "var(--text3)" }}>against</em> the macro tide.<br/>
             A hawkish Fed comment, a geopolitical escalation, a surprise CPI print  -  any of these can invalidate a perfect technical setup instantly.<br/>
-            <span style={{ color: "#888" }}>MarketDebriefs makes sure you always know which way the macro tide is running.</span>
+            <span style={{ color: "var(--text3)" }}>MarketDebriefs makes sure you always know which way the macro tide is running.</span>
           </p>
         </div>
       </div>
 
       {/* ── OLD WAY vs MARKET DEBRIEFS ── */}
-      <style>{`.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.06); } @media (max-width: 520px) { .compare-grid { grid-template-columns: 1fr; } .compare-grid .md-col { border-left: none !important; border-top: 1px solid rgba(0,212,255,.1); } }`}</style>
+      <style>{`.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; border-radius: 14px; overflow: hidden; border: 1px solid var(--surface3); } @media (max-width: 520px) { .compare-grid { grid-template-columns: 1fr; } .compare-grid .md-col { border-left: none !important; border-top: 1px solid rgba(0,212,255,.1); } }`}</style>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 32px 80px" }}>
-        <div style={{ fontSize: 11, color: "#888", letterSpacing: 2, fontWeight: 700, marginBottom: 24, textAlign: "center" }}>THE ALTERNATIVE</div>
+        <div style={{ fontSize: 11, color: "var(--text3)", letterSpacing: 2, fontWeight: 700, marginBottom: 24, textAlign: "center" }}>THE ALTERNATIVE</div>
         <div className="compare-grid">
-          <div style={{ background: "rgba(255,255,255,.02)", padding: "24px 20px" }}>
-            <div style={{ fontSize: 11, color: "#888", fontWeight: 700, letterSpacing: 2, marginBottom: 20 }}>OLD WAY</div>
+          <div style={{ background: "var(--surface1)", padding: "24px 20px" }}>
+            <div style={{ fontSize: 11, color: "var(--text3)", fontWeight: 700, letterSpacing: 2, marginBottom: 20 }}>OLD WAY</div>
             {[
               ["Bloomberg Terminal", "$30,000 / year"],
               ["Manually scan news", "30 - 60 min / day"],
@@ -574,9 +574,9 @@ function LandingPage({ navigate }) {
               ["Still miss macro context", "Before key trades"],
               ["Institutional access only", "Not for retail"],
             ].map(([what, cost]) => (
-              <div key={what} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid rgba(255,255,255,.04)", gap: 12 }}>
+              <div key={what} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid var(--surface2)", gap: 12 }}>
                 <span style={{ fontSize: 12, color: "#999" }}>{what}</span>
-                <span style={{ fontSize: 11, color: "#888", fontWeight: 600, whiteSpace: "nowrap" }}>{cost}</span>
+                <span style={{ fontSize: 11, color: "var(--text3)", fontWeight: 600, whiteSpace: "nowrap" }}>{cost}</span>
               </div>
             ))}
           </div>
@@ -590,7 +590,7 @@ function LandingPage({ navigate }) {
               ["Built for retail traders", "Anyone, anywhere"],
             ].map(([what, cost]) => (
               <div key={what} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid rgba(0,212,255,.06)", gap: 12 }}>
-                <span style={{ fontSize: 12, color: "#888" }}>{what}</span>
+                <span style={{ fontSize: 12, color: "var(--text3)" }}>{what}</span>
                 <span style={{ fontSize: 11, color: "#00d4ff", fontWeight: 700, whiteSpace: "nowrap" }}>{cost}</span>
               </div>
             ))}
@@ -602,19 +602,19 @@ function LandingPage({ navigate }) {
       </div>
 
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 32px 80px", textAlign: "center" }}>
-        <div style={{ fontSize: 11, color: "#888", letterSpacing: 2, fontWeight: 700, marginBottom: 24 }}>PRICING</div>
+        <div style={{ fontSize: 11, color: "var(--text3)", letterSpacing: 2, fontWeight: 700, marginBottom: 24 }}>PRICING</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 32 }}>
           {[
             { name: "Trial", price: "Free · 7 days", features: ["Full Pro access", "All features", "Cancel anytime"], highlight: false, isTrial: true },
             { name: "Pro", price: "€49/mo", features: ["Unlimited briefs", "Events Brief", "Breaking Narratives", "Stocks + Post-Session", "All instruments"], highlight: true },
           ].map(p => (
-            <div key={p.name} style={{ background: p.highlight ? "rgba(0,212,255,.06)" : p.isTrial ? "rgba(245,158,11,.06)" : "rgba(255,255,255,.02)", border: `1px solid ${p.highlight ? "rgba(0,212,255,.25)" : p.isTrial ? "rgba(245,158,11,.3)" : "rgba(255,255,255,.06)"}`, borderRadius: 12, padding: 20, textAlign: "left", position: "relative" }}>
+            <div key={p.name} style={{ background: p.highlight ? "rgba(0,212,255,.06)" : p.isTrial ? "rgba(245,158,11,.06)" : "var(--surface1)", border: `1px solid ${p.highlight ? "rgba(0,212,255,.25)" : p.isTrial ? "rgba(245,158,11,.3)" : "var(--surface3)"}`, borderRadius: 12, padding: 20, textAlign: "left", position: "relative" }}>
               {p.isTrial && <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "#f59e0b", color: "#000", fontSize: 9, fontWeight: 800, padding: "2px 10px", borderRadius: 10, letterSpacing: 1, whiteSpace: "nowrap" }}>START HERE</div>}
-              <div style={{ fontSize: 12, fontWeight: 700, color: p.highlight ? "#00d4ff" : p.isTrial ? "#f59e0b" : "#555", marginBottom: 6 }}>{p.name}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: p.highlight ? "#00d4ff" : p.isTrial ? "#f59e0b" : "var(--text4)", marginBottom: 6 }}>{p.name}</div>
               <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", marginBottom: 14 }}>{p.price}</div>
               {p.features.map(f => (
                 <div key={f} style={{ fontSize: 12, color: "#aaa", marginBottom: 5, display: "flex", gap: 7 }}>
-                  <span style={{ color: p.highlight ? "#00d4ff" : p.isTrial ? "#f59e0b" : "#333" }}>✓</span>{f}
+                  <span style={{ color: p.highlight ? "#00d4ff" : p.isTrial ? "#f59e0b" : "var(--textdim)" }}>✓</span>{f}
                 </div>
               ))}
             </div>
@@ -662,10 +662,10 @@ function LandingPage({ navigate }) {
       </div>
 
       {/* ── LEGAL FOOTER BAR ── */}
-      <div style={{ borderTop: "1px solid rgba(255,255,255,.06)", padding: "28px 32px", background: "rgba(0,0,0,.2)" }}>
+      <div style={{ borderTop: "1px solid var(--surface3)", padding: "28px 32px", background: "rgba(0,0,0,.2)" }}>
         {/* Risk disclaimer strip */}
         <div style={{ maxWidth: 760, margin: "0 auto 16px", padding: "12px 16px", background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.1)", borderRadius: 8, textAlign: "center" }}>
-          <p style={{ fontSize: 11, color: "#888", lineHeight: 1.7, margin: 0 }}>
+          <p style={{ fontSize: 11, color: "var(--text3)", lineHeight: 1.7, margin: 0 }}>
             Trading financial instruments involves substantial risk and is not appropriate for all investors. Only risk capital should be used for trading.
             MarketDebriefs provides macro intelligence and education only — not financial advice or trading signals.
             Past performance is not indicative of future results.
@@ -673,7 +673,7 @@ function LandingPage({ navigate }) {
         </div>
         {/* Legal links */}
         <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "6px 16px" }}>
-          <span style={{ fontSize: 11, color: "#555" }}>© {new Date().getFullYear()} MarketDebriefs</span>
+          <span style={{ fontSize: 11, color: "var(--text4)" }}>© {new Date().getFullYear()} MarketDebriefs</span>
           <span style={{ color: "#2a2a2a" }}>·</span>
           {[
             { label: "General Risk Disclaimer", path: "/legal/risk" },
@@ -699,7 +699,7 @@ function LandingPage({ navigate }) {
 // ── LEGAL PAGE SHELL ──────────────────────────────────────────────────────────
 function LegalShell({ title, badge, children, navigate }) {
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)", fontFamily: "Inter, system-ui, sans-serif" }}>
       <style>{`
         .legal-h2 { font-size: 13px; font-weight: 800; color: #00d4ff; letter-spacing: 1.5px; margin: 28px 0 10px; text-transform: uppercase; }
         .legal-h3 { font-size: 12px; font-weight: 700; color: #e0e0e0; margin: 18px 0 6px; }
@@ -710,24 +710,24 @@ function LegalShell({ title, badge, children, navigate }) {
         .legal-highlight p { color: #ccc; margin: 0; }
         .legal-warning { background: rgba(255,71,87,.06); border: 1px solid rgba(255,71,87,.15); border-radius: 8px; padding: 14px 16px; margin: 16px 0; }
         .legal-warning p { color: #ffb3b3; margin: 0; }
-        hr.legal { border: none; border-top: 1px solid rgba(255,255,255,.06); margin: 24px 0; }
+        hr.legal { border: none; border-top: 1px solid var(--surface3); margin: 24px 0; }
       `}</style>
-      <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 24px", borderBottom: "1px solid rgba(255,255,255,.06)", position: "sticky", top: 0, background: "rgba(10,12,15,.96)", backdropFilter: "blur(10px)", zIndex: 100 }}>
+      <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 24px", borderBottom: "1px solid var(--surface3)", position: "sticky", top: 0, background: "rgba(10,12,15,.96)", backdropFilter: "blur(10px)", zIndex: 100 }}>
         <div onClick={() => navigate("/")} style={{ cursor: "pointer", fontSize: 14, fontWeight: 800, color: "#fff" }}>
           MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span>
         </div>
-        <button onClick={() => navigate("/")} style={{ fontSize: 9, fontFamily: "monospace", color: "#e0e0e0", padding: "3px 7px", border: "1px solid rgba(255,255,255,.25)", borderRadius: 4, background: "rgba(255,255,255,.08)", cursor: "pointer", fontWeight: 700 }}>← BACK</button>
+        <button onClick={() => navigate("/")} style={{ fontSize: 9, fontFamily: "monospace", color: "var(--text1)", padding: "3px 7px", border: "1px solid rgba(255,255,255,.25)", borderRadius: 4, background: "var(--border)", cursor: "pointer", fontWeight: 700 }}>← BACK</button>
       </nav>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 80px" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 12px", borderRadius: 20, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.05)", marginBottom: 16 }}>
           <span style={{ fontSize: 9, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5 }}>{badge}</span>
         </div>
         <h1 style={{ fontSize: "clamp(22px,4vw,34px)", fontWeight: 900, color: "#fff", letterSpacing: -0.5, marginBottom: 6 }}>{title}</h1>
-        <div style={{ fontSize: 11, color: "#555", fontFamily: "monospace", marginBottom: 32 }}>Last updated: May 2026 · marketdebriefs.com</div>
+        <div style={{ fontSize: 11, color: "var(--text4)", fontFamily: "monospace", marginBottom: 32 }}>Last updated: May 2026 · marketdebriefs.com</div>
         {children}
       </div>
-      <div style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "20px 24px", textAlign: "center", fontSize: 11, color: "#555" }}>
-        © {new Date().getFullYear()} MarketDebriefs · <a onClick={() => navigate("/legal/risk")} style={{ color: "#555", cursor: "pointer", textDecoration: "none" }}>Risk Disclaimer</a> · <a onClick={() => navigate("/legal/terms")} style={{ color: "#555", cursor: "pointer", textDecoration: "none" }}>Terms</a> · <a onClick={() => navigate("/legal/privacy")} style={{ color: "#555", cursor: "pointer", textDecoration: "none" }}>Privacy</a> · <a onClick={() => navigate("/legal/affiliate")} style={{ color: "#555", cursor: "pointer", textDecoration: "none" }}>Affiliate</a>
+      <div style={{ borderTop: "1px solid var(--surface2)", padding: "20px 24px", textAlign: "center", fontSize: 11, color: "var(--text4)" }}>
+        © {new Date().getFullYear()} MarketDebriefs · <a onClick={() => navigate("/legal/risk")} style={{ color: "var(--text4)", cursor: "pointer", textDecoration: "none" }}>Risk Disclaimer</a> · <a onClick={() => navigate("/legal/terms")} style={{ color: "var(--text4)", cursor: "pointer", textDecoration: "none" }}>Terms</a> · <a onClick={() => navigate("/legal/privacy")} style={{ color: "var(--text4)", cursor: "pointer", textDecoration: "none" }}>Privacy</a> · <a onClick={() => navigate("/legal/affiliate")} style={{ color: "var(--text4)", cursor: "pointer", textDecoration: "none" }}>Affiliate</a>
       </div>
     </div>
   );
@@ -1103,16 +1103,16 @@ function MorningDashboard({ watchList, stockWatchList, todaysBriefs, calendarEve
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <div style={{ fontSize: 9, color: "#00d4ff", letterSpacing: 2, fontWeight: 700 }}>📊 MORNING BRIEF</div>
-        <div style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>{now} ET</div>
+        <div style={{ fontSize: 9, color: "var(--text4)", fontFamily: "monospace" }}>{now} ET</div>
       </div>
 
       {/* Macro context strip — from last brief */}
       {hasContext && (
         <div style={{ padding: "9px 12px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.08)", borderRadius: 8, marginBottom: 8 }}>
           <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>CURRENT MACRO THEME</div>
-          <div style={{ fontSize: 12, color: "#ccc", lineHeight: 1.5 }}>{globalMacroContext.macro_theme}</div>
+          <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.5 }}>{globalMacroContext.macro_theme}</div>
           {globalMacroContext.instrument && (
-            <div style={{ fontSize: 9, color: "#555", marginTop: 3 }}>from {globalMacroContext.instrument} brief</div>
+            <div style={{ fontSize: 9, color: "var(--text4)", marginTop: 3 }}>from {globalMacroContext.instrument} brief</div>
           )}
         </div>
       )}
@@ -1124,7 +1124,7 @@ function MorningDashboard({ watchList, stockWatchList, todaysBriefs, calendarEve
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {upcomingHigh.map((ev, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "rgba(255,215,0,.04)", border: "1px solid rgba(255,215,0,.1)", borderRadius: 6 }}>
-                <span style={{ fontSize: 11, color: "#e0e0e0", fontWeight: 600 }}>{ev.event}</span>
+                <span style={{ fontSize: 11, color: "var(--text1)", fontWeight: 600 }}>{ev.event}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                   <span style={{ fontSize: 9, color: "#ffd700", fontFamily: "monospace" }}>{ev.time_est} ET</span>
                   <span style={{ fontSize: 8, color: ev.impact === "high" ? "#ff4757" : "#f59e0b", fontWeight: 700, padding: "1px 5px", border: "1px solid " + (ev.impact === "high" ? "rgba(255,71,87,.3)" : "rgba(245,158,11,.3)"), borderRadius: 3 }}>{ev.impact?.toUpperCase()}</span>
@@ -1144,7 +1144,7 @@ function MorningDashboard({ watchList, stockWatchList, todaysBriefs, calendarEve
                 {n.political_alert ? "🔴 POLITICAL ALERT" : n.urgency === "CRITICAL" ? "🔴 CRITICAL" : "🟠 HIGH IMPACT"}
               </div>
               <div style={{ fontSize: 11, color: n.political_alert ? "#ffb3b3" : "#ffd4a0", lineHeight: 1.4, marginBottom: 3 }}>{n.headline}</div>
-              {n.narrative_summary && <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, fontStyle: "italic" }}>{n.narrative_summary.slice(0, 120)}{n.narrative_summary.length > 120 ? "..." : ""}</div>}
+              {n.narrative_summary && <div style={{ fontSize: 10, color: "var(--text3)", lineHeight: 1.4, fontStyle: "italic" }}>{n.narrative_summary.slice(0, 120)}{n.narrative_summary.length > 120 ? "..." : ""}</div>}
             </div>
           ))}
         </div>
@@ -1153,7 +1153,7 @@ function MorningDashboard({ watchList, stockWatchList, todaysBriefs, calendarEve
       {/* Instrument Watch List */}
       {hasWatchList && (
         <div style={{ marginBottom: hasStockWL ? 8 : 0 }}>
-          <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>INSTRUMENTS</div>
+          <div style={{ fontSize: 8, color: "var(--text4)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>INSTRUMENTS</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {watchList.map((inst, i) => (
               <button key={i} onClick={() => onRunInst(inst.label)}
@@ -1197,8 +1197,8 @@ function TrackRecordTab({ trackRecord, userId, onShareRecord }) {
     return (
       <div style={{ textAlign: "center", padding: "56px 20px" }}>
         <div style={{ fontSize: 44, marginBottom: 14 }}>📈</div>
-        <div style={{ fontSize: 14, color: "#888", marginBottom: 6 }}>No calls tracked yet</div>
-        <div style={{ fontSize: 11, color: "#555", lineHeight: 1.7 }}>
+        <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 6 }}>No calls tracked yet</div>
+        <div style={{ fontSize: 11, color: "var(--text4)", lineHeight: 1.7 }}>
           Run Full Briefs on any instrument and MarketDebriefs will track whether the macro call aged well.<br/>
           Check back after 4pm EST for today's outcomes.
         </div>
@@ -1233,7 +1233,7 @@ function TrackRecordTab({ trackRecord, userId, onShareRecord }) {
         });
       }
       const canvas = await window.html2canvas(cardRef.current, {
-        backgroundColor: "#0a0c0f", scale: 2, useCORS: true, logging: false,
+        backgroundColor: "var(--bg)", scale: 2, useCORS: true, logging: false,
       });
       const blob = await new Promise(r => canvas.toBlob(r, "image/png"));
       const file = new File([blob], "marketdebriefs-track-record.png", { type: "image/png" });
@@ -1255,33 +1255,33 @@ Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
   return (
     <div>
       {/* Shareable stats card */}
-      <div ref={cardRef} style={{ background: "#0a0c0f", border: "1px solid rgba(0,212,255,.15)", borderRadius: 12, padding: "16px", marginBottom: 16 }}>
+      <div ref={cardRef} style={{ background: "var(--bg)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 12, padding: "16px", marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: "#00d4ff", letterSpacing: 1.5 }}>📊 TRACK RECORD</div>
-          <div style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>marketdebriefs.com</div>
+          <div style={{ fontSize: 9, color: "var(--text4)", fontFamily: "monospace" }}>marketdebriefs.com</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
           {[
             { label: "WIN RATE", value: winRate !== null ? `${winRate}%` : "—", color: winRate >= 60 ? "#00d4aa" : winRate >= 40 ? "#ffd700" : "#ff4757" },
             { label: "CORRECT",  value: `${correct.length}/${resolved.length}`, color: "#00d4aa" },
-            { label: "STREAK",   value: streak > 0 ? `${streak} 🔥` : "0", color: streak >= 3 ? "#ffd700" : "#888" },
+            { label: "STREAK",   value: streak > 0 ? `${streak} 🔥` : "0", color: streak >= 3 ? "#ffd700" : "var(--text3)" },
           ].map(stat => (
-            <div key={stat.label} style={{ textAlign: "center", padding: "10px 6px", background: "rgba(255,255,255,.02)", borderRadius: 8, border: "1px solid rgba(255,255,255,.06)" }}>
+            <div key={stat.label} style={{ textAlign: "center", padding: "10px 6px", background: "var(--surface1)", borderRadius: 8, border: "1px solid var(--surface3)" }}>
               <div style={{ fontSize: 18, fontWeight: 900, color: stat.color, fontFamily: "monospace" }}>{stat.value}</div>
-              <div style={{ fontSize: 8, color: "#555", letterSpacing: 1, marginTop: 3 }}>{stat.label}</div>
+              <div style={{ fontSize: 8, color: "var(--text4)", letterSpacing: 1, marginTop: 3 }}>{stat.label}</div>
             </div>
           ))}
         </div>
         {/* Recent calls */}
-        <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>RECENT CALLS</div>
+        <div style={{ fontSize: 8, color: "var(--text4)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>RECENT CALLS</div>
         {trackRecord.slice(0, 6).map((r, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--surface2)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 10, fontWeight: 800, color: r.instColor || "#00d4ff", fontFamily: "monospace", minWidth: 30 }}>{r.instFlag || r.instKey?.toUpperCase()}</span>
               <span style={{ fontSize: 9, color: r.sentiment === "bullish" ? "#00d4aa" : "#ff4757", fontWeight: 700, padding: "1px 5px", background: r.sentiment === "bullish" ? "rgba(0,212,170,.1)" : "rgba(255,71,87,.1)", borderRadius: 3 }}>
                 {r.sentiment?.toUpperCase()}
               </span>
-              <span style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>{r.date}</span>
+              <span style={{ fontSize: 9, color: "var(--text4)", fontFamily: "monospace" }}>{r.date}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               {r.pct !== null && (
@@ -1291,11 +1291,11 @@ Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
               )}
               {r.outcome === "correct"   && <span style={{ fontSize: 12 }}>✅</span>}
               {r.outcome === "incorrect" && <span style={{ fontSize: 12 }}>❌</span>}
-              {r.outcome === null        && <span style={{ fontSize: 9, color: "#555" }}>pending</span>}
+              {r.outcome === null        && <span style={{ fontSize: 9, color: "var(--text4)" }}>pending</span>}
             </div>
           </div>
         ))}
-        <div style={{ marginTop: 10, fontSize: 9, color: "#555", textAlign: "center" }}>Brief First, Trade After · marketdebriefs.com</div>
+        <div style={{ marginTop: 10, fontSize: 9, color: "var(--text4)", textAlign: "center" }}>Brief First, Trade After · marketdebriefs.com</div>
       </div>
 
       {/* Share button */}
@@ -1303,7 +1303,7 @@ Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
         <button onClick={handleShare} disabled={sharing} style={{
           width: "100%", padding: 12, borderRadius: 8, border: "none",
           background: sharing ? "rgba(0,212,255,.05)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
-          color: sharing ? "#555" : "#000",
+          color: sharing ? "var(--text4)" : "#000",
           fontSize: 13, fontWeight: 800, cursor: sharing ? "wait" : "pointer", fontFamily: "inherit", marginBottom: 16,
         }}>
           {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share My Track Record"}
@@ -1313,19 +1313,19 @@ Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
       {/* Full history */}
       {trackRecord.length > 6 && (
         <div>
-          <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 8 }}>FULL HISTORY ({trackRecord.length} calls)</div>
+          <div style={{ fontSize: 8, color: "var(--text4)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 8 }}>FULL HISTORY ({trackRecord.length} calls)</div>
           {trackRecord.slice(6).map((r, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+            <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--surface2)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 10, fontWeight: 800, color: r.instColor || "#00d4ff", fontFamily: "monospace", minWidth: 30 }}>{r.instFlag || r.instKey?.toUpperCase()}</span>
                 <span style={{ fontSize: 9, color: r.sentiment === "bullish" ? "#00d4aa" : "#ff4757", fontWeight: 700 }}>{r.sentiment?.toUpperCase()}</span>
-                <span style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>{r.date}</span>
+                <span style={{ fontSize: 9, color: "var(--text4)", fontFamily: "monospace" }}>{r.date}</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 {r.pct !== null && <span style={{ fontSize: 9, color: r.pct >= 0 ? "#00d4aa" : "#ff4757", fontFamily: "monospace" }}>{r.pct >= 0 ? "+" : ""}{r.pct?.toFixed(1)}%</span>}
                 {r.outcome === "correct"   && <span>✅</span>}
                 {r.outcome === "incorrect" && <span>❌</span>}
-                {r.outcome === null        && <span style={{ fontSize: 9, color: "#555" }}>pending</span>}
+                {r.outcome === null        && <span style={{ fontSize: 9, color: "var(--text4)" }}>pending</span>}
               </div>
             </div>
           ))}
@@ -1346,7 +1346,7 @@ function InstrumentHeatmap({ watchList, userId, onTap }) {
     TAILWIND: { bg: "rgba(0,212,170,.12)",  border: "rgba(0,212,170,.35)", color: "#00d4aa", dot: "#00d4aa" },
     HEADWIND: { bg: "rgba(255,71,87,.12)",  border: "rgba(255,71,87,.35)", color: "#ff4757", dot: "#ff4757" },
     MIXED:    { bg: "rgba(255,215,0,.1)",   border: "rgba(255,215,0,.3)",  color: "#ffd700", dot: "#ffd700" },
-    NEUTRAL:  { bg: "rgba(255,255,255,.04)",border: "rgba(255,255,255,.12)",color: "#666",   dot: "#444"   },
+    NEUTRAL:  { bg: "var(--surface2)",border: "var(--border2)",color: "#666",   dot: "var(--text5)"   },
   };
 
   const items = watchList.map(inst => {
@@ -1362,7 +1362,7 @@ function InstrumentHeatmap({ watchList, userId, onTap }) {
 
   return (
     <div style={{ marginBottom: 14 }}>
-      <div style={{ fontSize: 8, color: "#555", letterSpacing: 2, fontWeight: 700, marginBottom: 7, fontFamily: "monospace" }}>MACRO HEATMAP</div>
+      <div style={{ fontSize: 8, color: "var(--text4)", letterSpacing: 2, fontWeight: 700, marginBottom: 7, fontFamily: "monospace" }}>MACRO HEATMAP</div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         {items.map(({ inst, verdict, vc, hasData }, i) => (
           <button key={i} onClick={() => onTap(inst.label)}
@@ -1387,7 +1387,7 @@ function AppShell({ navigate }) {
 
 function Spinner() {
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0c0f", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ width: 28, height: 28, border: "2px solid #1a1f2e", borderTop: "2px solid #00d4ff", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
@@ -1722,7 +1722,7 @@ function UpgradeModal({ reason, onClose, userId, email, isOnTrial, trialExpired 
   };
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ background: "#0d1117", border: "1px solid rgba(0,212,255,.2)", borderRadius: 16, padding: 32, maxWidth: 380, width: "100%", textAlign: "center" }}>
+      <div style={{ background: "var(--bg2)", border: "1px solid rgba(0,212,255,.2)", borderRadius: 16, padding: 32, maxWidth: 380, width: "100%", textAlign: "center" }}>
         <div style={{ fontSize: 32, marginBottom: 16 }}>📊</div>
         <div style={{ fontSize: 20, fontWeight: 800, color: "#f0f0f0", marginBottom: 10 }}>
           {trialExpired ? "Your Trial Has Ended" : isOnTrial ? "Lock In Pro Access" : reason === "limit" ? "Daily Limit Reached" : reason === "stocks" ? "Equity Debriefs  -  Pro" : "Pro Feature"}
@@ -1749,7 +1749,7 @@ function UpgradeModal({ reason, onClose, userId, email, isOnTrial, trialExpired 
         <button onClick={checkout} disabled={loading} style={{ width: "100%", padding: "14px 20px", borderRadius: 10, border: "none", cursor: loading ? "wait" : "pointer", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", fontSize: 15, fontWeight: 800, fontFamily: "inherit", marginBottom: 12 }}>
           {loading ? "Redirecting…" : isOnTrial ? "Continue with Pro  -  €49/mo" : trialExpired ? "Reactivate Pro  -  €49/mo" : "Start 7-Day Free Trial  -  €49/mo after"}
         </button>
-        <button onClick={onClose} style={{ background: "none", border: "none", color: "#888", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Maybe later</button>
+        <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Maybe later</button>
       </div>
     </div>
   );
@@ -1759,7 +1759,7 @@ function UpgradeModal({ reason, onClose, userId, email, isOnTrial, trialExpired 
 function AuthScreen() {
   const [view, setView] = useState("sign-up");
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0c0f", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20 }}>
 
       {/* Logo */}
       <div style={{ marginBottom: 24, textAlign: "center" }}>
@@ -1777,16 +1777,16 @@ function AuthScreen() {
     <text x="145" y="66" fontFamily="'Courier New', monospace" fontSize="7.5" fill="#4d8f8f" letterSpacing="3.5">BRIEF FIRST · TRADE AFTER</text>
   </svg>
 </div>
-        <div style={{ fontSize: 12, color: "#888", marginTop: 4 }}>Know the macro before you trade</div>
+        <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 4 }}>Know the macro before you trade</div>
       </div>
 
       {/* Tab toggle  -  prominent, above the form */}
-      <div style={{ display: "flex", width: "100%", maxWidth: 400, marginBottom: 0, background: "#0d1117", borderRadius: "10px 10px 0 0", border: "1px solid rgba(255,255,255,.07)", borderBottom: "none", overflow: "hidden" }}>
+      <div style={{ display: "flex", width: "100%", maxWidth: 400, marginBottom: 0, background: "var(--bg2)", borderRadius: "10px 10px 0 0", border: "1px solid rgba(255,255,255,.07)", borderBottom: "none", overflow: "hidden" }}>
         <button
           onClick={() => setView("sign-up")}
           style={{ flex: 1, padding: "13px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700,
             background: view === "sign-up" ? "rgba(0,212,255,.1)" : "transparent",
-            color: view === "sign-up" ? "#00d4ff" : "#333",
+            color: view === "sign-up" ? "#00d4ff" : "var(--textdim)",
             borderBottom: view === "sign-up" ? "2px solid #00d4ff" : "2px solid transparent",
             transition: "all .15s"
           }}>
@@ -1796,7 +1796,7 @@ function AuthScreen() {
           onClick={() => setView("sign-in")}
           style={{ flex: 1, padding: "13px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700,
             background: view === "sign-in" ? "rgba(0,212,255,.1)" : "transparent",
-            color: view === "sign-in" ? "#00d4ff" : "#333",
+            color: view === "sign-in" ? "#00d4ff" : "var(--textdim)",
             borderBottom: view === "sign-in" ? "2px solid #00d4ff" : "2px solid transparent",
             transition: "all .15s"
           }}>
@@ -1807,20 +1807,20 @@ function AuthScreen() {
       {/* Clerk form */}
       <div style={{ width: "100%", maxWidth: 400 }}>
         {view === "sign-up"
-          ? <SignUp forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" }, elements: { card: { borderRadius: "0 0 10px 10px", borderTop: "none" }, footer: { display: "none" }, footerAction: { display: "none" }, footerActionLink: { display: "none" }, footerPages: { display: "none" } } }} />
-          : <SignIn forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "#0d1117", colorText: "#e0e0e0", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "#e0e0e0" }, elements: { card: { borderRadius: "0 0 10px 10px", borderTop: "none" }, footer: { display: "none" }, footerAction: { display: "none" }, footerActionLink: { display: "none" }, footerPages: { display: "none" } } }} />
+          ? <SignUp forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "var(--bg2)", colorText: "var(--text1)", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "var(--text1)" }, elements: { card: { borderRadius: "0 0 10px 10px", borderTop: "none" }, footer: { display: "none" }, footerAction: { display: "none" }, footerActionLink: { display: "none" }, footerPages: { display: "none" } } }} />
+          : <SignIn forceRedirectUrl="/app" appearance={{ variables: { colorBackground: "var(--bg2)", colorText: "var(--text1)", colorPrimary: "#00d4ff", colorInputBackground: "#161b22", colorInputText: "var(--text1)" }, elements: { card: { borderRadius: "0 0 10px 10px", borderTop: "none" }, footer: { display: "none" }, footerAction: { display: "none" }, footerActionLink: { display: "none" }, footerPages: { display: "none" } } }} />
         }
       </div>
 
       {/* Manual toggle fallback - in case Clerk's internal links don't work */}
-      <div style={{ marginTop: 12, fontSize: 12, color: "#888", textAlign: "center" }}>
+      <div style={{ marginTop: 12, fontSize: 12, color: "var(--text3)", textAlign: "center" }}>
         {view === "sign-up"
           ? <>Already have an account?{" "}<button onClick={() => setView("sign-in")} style={{ background: "none", border: "none", color: "#00d4ff", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: 0, textDecoration: "underline" }}>Sign in</button></>
           : <>Don't have an account?{" "}<button onClick={() => setView("sign-up")} style={{ background: "none", border: "none", color: "#00d4ff", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: 0, textDecoration: "underline" }}>Sign up free</button></>
         }
       </div>
       {/* Free tier reminder */}
-      <div style={{ marginTop: 10, fontSize: 11, color: "#555", textAlign: "center", fontFamily: "monospace", letterSpacing: 0.5 }}>
+      <div style={{ marginTop: 10, fontSize: 11, color: "var(--text4)", textAlign: "center", fontFamily: "monospace", letterSpacing: 0.5 }}>
         7-day free trial · Cancel anytime
       </div>
 
@@ -1834,7 +1834,7 @@ function Loader() {
     <div>
       <style>{"@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
       {[90, 65, 80, 55].map((h, i) => (
-        <div key={i} style={{ height: h, borderRadius: 8, marginBottom: 12, background: "linear-gradient(90deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 100%)", backgroundSize: "200% 100%", animation: "sh 1.4s " + (i * 0.15) + "s infinite" }} />
+        <div key={i} style={{ height: h, borderRadius: 8, marginBottom: 12, background: "linear-gradient(90deg,rgba(255,255,255,.03) 0%,var(--border) 50%,rgba(255,255,255,.03) 100%)", backgroundSize: "200% 100%", animation: "sh 1.4s " + (i * 0.15) + "s infinite" }} />
       ))}
     </div>
   );
@@ -1844,7 +1844,7 @@ function EventCard({ ev }) {
   const [open, setOpen] = useState(false);
   const c = DC[ev.direction] || "#666";
   return (
-    <div onClick={() => setOpen(o => !o)} style={{ background: DB[ev.direction] || "rgba(255,255,255,.02)", borderLeft: "3px solid " + c, border: "1px solid " + c + "22", borderRadius: 8, padding: "13px 15px", marginBottom: 9, cursor: "pointer" }}>
+    <div onClick={() => setOpen(o => !o)} style={{ background: DB[ev.direction] || "var(--surface1)", borderLeft: "3px solid " + c, border: "1px solid " + c + "22", borderRadius: 8, padding: "13px 15px", marginBottom: 9, cursor: "pointer" }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", gap: 7, marginBottom: 4, flexWrap: "wrap", alignItems: "center" }}>
@@ -1856,17 +1856,17 @@ function EventCard({ ev }) {
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
           <div style={{ fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 4, color: c, border: "1px solid " + c + "44", background: c + "11" }}>{ev.direction}</div>
-          <div style={{ fontSize: 10, color: "#888", marginTop: 3 }}>{ev.confidence}</div>
+          <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 3 }}>{ev.confidence}</div>
         </div>
       </div>
       {open && (
-        <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,.06)" }}>
-          <div style={{ fontSize: 9, color: "#888", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>WHY IT MOVES PRICE</div>
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--surface3)" }}>
+          <div style={{ fontSize: 9, color: "var(--text3)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>WHY IT MOVES PRICE</div>
           <div style={{ fontSize: 13, color: "#c8d6e5", lineHeight: 1.75, background: "rgba(0,0,0,.25)", padding: 11, borderRadius: 6 }}>{ev.why_it_moves_price}</div>
         </div>
       )}
       <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: open ? "#555" : "#ffd700", background: open ? "transparent" : "rgba(255,215,0,.08)", border: open ? "none" : "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: open ? 0 : "2px 8px" }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: open ? "var(--text4)" : "#ffd700", background: open ? "transparent" : "rgba(255,215,0,.08)", border: open ? "none" : "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: open ? 0 : "2px 8px" }}>
           {open ? "▲ Close" : "▼ Why does this move price?"}
         </span>
       </div>
@@ -1880,7 +1880,7 @@ function StockGate({ onUpgrade }) {
     <div style={{ textAlign: "center", padding: "48px 20px" }}>
       <div style={{ fontSize: 36, marginBottom: 16 }}>📈</div>
       <div style={{ fontSize: 16, fontWeight: 800, color: "#f59e0b", marginBottom: 8 }}>Equity Debriefs</div>
-      <div style={{ fontSize: 13, color: "#555", lineHeight: 1.7, maxWidth: 340, margin: "0 auto 24px" }}>
+      <div style={{ fontSize: 13, color: "var(--text4)", lineHeight: 1.7, maxWidth: 340, margin: "0 auto 24px" }}>
         Search any stock or ticker and get a full macro debrief  - 
         earnings context, tailwinds, headwinds, sector rotation and institutional flow.
         <br /><br />
@@ -1897,7 +1897,7 @@ function StockGate({ onUpgrade }) {
       <button onClick={onUpgrade} style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "#000", border: "none", padding: "13px 32px", borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
         UPGRADE TO PRO  -  €49/mo
       </button>
-      <div style={{ marginTop: 10, fontSize: 11, color: "#555" }}>Includes Scalper Mode & all instruments</div>
+      <div style={{ marginTop: 10, fontSize: 11, color: "var(--text4)" }}>Includes Scalper Mode & all instruments</div>
     </div>
   );
 }
@@ -1911,9 +1911,9 @@ function BreakingGate({ onUpgrade }) {
       <div style={{ textAlign: "center", marginBottom: 28 }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
         <div style={{ fontSize: 17, fontWeight: 900, color: "#fff", marginBottom: 10, letterSpacing: -0.5 }}>Breaking Narratives</div>
-        <div style={{ fontSize: 13, color: "#555", lineHeight: 1.75, maxWidth: 340, margin: "0 auto" }}>
+        <div style={{ fontSize: 13, color: "var(--text4)", lineHeight: 1.75, maxWidth: 340, margin: "0 auto" }}>
           See a headline in Discord or on Twitter and have no idea how it affects your trade?
-          <span style={{ color: "#e0e0e0" }}> Paste it in. Get the full macro explanation instantly.</span>
+          <span style={{ color: "var(--text1)" }}> Paste it in. Get the full macro explanation instantly.</span>
         </div>
       </div>
 
@@ -1923,7 +1923,7 @@ function BreakingGate({ onUpgrade }) {
           <div style={{ fontSize: 10, color: "#ff4757", fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>📡 LIVE FEED</div>
           <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6 }}>
             Real-time macro wire stories interpreted every 15 minutes during market hours.
-            Know when a breaking event invalidates your setup <em style={{ color: "#888" }}>before</em> it hits the chart.
+            Know when a breaking event invalidates your setup <em style={{ color: "var(--text3)" }}>before</em> it hits the chart.
           </div>
         </div>
         <div style={{ padding: "14px 16px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.12)", borderRadius: 10 }}>
@@ -1936,16 +1936,16 @@ function BreakingGate({ onUpgrade }) {
       </div>
 
       {/* Example scenarios */}
-      <div style={{ maxWidth: 360, margin: "0 auto 24px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 10, padding: "14px 16px" }}>
-        <div style={{ fontSize: 10, color: "#888", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>EXAMPLE USE CASES</div>
+      <div style={{ maxWidth: 360, margin: "0 auto 24px", background: "var(--surface1)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 10, padding: "14px 16px" }}>
+        <div style={{ fontSize: 10, color: "var(--text3)", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>EXAMPLE USE CASES</div>
         {[
           { q: "'Fed signals higher for longer'", a: "What does this mean for EUR/USD and Gold?" },
           { q: "'Trump announces new Iran sanctions'", a: "How does this hit Oil, Dollar and risk assets?" },
           { q: "'OPEC+ cuts production by 1M barrels'", a: "Why does this move Brent and what's the macro chain?" },
         ].map((ex, i) => (
-          <div key={i} style={{ marginBottom: i < 2 ? 10 : 0, paddingBottom: i < 2 ? 10 : 0, borderBottom: i < 2 ? "1px solid rgba(255,255,255,.04)" : "none" }}>
-            <div style={{ fontSize: 11, color: "#888", fontStyle: "italic", marginBottom: 3 }}>{ex.q}</div>
-            <div style={{ fontSize: 11, color: "#888" }}>→ {ex.a}</div>
+          <div key={i} style={{ marginBottom: i < 2 ? 10 : 0, paddingBottom: i < 2 ? 10 : 0, borderBottom: i < 2 ? "1px solid var(--surface2)" : "none" }}>
+            <div style={{ fontSize: 11, color: "var(--text3)", fontStyle: "italic", marginBottom: 3 }}>{ex.q}</div>
+            <div style={{ fontSize: 11, color: "var(--text3)" }}>→ {ex.a}</div>
           </div>
         ))}
       </div>
@@ -1960,7 +1960,7 @@ function BreakingGate({ onUpgrade }) {
           "Watch For and Fades When guidance",
           "Shareable narrative cards for X",
         ].map(f => (
-          <div key={f} style={{ fontSize: 12, color: "#555", marginBottom: 7, display: "flex", gap: 8, alignItems: "flex-start" }}>
+          <div key={f} style={{ fontSize: 12, color: "var(--text4)", marginBottom: 7, display: "flex", gap: 8, alignItems: "flex-start" }}>
             <span style={{ color: "#ff4757", flexShrink: 0 }}>✓</span>{f}
           </div>
         ))}
@@ -1970,7 +1970,7 @@ function BreakingGate({ onUpgrade }) {
         <button onClick={onUpgrade} style={{ background: "linear-gradient(135deg,#ff4757,#cc0011)", color: "#fff", border: "none", padding: "13px 36px", borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}>
           UPGRADE TO PRO  -  €49/mo
         </button>
-        <div style={{ fontSize: 11, color: "#555" }}>Includes Equity Debriefs, Scalper Mode & all instruments</div>
+        <div style={{ fontSize: 11, color: "var(--text4)" }}>Includes Equity Debriefs, Scalper Mode & all instruments</div>
       </div>
     </div>
   );
@@ -1996,9 +1996,9 @@ function SocialHeat({ ticker }) {
   }, [ticker]);
 
   if (loading) return (
-    <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
-      <div style={{ fontSize: 9, color: "#888", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>SOCIAL HEAT</div>
-      <div style={{ fontSize: 11, color: "#888" }}>Reading social pulse...</div>
+    <div style={{ background: "var(--surface1)", border: "1px solid var(--surface3)", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
+      <div style={{ fontSize: 9, color: "var(--text3)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>SOCIAL HEAT</div>
+      <div style={{ fontSize: 11, color: "var(--text3)" }}>Reading social pulse...</div>
     </div>
   );
 
@@ -2036,10 +2036,10 @@ function SocialHeat({ ticker }) {
       {/* Buzz score bar */}
       <div style={{ marginBottom: 10 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-          <span style={{ fontSize: 9, color: "#555", letterSpacing: 1 }}>BUZZ SCORE</span>
+          <span style={{ fontSize: 9, color: "var(--text4)", letterSpacing: 1 }}>BUZZ SCORE</span>
           <span style={{ fontSize: 11, fontWeight: 700, color: buzzColor }}>{Math.round(buzz)}/100</span>
         </div>
-        <div style={{ height: 4, background: "rgba(255,255,255,.06)", borderRadius: 2 }}>
+        <div style={{ height: 4, background: "var(--surface3)", borderRadius: 2 }}>
           <div style={{ height: 4, width: Math.min(buzz, 100) + "%", background: buzzColor, borderRadius: 2, transition: "width .4s ease" }} />
         </div>
       </div>
@@ -2060,7 +2060,7 @@ function SocialHeat({ ticker }) {
       {/* Trend history sparkline */}
       {data.trend_history && data.trend_history.length > 1 && (
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 9, color: "#888", letterSpacing: 1, marginBottom: 5 }}>7-DAY BUZZ</div>
+          <div style={{ fontSize: 9, color: "var(--text3)", letterSpacing: 1, marginBottom: 5 }}>7-DAY BUZZ</div>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 24 }}>
             {data.trend_history.slice(-7).map((v, i) => {
               const h = Math.max(3, Math.round((v / 100) * 24));
@@ -2071,7 +2071,7 @@ function SocialHeat({ ticker }) {
         </div>
       )}
 
-      <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4 }}>
+      <div style={{ fontSize: 10, color: "var(--text3)", lineHeight: 1.4 }}>
         {buzz >= 70
           ? "Unusually high social activity - often precedes volatility. Cross-reference with fundamentals before trading."
           : buzz >= 40
@@ -2172,10 +2172,10 @@ function AgedWellChart({ candles, briefTimestamp }) {
       const chart = window.LightweightCharts.createChart(containerRef.current, {
         width:  containerRef.current.clientWidth,
         height: 160,
-        layout: { background: { color: "#0a0c0f" }, textColor: "#444" },
-        grid:   { vertLines: { color: "rgba(255,255,255,.04)" }, horzLines: { color: "rgba(255,255,255,.04)" } },
-        rightPriceScale: { borderColor: "rgba(255,255,255,.08)" },
-        timeScale: { borderColor: "rgba(255,255,255,.08)", timeVisible: true, secondsVisible: false },
+        layout: { background: { color: "var(--bg)" }, textColor: "var(--text5)" },
+        grid:   { vertLines: { color: "var(--surface2)" }, horzLines: { color: "var(--surface2)" } },
+        rightPriceScale: { borderColor: "var(--border)" },
+        timeScale: { borderColor: "var(--border)", timeVisible: true, secondsVisible: false },
         crosshair: { mode: 0 },
       });
       chartRef.current = chart;
@@ -2245,7 +2245,7 @@ function AgedWellCard({ call, candles, outcome, onShare, onDismiss }) {
         });
       }
       const canvas = await window.html2canvas(cardRef.current, {
-        backgroundColor: "#0a0c0f", scale: 2, useCORS: true, logging: false,
+        backgroundColor: "var(--bg)", scale: 2, useCORS: true, logging: false,
       });
       const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
       const file = new File([blob], `marketdebriefs-aged-well-${call.ticker}.png`, { type: "image/png" });
@@ -2273,15 +2273,15 @@ Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
   return (
     <div style={{ marginBottom: 16, border: "1px solid rgba(255,215,0,.25)", borderRadius: 12, overflow: "hidden", background: "rgba(255,215,0,.03)" }}>
       {/* Card content — captured by html2canvas */}
-      <div ref={cardRef} style={{ background: "#0a0c0f", padding: "14px 14px 10px" }}>
+      <div ref={cardRef} style={{ background: "var(--bg)", padding: "14px 14px 10px" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 14 }}>✅</span>
             <span style={{ fontSize: 10, fontWeight: 800, color: "#ffd700", letterSpacing: 1.5 }}>AGED WELL</span>
-            <span style={{ fontSize: 10, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{call.ticker}</span>
+            <span style={{ fontSize: 10, fontWeight: 800, color: "var(--text1)", fontFamily: "monospace" }}>{call.ticker}</span>
           </div>
-          <span style={{ fontSize: 9, color: "#888", fontFamily: "monospace" }}>marketdebriefs.com</span>
+          <span style={{ fontSize: 9, color: "var(--text3)", fontFamily: "monospace" }}>marketdebriefs.com</span>
         </div>
 
         {/* Original brief snippet */}
@@ -2289,7 +2289,7 @@ Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
           <div style={{ fontSize: 8, color: "#ffd700", fontWeight: 700, letterSpacing: 1.2, marginBottom: 4 }}>
             BRIEF GENERATED {briefTime} EST
           </div>
-          <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>
+          <div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5 }}>
             {call.headline_summary?.slice(0, 120)}{call.headline_summary?.length > 120 ? "..." : ""}
           </div>
           <div style={{ marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
@@ -2307,7 +2307,7 @@ Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
 
         {/* Outcome */}
         <div style={{ marginTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontSize: 11, color: "#e0e0e0" }}>
+          <div style={{ fontSize: 11, color: "var(--text1)" }}>
             Session close: <span style={{ fontWeight: 800, color: outcome.direction === "up" ? "#00d4aa" : "#ff4757",
               fontFamily: "monospace" }}>{pctStr}</span>
           </div>
@@ -2320,15 +2320,15 @@ Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
         <button onClick={handleShare} disabled={sharing} style={{
           flex: 1, padding: "10px", borderRadius: 8, border: "none",
           background: sharing ? "rgba(255,215,0,.05)" : "linear-gradient(135deg,#ffd700,#f59e0b)",
-          color: sharing ? "#555" : "#000",
+          color: sharing ? "var(--text4)" : "#000",
           fontSize: 12, fontWeight: 800, fontFamily: "inherit", cursor: sharing ? "wait" : "pointer",
         }}>
           {sharing ? "Preparing..." : shared ? "✓ Shared!" : "↗ Share This Call"}
         </button>
         <button onClick={onDismiss} style={{
           padding: "10px 16px", borderRadius: 8,
-          border: "1px solid rgba(255,255,255,.08)", background: "transparent",
-          color: "#888", fontSize: 12, cursor: "pointer", fontFamily: "inherit",
+          border: "1px solid var(--border)", background: "transparent",
+          color: "var(--text3)", fontSize: 12, cursor: "pointer", fontFamily: "inherit",
         }}>Dismiss</button>
       </div>
     </div>
@@ -2392,20 +2392,20 @@ function AgedWellSection() {
               {agedCalls.length} aged well
             </span>
           )}
-          {loading && <span style={{ fontSize: 9, color: "#555" }}>Checking calls...</span>}
+          {loading && <span style={{ fontSize: 9, color: "var(--text4)" }}>Checking calls...</span>}
         </div>
-        <span style={{ fontSize: 10, color: "#555" }}>{open ? "▲" : "▼"}</span>
+        <span style={{ fontSize: 10, color: "var(--text4)" }}>{open ? "▲" : "▼"}</span>
       </button>
 
       {open && (
         <div>
           {loading && (
-            <div style={{ textAlign: "center", padding: "16px 0", fontSize: 11, color: "#555" }}>
+            <div style={{ textAlign: "center", padding: "16px 0", fontSize: 11, color: "var(--text4)" }}>
               Checking today's calls against market close...
             </div>
           )}
           {!loading && agedCalls.length === 0 && (
-            <div style={{ textAlign: "center", padding: "12px 0", fontSize: 11, color: "#555" }}>
+            <div style={{ textAlign: "center", padding: "12px 0", fontSize: 11, color: "var(--text4)" }}>
               No calls aged well today — market didn't move enough in the predicted direction.
             </div>
           )}
@@ -2455,9 +2455,9 @@ function EarningsWatch({ onBriefMe, ewData, ewImplications, ewLoading }) {
               {data.prevMovers.length > 0 && `${data.prevMovers.length} recent`}
             </span>
           )}
-          {ewLoading && <span style={{ fontSize: 9, color: "#555" }}>Loading…</span>}
+          {ewLoading && <span style={{ fontSize: 9, color: "var(--text4)" }}>Loading…</span>}
         </div>
-        <span style={{ fontSize: 10, color: "#555" }}>{open ? "▲" : "▼"}</span>
+        <span style={{ fontSize: 10, color: "var(--text4)" }}>{open ? "▲" : "▼"}</span>
       </button>
 
       {open && !ewLoading && data && (
@@ -2468,10 +2468,10 @@ function EarningsWatch({ onBriefMe, ewData, ewImplications, ewLoading }) {
                 <div style={{ marginBottom: 8 }}>
                   <div style={{ fontSize: 8, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>☀️ PRE-MARKET TODAY</div>
                   {todayPre.map(e => (
-                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--surface2)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
-                        <span style={{ fontSize: 10, color: "#888" }}>{e.name}</span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text1)", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 10, color: "var(--text3)" }}>{e.name}</span>
                       </div>
                       <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(245,158,11,.3)", background: "rgba(245,158,11,.06)", color: "#f59e0b", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
                     </div>
@@ -2482,10 +2482,10 @@ function EarningsWatch({ onBriefMe, ewData, ewImplications, ewLoading }) {
                 <div style={{ marginBottom: todayTbd.length > 0 ? 8 : 0 }}>
                   <div style={{ fontSize: 8, color: "#c084fc", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>🌙 AFTER CLOSE TODAY</div>
                   {todayPost.map(e => (
-                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--surface2)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
-                        <span style={{ fontSize: 10, color: "#888" }}>{e.name}</span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text1)", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 10, color: "var(--text3)" }}>{e.name}</span>
                       </div>
                       <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(192,132,252,.3)", background: "rgba(192,132,252,.06)", color: "#c084fc", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
                     </div>
@@ -2494,14 +2494,14 @@ function EarningsWatch({ onBriefMe, ewData, ewImplications, ewLoading }) {
               )}
               {todayTbd.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>📋 REPORTING TODAY</div>
+                  <div style={{ fontSize: 8, color: "var(--text4)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>📋 REPORTING TODAY</div>
                   {todayTbd.map(e => (
-                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                    <div key={e.ticker} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--surface2)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
-                        <span style={{ fontSize: 10, color: "#888" }}>{e.name}</span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text1)", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 10, color: "var(--text3)" }}>{e.name}</span>
                       </div>
-                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#555", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
+                      <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "var(--text4)", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>Brief Me</button>
                     </div>
                   ))}
                 </div>
@@ -2513,28 +2513,28 @@ function EarningsWatch({ onBriefMe, ewData, ewImplications, ewLoading }) {
               <div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>⚡ RECENT EARNINGS</div>
               {data.prevMovers.map(e => {
                 const impl = ewImplications[e.ticker];
-                const beatColor = e.pending ? "#555" : e.beat ? "#00d4aa" : "#ff4757";
+                const beatColor = e.pending ? "var(--text4)" : e.beat ? "#00d4aa" : "#ff4757";
                 const beatLabel = e.pending ? "PENDING" : e.beat ? "BEAT" : "MISS";
-                const badgeBg   = e.pending ? "rgba(255,255,255,.04)" : e.beat ? "rgba(0,212,170,.1)" : "rgba(255,71,87,.1)";
+                const badgeBg   = e.pending ? "var(--surface2)" : e.beat ? "rgba(0,212,170,.1)" : "rgba(255,71,87,.1)";
                 const badgeBdr  = e.pending ? "rgba(255,255,255,.1)" : e.beat ? "rgba(0,212,170,.25)" : "rgba(255,71,87,.25)";
                 return (
-                  <div key={e.ticker} style={{ padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                  <div key={e.ticker} style={{ padding: "8px 0", borderBottom: "1px solid var(--surface2)" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: (!e.pending && impl) ? 6 : 2 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#e0e0e0", fontFamily: "monospace" }}>{e.ticker}</span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text1)", fontFamily: "monospace" }}>{e.ticker}</span>
                         <span style={{ fontSize: 9, fontWeight: 700, color: beatColor, background: badgeBg, border: "1px solid " + badgeBdr, borderRadius: 3, padding: "1px 5px" }}>{beatLabel}</span>
                         {e.surprise != null && !e.pending && <span style={{ fontSize: 9, color: beatColor }}>{e.beat ? "+" : ""}{e.surprise}% vs est.</span>}
-                        {e.pending && <span style={{ fontSize: 9, color: "#888" }}>Results pending</span>}
+                        {e.pending && <span style={{ fontSize: 9, color: "var(--text3)" }}>Results pending</span>}
                       </div>
                       <button onClick={() => onBriefMe(e.ticker)} style={{ fontSize: 9, padding: "4px 10px", borderRadius: 5, border: "1px solid rgba(255,71,87,.3)", background: "rgba(255,71,87,.06)", color: "#ff4757", cursor: "pointer", fontFamily: "inherit", fontWeight: 700, flexShrink: 0 }}>Brief Me</button>
                     </div>
                     {!e.pending && impl ? (
                       <div style={{ paddingLeft: 2 }}>
-                        <div style={{ fontSize: 11, color: "#555", lineHeight: 1.5, marginBottom: 2 }}>{impl.implication}</div>
+                        <div style={{ fontSize: 11, color: "var(--text4)", lineHeight: 1.5, marginBottom: 2 }}>{impl.implication}</div>
                         <div style={{ fontSize: 10, color: "#00d4ff", opacity: 0.7 }}>📊 {impl.index_impact}</div>
                       </div>
                     ) : !e.pending && e.beat != null ? (
-                      <div style={{ fontSize: 10, color: "#555", paddingLeft: 2 }}>Generating macro implication…</div>
+                      <div style={{ fontSize: 10, color: "var(--text4)", paddingLeft: 2 }}>Generating macro implication…</div>
                     ) : null}
                   </div>
                 );
@@ -2542,7 +2542,7 @@ function EarningsWatch({ onBriefMe, ewData, ewImplications, ewLoading }) {
             </div>
           )}
           {data.reportingToday.length === 0 && data.prevMovers.length === 0 && (
-            <div style={{ fontSize: 11, color: "#555", textAlign: "center", padding: "8px 0" }}>No large cap earnings in this window</div>
+            <div style={{ fontSize: 11, color: "var(--text4)", textAlign: "center", padding: "8px 0" }}>No large cap earnings in this window</div>
           )}
         </div>
       )}
@@ -2672,7 +2672,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
         <div style={{ marginBottom: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <div style={{ fontSize: 10, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700 }}>⭐ MY STOCKS</div>
-            <div style={{ fontSize: 9, color: "#555" }}>up to 7 · tap to brief</div>
+            <div style={{ fontSize: 9, color: "var(--text4)" }}>up to 7 · tap to brief</div>
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {stockWatchList.map((item, i) => {
@@ -2696,37 +2696,37 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <div style={{ fontSize: 10, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700 }}>⚡ MACRO SECTOR IMPACT</div>
-            <div style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>from {macroContext.instrument} brief</div>
+            <div style={{ fontSize: 9, color: "var(--text4)", fontFamily: "monospace" }}>from {macroContext.instrument} brief</div>
           </div>
           <div style={{ padding: "8px 12px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)", borderRadius: 8, marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: "#555", lineHeight: 1.5 }}>{macroContext.macro_theme}</div>
+            <div style={{ fontSize: 11, color: "var(--text4)", lineHeight: 1.5 }}>{macroContext.macro_theme}</div>
           </div>
 
           {sectorLoading && (
-            <div style={{ textAlign: "center", padding: "16px 0", fontSize: 12, color: "#555" }}>Analysing sector impacts…</div>
+            <div style={{ textAlign: "center", padding: "16px 0", fontSize: 12, color: "var(--text4)" }}>Analysing sector impacts…</div>
           )}
 
           {sectorData?.sectors && sectorData.sectors.map((sector, i) => {
-            const c = FC[sector.flow] || "#555";
+            const c = FC[sector.flow] || "var(--text4)";
             const isExp = expandedSector === i;
             return (
               <div key={i} style={{ marginBottom: 8 }}>
                 <div
                   onClick={() => setExpandedSector(isExp ? null : i)}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", background: isExp ? c + "10" : "rgba(255,255,255,.02)", border: "1px solid " + (isExp ? c + "30" : "rgba(255,255,255,.06)"), borderLeft: "3px solid " + c, borderRadius: "0 8px 8px 0", cursor: "pointer" }}>
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", background: isExp ? c + "10" : "var(--surface1)", border: "1px solid " + (isExp ? c + "30" : "var(--surface3)"), borderLeft: "3px solid " + c, borderRadius: "0 8px 8px 0", cursor: "pointer" }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#e0e0e0" }}>{sector.name}</div>
-                    <div style={{ fontSize: 10, color: "#888", marginTop: 2, lineHeight: 1.4 }}>{sector.reason}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text1)" }}>{sector.name}</div>
+                    <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 2, lineHeight: 1.4 }}>{sector.reason}</div>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
                     <div style={{ fontSize: 9, fontWeight: 800, color: c, letterSpacing: 1 }}>{sector.flow}</div>
-                    <div style={{ fontSize: 9, color: "#888" }}>{isExp ? "▲" : "▼"}</div>
+                    <div style={{ fontSize: 9, color: "var(--text3)" }}>{isExp ? "▲" : "▼"}</div>
                   </div>
                 </div>
 
                 {isExp && (
-                  <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderTop: "none", borderRadius: "0 0 8px 8px", padding: "12px 14px" }}>
-                    <div style={{ fontSize: 9, color: "#888", letterSpacing: 1.5, fontWeight: 700, marginBottom: 10 }}>AFFECTED TICKERS  -  tap to brief</div>
+                  <div style={{ background: "var(--surface1)", border: "1px solid var(--surface3)", borderTop: "none", borderRadius: "0 0 8px 8px", padding: "12px 14px" }}>
+                    <div style={{ fontSize: 9, color: "var(--text3)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 10 }}>AFFECTED TICKERS  -  tap to brief</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                       {(sector.tickers || []).map(ticker => (
                         <button key={ticker}
@@ -2778,12 +2778,12 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
       <div id="stocks-brief-result" style={{ height: 0 }} />
 
       {/* Mode indicator */}
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 14, padding: "8px 12px", background: isScalper ? "rgba(245,158,11,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (isScalper ? "rgba(245,158,11,.2)" : "rgba(255,255,255,.06)"), borderRadius: 8 }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 14, padding: "8px 12px", background: isScalper ? "rgba(245,158,11,.06)" : "var(--surface1)", border: "1px solid " + (isScalper ? "rgba(245,158,11,.2)" : "var(--surface3)"), borderRadius: 8 }}>
         <div style={{ width: 6, height: 6, borderRadius: "50%", background: isScalper ? "#f59e0b" : "#00d4ff", flexShrink: 0 }} />
         <div style={{ fontSize: 10, fontWeight: 700, color: isScalper ? "#f59e0b" : "#00d4ff", letterSpacing: 1.5 }}>
           {isScalper ? "EQUITY SCALPER  -  PRO" : "EQUITY DEBRIEF  -  PRO"}
         </div>
-        <div style={{ fontSize: 10, color: "#888", marginLeft: "auto" }}>
+        <div style={{ fontSize: 10, color: "var(--text3)", marginLeft: "auto" }}>
           {isScalper ? "CLEAR / CAUTION / STAND DOWN" : "Full macro & fundamental analysis"}
         </div>
       </div>
@@ -2795,9 +2795,9 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === "Enter" && runStock()}
             placeholder={isScalper ? "NVDA, TSLA, AAPL  -  about to trade?" : "Tesla, MSFT, Apple, NVDA, any ticker…"}
-            style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid " + (isScalper ? "rgba(245,158,11,.25)" : "rgba(245,158,11,.2)"), borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
+            style={{ flex: 1, background: "var(--surface2)", border: "1px solid " + (isScalper ? "rgba(245,158,11,.25)" : "rgba(245,158,11,.2)"), borderRadius: 8, color: "var(--text1)", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
           />
-          <button id="stocks-brief-btn" onClick={runStock} disabled={activeLoading} style={{ padding: "10px 16px", borderRadius: 8, cursor: activeLoading ? "not-allowed" : "pointer", background: activeLoading ? "rgba(255,255,255,.02)" : "rgba(245,158,11,.12)", color: activeLoading ? "#2a2a2a" : "#f59e0b", border: "1px solid rgba(245,158,11,.25)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+          <button id="stocks-brief-btn" onClick={runStock} disabled={activeLoading} style={{ padding: "10px 16px", borderRadius: 8, cursor: activeLoading ? "not-allowed" : "pointer", background: activeLoading ? "var(--surface1)" : "rgba(245,158,11,.12)", color: activeLoading ? "#2a2a2a" : "#f59e0b", border: "1px solid rgba(245,158,11,.25)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>
             {activeLoading ? "…" : isScalper ? "CHECK NOW" : "BRIEF ME"}
           </button>
         </div>
@@ -2816,16 +2816,16 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
         !scalperLoading && !scalperData && !scalperError && (
           <div style={{ textAlign: "center", padding: "40px 20px" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>⚡</div>
-            <div style={{ fontSize: 13, color: "#888", marginBottom: 6 }}>Enter a stock ticker for an instant risk check</div>
-            <div style={{ fontSize: 11, color: "#555" }}>Earnings proximity · Breaking news · Imminent catalysts</div>
+            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Enter a stock ticker for an instant risk check</div>
+            <div style={{ fontSize: 11, color: "var(--text4)" }}>Earnings proximity · Breaking news · Imminent catalysts</div>
           </div>
         )
       ) : (
         !loading && !data && !error && (
           <div style={{ textAlign: "center", padding: "40px 20px" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
-            <div style={{ fontSize: 13, color: "#888" }}>Search any stock or ticker above for a full macro & fundamental debrief</div>
-            <div style={{ fontSize: 11, color: "#555", marginTop: 6 }}>MAG7 · Large caps · Any public company</div>
+            <div style={{ fontSize: 13, color: "var(--text3)" }}>Search any stock or ticker above for a full macro & fundamental debrief</div>
+            <div style={{ fontSize: 11, color: "var(--text4)", marginTop: 6 }}>MAG7 · Large caps · Any public company</div>
           </div>
         )
       )}
@@ -2870,7 +2870,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
           {/* Post-session  -  generate on demand */}
           {!equityPostData ? (
             <button onClick={runEquityPost} disabled={equityPostLoading}
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 8, border: "1px solid rgba(255,165,0,.25)", background: equityPostLoading ? "rgba(255,255,255,.02)" : "rgba(255,165,0,.06)", color: equityPostLoading ? "#333" : "#ffa500", fontSize: 12, fontWeight: 700, cursor: equityPostLoading ? "wait" : "pointer", fontFamily: "inherit" }}>
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 8, border: "1px solid rgba(255,165,0,.25)", background: equityPostLoading ? "var(--surface1)" : "rgba(255,165,0,.06)", color: equityPostLoading ? "var(--textdim)" : "#ffa500", fontSize: 12, fontWeight: 700, cursor: equityPostLoading ? "wait" : "pointer", fontFamily: "inherit" }}>
               {equityPostLoading ? "Generating post-session…" : "🌙 Get Post-Session Brief"}
             </button>
           ) : (
@@ -2879,30 +2879,30 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
               <div style={{ background: "rgba(255,165,0,.06)", border: "1px solid rgba(255,165,0,.2)", borderRadius: 10, padding: 16, marginBottom: 8 }}>
                 <div style={{ fontSize: 9, color: "#ffa500", letterSpacing: 1.5, fontWeight: 700, marginBottom: 10 }}>🌙 POST-SESSION BRIEF</div>
                 {equityPostData.session_summary && (
-                  <div style={{ fontSize: 14, color: "#e0e0e0", fontWeight: 700, lineHeight: 1.4, marginBottom: 12 }}>{equityPostData.session_summary}</div>
+                  <div style={{ fontSize: 14, color: "var(--text1)", fontWeight: 700, lineHeight: 1.4, marginBottom: 12 }}>{equityPostData.session_summary}</div>
                 )}
                 {equityPostData.primary_driver && (
                   <div style={{ marginBottom: 8 }}>
                     <div style={{ fontSize: 9, color: "#ffa500", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>PRIMARY DRIVER</div>
-                    <div style={{ fontSize: 12, color: "#888", lineHeight: 1.6 }}>{equityPostData.primary_driver}</div>
+                    <div style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.6 }}>{equityPostData.primary_driver}</div>
                   </div>
                 )}
                 {equityPostData.macro_connection && (
                   <div style={{ marginBottom: 8 }}>
                     <div style={{ fontSize: 9, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>MACRO CONNECTION</div>
-                    <div style={{ fontSize: 12, color: "#888", lineHeight: 1.6 }}>{equityPostData.macro_connection}</div>
+                    <div style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.6 }}>{equityPostData.macro_connection}</div>
                   </div>
                 )}
                 {equityPostData.what_it_signals && (
                   <div style={{ marginBottom: 8 }}>
                     <div style={{ fontSize: 9, color: "#c084fc", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>WHAT IT SIGNALS</div>
-                    <div style={{ fontSize: 12, color: "#888", lineHeight: 1.6 }}>{equityPostData.what_it_signals}</div>
+                    <div style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.6 }}>{equityPostData.what_it_signals}</div>
                   </div>
                 )}
                 {equityPostData.watch_next && (
                   <div style={{ padding: "9px 12px", background: "rgba(0,212,255,.06)", border: "1px solid rgba(0,212,255,.12)", borderRadius: 7 }}>
                     <div style={{ fontSize: 9, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>WATCH NEXT</div>
-                    <div style={{ fontSize: 12, color: "#888", lineHeight: 1.5 }}>{equityPostData.watch_next}</div>
+                    <div style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.5 }}>{equityPostData.watch_next}</div>
                   </div>
                 )}
               </div>
@@ -2912,7 +2912,7 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
                   ↗ Share Post-Session
                 </button>
                 <button onClick={() => { setEquityPostData(null); setEquityPostError(null); }}
-                  style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(255,255,255,.06)", background: "transparent", color: "#888", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>
+                  style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid var(--surface3)", background: "transparent", color: "var(--text3)", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>
                   ✕
                 </button>
               </div>
@@ -2937,17 +2937,17 @@ function StocksTab({ query, setQuery, data, setData, loading, setLoading, error,
 // ── EQUITY VIEW (Pro) ─────────────────────────────────────────────────────────
 function EquityView({ inst, data }) {
   const sc = { bullish: "#00d4aa", bearish: "#ff4757", neutral: "#ffd700", mixed: "#c084fc" };
-  const cc = sc[data.sentiment] || "#888";
+  const cc = sc[data.sentiment] || "var(--text3)";
   return (
     <div>
       <div style={{ background: "linear-gradient(135deg,rgba(245,158,11,.12),transparent)", border: "1px solid rgba(245,158,11,.3)", borderRadius: 12, padding: 20, marginBottom: 18 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
           <div>
             <div style={{ fontSize: 21, fontWeight: 800, color: "#f59e0b" }}>{data.ticker || inst.label.toUpperCase()}</div>
-            <div style={{ fontSize: 11, color: "#555", marginTop: 3, letterSpacing: 1 }}>{data.sector || "EQUITY"}</div>
+            <div style={{ fontSize: 11, color: "var(--text4)", marginTop: 3, letterSpacing: 1 }}>{data.sector || "EQUITY"}</div>
           </div>
         </div>
-        <div style={{ fontSize: 9, color: "#888", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>MACRO THEME</div>
+        <div style={{ fontSize: 9, color: "var(--text3)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>MACRO THEME</div>
         <div style={{ fontSize: 14, color: "#c8d6e5", lineHeight: 1.6 }}>{data.macro_theme || data.headline_summary}</div>
       </div>
       {data.earnings_context && (
@@ -2972,7 +2972,7 @@ function EquityView({ inst, data }) {
       </div>
       {data.catalyst_events && data.catalyst_events.length > 0 && (
         <div style={{ marginBottom: 13 }}>
-          <div style={{ fontSize: 9, color: "#888", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>CATALYST EVENTS</div>
+          <div style={{ fontSize: 9, color: "var(--text3)", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>CATALYST EVENTS</div>
           {data.catalyst_events.map((e, i) => <EventCard key={i} ev={e} />)}
         </div>
       )}
@@ -3016,13 +3016,13 @@ function EquityScalperView({ ticker, data, loading, error }) {
     <div>
       {/* Risk signal */}
       <div style={{ background: rl.bg, border: "1px solid " + rl.border, borderRadius: 12, padding: "22px 20px", marginBottom: 14, textAlign: "center" }}>
-        <div style={{ fontSize: 10, color: "#888", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>
+        <div style={{ fontSize: 10, color: "var(--text3)", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>
           {(data.ticker || ticker).toUpperCase()}  -  MACRO RISK CHECK
         </div>
         <div style={{ fontSize: 32, fontWeight: 900, color: rl.color, marginBottom: 4, letterSpacing: -1 }}>{rl.label}</div>
         <div style={{ fontSize: 10, color: rl.color, opacity: 0.6, fontFamily: "monospace", letterSpacing: 1, marginBottom: 10 }}>{rl.sub}</div>
         <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 10 }} />
-        <div style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>{data.risk_reason}</div>
+        <div style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.5 }}>{data.risk_reason}</div>
       </div>
 
       {/* Earnings proximity badge */}
@@ -3034,7 +3034,7 @@ function EquityScalperView({ ticker, data, loading, error }) {
       {/* Scalper note */}
       <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, padding: 13, marginBottom: 14 }}>
         <div style={{ fontSize: 9, color: "#666", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>EQUITY SCALPER NOTE</div>
-        <div style={{ fontSize: 14, color: "#e0e0e0", lineHeight: 1.6, fontWeight: 500 }}>{data.scalper_note}</div>
+        <div style={{ fontSize: 14, color: "var(--text1)", lineHeight: 1.6, fontWeight: 500 }}>{data.scalper_note}</div>
       </div>
 
       {/* Breaking news */}
@@ -3042,12 +3042,12 @@ function EquityScalperView({ ticker, data, loading, error }) {
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>BREAKING  -  {(data.ticker || ticker).toUpperCase()}</div>
           {data.breaking.map((b, i) => (
-            <div key={i} style={{ background: DB[b.direction] || "rgba(255,255,255,.02)", borderLeft: "3px solid " + (DC[b.direction] || "#555"), borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}>
+            <div key={i} style={{ background: DB[b.direction] || "var(--surface1)", borderLeft: "3px solid " + (DC[b.direction] || "var(--text4)"), borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, flex: 1 }}>{b.headline}</div>
+                <div style={{ fontSize: 13, color: "var(--text1)", fontWeight: 600, flex: 1 }}>{b.headline}</div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, color: DC[b.direction] || "#888" }}>{b.direction}</div>
-                  <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{b.age}</div>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: DC[b.direction] || "var(--text3)" }}>{b.direction}</div>
+                  <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 2 }}>{b.age}</div>
                 </div>
               </div>
             </div>
@@ -3061,7 +3061,7 @@ function EquityScalperView({ ticker, data, loading, error }) {
           <div style={{ fontSize: 9, color: "#f59e0b", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>COMING UP  -  {(data.ticker || ticker).toUpperCase()}</div>
           {data.imminent.map((ev, i) => (
             <div key={i} style={{ background: "rgba(245,158,11,.05)", border: "1px solid rgba(245,158,11,.15)", borderRadius: 8, padding: "11px 13px", marginBottom: 7, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600 }}>{ev.event}</div>
+              <div style={{ fontSize: 13, color: "var(--text1)", fontWeight: 600 }}>{ev.event}</div>
               <div style={{ textAlign: "right", marginLeft: 12 }}>
                 <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700 }}>{ev.due_in ? "~" + ev.due_in : ""}</div>
                 <div style={{ fontSize: 11, color: "#777", marginTop: 2 }}>{ev.expected_impact}</div>
@@ -3090,10 +3090,10 @@ function DynamicCalendar({ size = 18 }) {
       {/* Month text */}
       <text x="9" y="7.2" textAnchor="middle" fontSize="3.2" fontWeight="700" fill="#fff" fontFamily="monospace" letterSpacing="0.5">{month}</text>
       {/* Day number */}
-      <text x="9" y="14.5" textAnchor="middle" fontSize="6" fontWeight="900" fill="#e0e0e0" fontFamily="monospace">{day}</text>
+      <text x="9" y="14.5" textAnchor="middle" fontSize="6" fontWeight="900" fill="var(--text1)" fontFamily="monospace">{day}</text>
       {/* Ring pins */}
-      <rect x="5" y="1.5" width="1.2" height="3.5" rx="0.6" fill="#555"/>
-      <rect x="11.8" y="1.5" width="1.2" height="3.5" rx="0.6" fill="#555"/>
+      <rect x="5" y="1.5" width="1.2" height="3.5" rx="0.6" fill="var(--text4)"/>
+      <rect x="11.8" y="1.5" width="1.2" height="3.5" rx="0.6" fill="var(--text4)"/>
     </svg>
   );
 }
@@ -3121,7 +3121,7 @@ function BreakingShareCard({ data, onClose }) {
         });
       }
       const el     = document.getElementById("breaking-card-el");
-      const canvas = await window.html2canvas(el, { backgroundColor: "#0a0c0f", scale: 2, useCORS: true, logging: false });
+      const canvas = await window.html2canvas(el, { backgroundColor: "var(--bg)", scale: 2, useCORS: true, logging: false });
       const blob   = await new Promise(r => canvas.toBlob(r, "image/png"));
       const file   = new File([blob], "marketdebriefs-breaking.png", { type: "image/png" });
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -3160,19 +3160,19 @@ function BreakingShareCard({ data, onClose }) {
       {/* Scrollable sheet — slides up from bottom, always shows buttons */}
       <div onClick={e => e.stopPropagation()}
         style={{ width: "100%", maxWidth: 480, maxHeight: "92vh", display: "flex", flexDirection: "column",
-          background: "#0a0c0f", borderRadius: "20px 20px 0 0", overflow: "hidden",
+          background: "var(--bg)", borderRadius: "20px 20px 0 0", overflow: "hidden",
           boxShadow: "0 -8px 40px rgba(0,0,0,.7)" }}>
 
         {/* Drag handle + close */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px 0", flexShrink: 0 }}>
           <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,.15)", margin: "0 auto" }} />
-          <button onClick={onClose} style={{ position: "absolute", right: 16, top: 12, background: "none", border: "none", color: "#555", fontSize: 18, cursor: "pointer", padding: "4px 8px", lineHeight: 1 }}>✕</button>
+          <button onClick={onClose} style={{ position: "absolute", right: 16, top: 12, background: "none", border: "none", color: "var(--text4)", fontSize: 18, cursor: "pointer", padding: "4px 8px", lineHeight: 1 }}>✕</button>
         </div>
 
         {/* Scrollable card content */}
         <div style={{ overflowY: "auto", padding: "10px 16px 0", flexGrow: 1 }}>
           {/* CARD — captured by html2canvas */}
-          <div id="breaking-card-el" style={{ background: "#0a0c0f", borderRadius: 14, padding: 16, position: "relative", overflow: "hidden", marginBottom: 12 }}>
+          <div id="breaking-card-el" style={{ background: "var(--bg)", borderRadius: 14, padding: 16, position: "relative", overflow: "hidden", marginBottom: 12 }}>
             <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,71,87,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,71,87,.02) 1px,transparent 1px)", backgroundSize: "32px 32px" }} />
             <div style={{ position: "absolute", top: -40, left: -40, width: 160, height: 160, pointerEvents: "none", background: "radial-gradient(circle,rgba(255,71,87,.07),transparent 70%)" }} />
 
@@ -3185,12 +3185,12 @@ function BreakingShareCard({ data, onClose }) {
                     <span style={{ fontSize: 9 }}>{data.urgency === "CRITICAL" ? "🔴" : data.urgency === "HIGH" ? "🟠" : "🟡"}</span>
                     <span style={{ fontSize: 9, fontWeight: 800, color: urgencyColor }}>{data.urgency}</span>
                   </div>
-                  <span style={{ fontSize: 8, color: "#555", fontFamily: "monospace" }}>{date}</span>
+                  <span style={{ fontSize: 8, color: "var(--text4)", fontFamily: "monospace" }}>{date}</span>
                 </div>
               </div>
 
               {/* Headline — compact */}
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#e0e0e0", lineHeight: 1.45, marginBottom: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text1)", lineHeight: 1.45, marginBottom: 8 }}>
                 {data.headline}
               </div>
 
@@ -3204,14 +3204,14 @@ function BreakingShareCard({ data, onClose }) {
                 <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 10 }}>
                   {data.instruments.slice(0, 4).map((inst, i) => {
                     const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
-                    const c = FC[inst.flow] || "#555";
+                    const c = FC[inst.flow] || "var(--text4)";
                     return (
-                      <div key={i} style={{ display: "flex", flexDirection: "column", gap: 3, padding: "6px 9px", background: "rgba(255,255,255,.02)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0" }}>
+                      <div key={i} style={{ display: "flex", flexDirection: "column", gap: 3, padding: "6px 9px", background: "var(--surface1)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{inst.name}</div>
                           <div style={{ fontSize: 7, color: c, fontWeight: 700, letterSpacing: 0.5, padding: "1px 5px", background: c + "18", borderRadius: 3 }}>{inst.flow}</div>
                         </div>
-                        <div style={{ fontSize: 10, color: "#888", lineHeight: 1.45 }}>{capSentence(inst.impact)}</div>
+                        <div style={{ fontSize: 10, color: "var(--text3)", lineHeight: 1.45 }}>{capSentence(inst.impact)}</div>
                       </div>
                     );
                   })}
@@ -3224,12 +3224,12 @@ function BreakingShareCard({ data, onClose }) {
                   {data.watch_for && (
                     <div style={{ padding: "5px 8px", borderRadius: 5, background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)" }}>
                       <div style={{ fontSize: 7, color: "#00d4ff", fontWeight: 700, letterSpacing: 1, marginBottom: 2 }}>WATCH</div>
-                      <div style={{ fontSize: 9, color: "#888", lineHeight: 1.4 }}>{oneLine(data.watch_for)}</div>
+                      <div style={{ fontSize: 9, color: "var(--text3)", lineHeight: 1.4 }}>{oneLine(data.watch_for)}</div>
                     </div>
                   )}
                   {data.fades_when && (
-                    <div style={{ padding: "5px 8px", borderRadius: 5, background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.07)" }}>
-                      <div style={{ fontSize: 7, color: "#555", fontWeight: 700, letterSpacing: 1, marginBottom: 2 }}>FADES</div>
+                    <div style={{ padding: "5px 8px", borderRadius: 5, background: "var(--surface1)", border: "1px solid rgba(255,255,255,.07)" }}>
+                      <div style={{ fontSize: 7, color: "var(--text4)", fontWeight: 700, letterSpacing: 1, marginBottom: 2 }}>FADES</div>
                       <div style={{ fontSize: 9, color: "#666", lineHeight: 1.4 }}>{oneLine(data.fades_when)}</div>
                     </div>
                   )}
@@ -3239,21 +3239,21 @@ function BreakingShareCard({ data, onClose }) {
               {/* Footer */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTop: "1px solid rgba(255,255,255,.05)" }}>
                 <span style={{ fontSize: 8, color: "#ff4757", fontFamily: "monospace", opacity: 0.7 }}>Brief First, Trade After · marketdebriefs.com</span>
-                <span style={{ fontSize: 8, color: "#333", fontFamily: "monospace" }}>BREAKING NARRATIVE</span>
+                <span style={{ fontSize: 8, color: "var(--textdim)", fontFamily: "monospace" }}>BREAKING NARRATIVE</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Action buttons — always visible, never scrolled away */}
-        <div style={{ padding: "10px 16px 20px", flexShrink: 0, borderTop: "1px solid rgba(255,255,255,.06)", background: "#0a0c0f" }}>
+        <div style={{ padding: "10px 16px 20px", flexShrink: 0, borderTop: "1px solid var(--surface3)", background: "var(--bg)" }}>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={handleShare} disabled={sharing} style={{ flex: 1, padding: "12px", borderRadius: 8, border: "none", cursor: sharing ? "wait" : "pointer", background: sharing ? "rgba(255,71,87,.05)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: sharing ? "#333" : "#fff", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>
+            <button onClick={handleShare} disabled={sharing} style={{ flex: 1, padding: "12px", borderRadius: 8, border: "none", cursor: sharing ? "wait" : "pointer", background: sharing ? "rgba(255,71,87,.05)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: sharing ? "var(--textdim)" : "#fff", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>
               {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share Card"}
             </button>
-            <button onClick={onClose} style={{ padding: "12px 20px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Done</button>
+            <button onClick={onClose} style={{ padding: "12px 20px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "var(--text3)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Done</button>
           </div>
-          <div style={{ fontSize: 10, color: "#333", textAlign: "center", marginTop: 8 }}>Mobile — shares to any app · Desktop — downloads as PNG</div>
+          <div style={{ fontSize: 10, color: "var(--textdim)", textAlign: "center", marginTop: 8 }}>Mobile — shares to any app · Desktop — downloads as PNG</div>
         </div>
       </div>
     </div>
@@ -3389,7 +3389,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
       await new Promise(r => setTimeout(r, 60));
 
       const canvas = await window.html2canvas(el, {
-        backgroundColor: "#0a0c0f",
+        backgroundColor: "var(--bg)",
         scale: 2,
         useCORS: true,
         logging: false,
@@ -3439,7 +3439,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
 
         {/* CARD */}
         <div id="share-card-el" style={{
-          background: "#0a0c0f", borderRadius: 20,
+          background: "var(--bg)", borderRadius: 20,
           padding: (isPostSession || isPostSessionBrief) ? 18 : 22,
           paddingBottom: 24,
           width: "100%",
@@ -3472,9 +3472,9 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
               Brief First, Trade After.
             </div>
             {isEquity && data.sector && (
-              <div style={{ fontSize: 10, color: "#555", letterSpacing: 1, marginBottom: 2 }}>{data.sector.toUpperCase()}</div>
+              <div style={{ fontSize: 10, color: "var(--text4)", letterSpacing: 1, marginBottom: 2 }}>{data.sector.toUpperCase()}</div>
             )}
-            <div style={{ fontSize: 10, color: "#888", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: (isPostSession || isPostSessionBrief) ? 8 : 14 }}>{date}</div>
+            <div style={{ fontSize: 10, color: "var(--text3)", fontFamily: "monospace", letterSpacing: 1.5, marginBottom: (isPostSession || isPostSessionBrief) ? 8 : 14 }}>{date}</div>
 
             {/* Theme pill  -  scalper keeps GREEN/YELLOW/RED, others show macro theme */}
             <div style={{ marginBottom: isScalper || isPostSession ? 8 : 12 }}>
@@ -3486,8 +3486,8 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
                 </div>
               ) : (
                 <div>
-                  <div style={{ fontSize: 8, color: "#888", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>MACRO THEME</div>
-                  <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4 }}>{truncate(data.macro_theme || data.headline_summary, 90)}</div>
+                  <div style={{ fontSize: 8, color: "var(--text3)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>MACRO THEME</div>
+                  <div style={{ fontSize: 10, color: "var(--text3)", lineHeight: 1.4 }}>{truncate(data.macro_theme || data.headline_summary, 90)}</div>
                 </div>
               )}
             </div>
@@ -3520,10 +3520,10 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
                       const c = dc[b.direction] || "#666";
                       return (
                         <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6, padding: "4px 7px", borderLeft: "2px solid " + c, marginBottom: 3, background: c + "08", borderRadius: "0 4px 4px 0" }}>
-                          <span style={{ fontSize: 9, color: "#888", lineHeight: 1.3, flex: 1 }}>{truncate(b.headline, 44)}</span>
+                          <span style={{ fontSize: 9, color: "var(--text3)", lineHeight: 1.3, flex: 1 }}>{truncate(b.headline, 44)}</span>
                           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
                             <span style={{ fontSize: 8, fontWeight: 700, color: c }}>{b.direction}</span>
-                            {b.age && <span style={{ fontSize: 8, color: "#888" }}>{b.age}</span>}
+                            {b.age && <span style={{ fontSize: 8, color: "var(--text3)" }}>{b.age}</span>}
                           </div>
                         </div>
                       );
@@ -3536,7 +3536,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
                     <div style={{ fontSize: 7, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>TODAY'S EVENTS</div>
                     {data.imminent.slice(0, 3).map((ev, i) => (
                       <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 7px", border: "1px solid rgba(255,215,0,.15)", borderRadius: 4, background: "rgba(255,215,0,.04)" }}>
-                        <span style={{ fontSize: 9, color: "#888", flex: 1 }}>{truncate(ev.event, 38)}</span>
+                        <span style={{ fontSize: 9, color: "var(--text3)", flex: 1 }}>{truncate(ev.event, 38)}</span>
                         <span style={{ fontSize: 9, color: "#ffd700", fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>in {ev.due_in}</span>
                       </div>
                     ))}
@@ -3553,7 +3553,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
                 )}
                 {data.events_summary && data.events_summary.slice(0, 3).map((ev, i) => {
                   const vc = { HAWKISH: "#ff4757", DOVISH: "#00d4aa", BULLISH: "#00d4aa", BEARISH: "#ff4757", NEUTRAL: "#ffd700" };
-                  const c = vc[ev.verdict] || "#888";
+                  const c = vc[ev.verdict] || "var(--text3)";
                   return (
                     <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
                       <span style={{ fontSize: 9, fontWeight: 800, color: c, flexShrink: 0, marginTop: 2, minWidth: 52 }}>{ev.verdict}</span>
@@ -3564,11 +3564,11 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
                 {data.net_bias && (
                   <div style={{ marginTop: 4, padding: "6px 9px", borderRadius: 5, background: "rgba(0,212,255,.05)", border: "1px solid rgba(0,212,255,.15)" }}>
                     <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1, fontWeight: 700, marginBottom: 2 }}>NET SESSION BIAS</div>
-                    <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4 }}>{truncate(data.net_bias, 80)}</div>
+                    <div style={{ fontSize: 10, color: "var(--text3)", lineHeight: 1.4 }}>{truncate(data.net_bias, 80)}</div>
                   </div>
                 )}
                 {data.watch_next && (
-                  <div style={{ fontSize: 9, color: "#555" }}>
+                  <div style={{ fontSize: 9, color: "var(--text4)" }}>
                     <span style={{ color: "#ffd700", fontWeight: 700 }}>Watch: </span>{truncate(data.watch_next, 60)}
                   </div>
                 )}
@@ -3576,44 +3576,44 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
             ) : isPostSession ? (
               // POST-SESSION — full story, nothing held back
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {data.session_summary && <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 700, lineHeight: 1.5, marginBottom: 2 }}>{data.session_summary}</div>}
-                {data.primary_driver && <div><div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>PRIMARY DRIVER</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.primary_driver}</div></div>}
-                {data.secondary_driver && <div><div style={{ fontSize: 8, color: "#888", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>SECONDARY</div><div style={{ fontSize: 11, color: "#aaa", lineHeight: 1.5 }}>{data.secondary_driver}</div></div>}
-                {data.what_it_revealed && <div><div style={{ fontSize: 8, color: "#c084fc", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WHAT IT SIGNALS</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.what_it_revealed}</div></div>}
+                {data.session_summary && <div style={{ fontSize: 13, color: "var(--text1)", fontWeight: 700, lineHeight: 1.5, marginBottom: 2 }}>{data.session_summary}</div>}
+                {data.primary_driver && <div><div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>PRIMARY DRIVER</div><div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5 }}>{data.primary_driver}</div></div>}
+                {data.secondary_driver && <div><div style={{ fontSize: 8, color: "var(--text3)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>SECONDARY</div><div style={{ fontSize: 11, color: "#aaa", lineHeight: 1.5 }}>{data.secondary_driver}</div></div>}
+                {data.what_it_revealed && <div><div style={{ fontSize: 8, color: "#c084fc", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WHAT IT SIGNALS</div><div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5 }}>{data.what_it_revealed}</div></div>}
                 {(data.watch_tomorrow || data.next_event?.title) && (
                   <div style={{ padding: "7px 9px", background: "rgba(0,212,255,.05)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 6 }}>
                     <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH NEXT{data.next_event?.time ? " · " + data.next_event.time : ""}</div>
-                    <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.watch_tomorrow || data.next_event?.title}</div>
+                    <div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5 }}>{data.watch_tomorrow || data.next_event?.title}</div>
                   </div>
                 )}
               </div>
             ) : isEquity ? (
               // EQUITY PRE-SESSION — full content
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {data.headline_summary && <div style={{ fontSize: 12, color: "#e0e0e0", fontWeight: 600, lineHeight: 1.5 }}>{data.headline_summary}</div>}
-                {data.earnings_context && <div><div style={{ fontSize: 8, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>EARNINGS</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.earnings_context}</div></div>}
-                {data.macro_tailwinds && <div><div style={{ fontSize: 8, color: "#00d4aa", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>TAILWINDS</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.macro_tailwinds}</div></div>}
-                {data.macro_headwinds && <div><div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>HEADWINDS</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.macro_headwinds}</div></div>}
+                {data.headline_summary && <div style={{ fontSize: 12, color: "var(--text1)", fontWeight: 600, lineHeight: 1.5 }}>{data.headline_summary}</div>}
+                {data.earnings_context && <div><div style={{ fontSize: 8, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>EARNINGS</div><div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5 }}>{data.earnings_context}</div></div>}
+                {data.macro_tailwinds && <div><div style={{ fontSize: 8, color: "#00d4aa", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>TAILWINDS</div><div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5 }}>{data.macro_tailwinds}</div></div>}
+                {data.macro_headwinds && <div><div style={{ fontSize: 8, color: "#ff4757", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>HEADWINDS</div><div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5 }}>{data.macro_headwinds}</div></div>}
                 {data.catalyst_events?.[0] && (
                   <div style={{ padding: "6px 9px", background: "rgba(245,158,11,.06)", border: "1px solid rgba(245,158,11,.15)", borderRadius: 5 }}>
                     <div style={{ fontSize: 8, color: "#f59e0b", letterSpacing: 1.2, fontWeight: 700, marginBottom: 2 }}>NEXT CATALYST{data.catalyst_events[0].time ? " · " + data.catalyst_events[0].time : ""}</div>
-                    <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.4 }}>{data.catalyst_events[0].title}</div>
-                    {data.catalyst_events[0].why_it_moves_price && <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, marginTop: 3 }}>{data.catalyst_events[0].why_it_moves_price}</div>}
+                    <div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.4 }}>{data.catalyst_events[0].title}</div>
+                    {data.catalyst_events[0].why_it_moves_price && <div style={{ fontSize: 10, color: "var(--text3)", lineHeight: 1.4, marginTop: 3 }}>{data.catalyst_events[0].why_it_moves_price}</div>}
                   </div>
                 )}
-                {data.institutional_flow && <div><div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>INSTITUTIONAL FLOW</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.institutional_flow}</div></div>}
+                {data.institutional_flow && <div><div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>INSTITUTIONAL FLOW</div><div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5 }}>{data.institutional_flow}</div></div>}
               </div>
             ) : (
               // MACRO PRE-SESSION — full picture
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {data.headline_summary && <div style={{ fontSize: 12, color: "#e0e0e0", fontWeight: 600, lineHeight: 1.5 }}>{data.headline_summary}</div>}
-                {data.geopolitical_risks && <div><div style={{ fontSize: 8, color: "#ff8c00", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>GEOPOLITICAL</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.geopolitical_risks}</div></div>}
-                {data.macro_context && data.macro_context !== data.headline_summary && <div><div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH</div><div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.5 }}>{data.macro_context}</div></div>}
+                {data.headline_summary && <div style={{ fontSize: 12, color: "var(--text1)", fontWeight: 600, lineHeight: 1.5 }}>{data.headline_summary}</div>}
+                {data.geopolitical_risks && <div><div style={{ fontSize: 8, color: "#ff8c00", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>GEOPOLITICAL</div><div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5 }}>{data.geopolitical_risks}</div></div>}
+                {data.macro_context && data.macro_context !== data.headline_summary && <div><div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH</div><div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5 }}>{data.macro_context}</div></div>}
                 {data.events && data.events.slice(0, 2).map((ev, i) => (
                   <div key={i} style={{ padding: "6px 9px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.12)", borderRadius: 5 }}>
                     <div style={{ fontSize: 8, color: "#00d4ff", letterSpacing: 1.2, fontWeight: 700, marginBottom: 2 }}>{ev.time}{ev.impact ? " · " + ev.impact.toUpperCase() : ""}</div>
-                    <div style={{ fontSize: 11, color: "#ccc", lineHeight: 1.4 }}>{ev.title}</div>
-                    {ev.why_it_moves_price && <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, marginTop: 3 }}>{ev.why_it_moves_price}</div>}
+                    <div style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.4 }}>{ev.title}</div>
+                    {ev.why_it_moves_price && <div style={{ fontSize: 10, color: "var(--text3)", lineHeight: 1.4, marginTop: 3 }}>{ev.why_it_moves_price}</div>}
                   </div>
                 ))}
               </div>
@@ -3642,11 +3642,11 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
 
         {/* Pre / Post session toggle */}
         {!isEventSummary && (
-          <div style={{ display: "flex", width: "100%", background: "#0d1117", borderRadius: 8, border: "1px solid rgba(255,255,255,.07)", overflow: "hidden" }}>
-            <button onClick={() => setIsPostSession(false)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: !isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: !isPostSession ? "#00d4ff" : "#333", borderBottom: !isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
+          <div style={{ display: "flex", width: "100%", background: "var(--bg2)", borderRadius: 8, border: "1px solid rgba(255,255,255,.07)", overflow: "hidden" }}>
+            <button onClick={() => setIsPostSession(false)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: !isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: !isPostSession ? "#00d4ff" : "var(--textdim)", borderBottom: !isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
               ☀️ Pre-Session
             </button>
-            <button onClick={() => setIsPostSession(true)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: isPostSession ? "#00d4ff" : "#333", borderBottom: isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
+            <button onClick={() => setIsPostSession(true)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: isPostSession ? "#00d4ff" : "var(--textdim)", borderBottom: isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
               🌙 Post-Session
             </button>
           </div>
@@ -3658,7 +3658,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
             flex: 1, padding: "12px", borderRadius: 8,
             border: "none", cursor: sharing ? "wait" : "pointer",
             background: sharing ? "rgba(0,212,255,.05)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
-            color: sharing ? "#333" : "#000",
+            color: sharing ? "var(--textdim)" : "#000",
             fontSize: 13, fontWeight: 800, fontFamily: "inherit",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
           }}>
@@ -3667,11 +3667,11 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
           <button onClick={onClose} style={{
             padding: "12px 20px", borderRadius: 8,
             border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)",
-            color: "#555", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+            color: "var(--text4)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
           }}>Done</button>
         </div>
 
-        <div style={{ fontSize: 11, color: "#555", textAlign: "center" }}>
+        <div style={{ fontSize: 11, color: "var(--text4)", textAlign: "center" }}>
           Mobile  -  shares to any app · Desktop  -  downloads as PNG
         </div>
       </div>
@@ -3681,12 +3681,12 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
 
 function FullView({ inst, data }) {
   const sc = { bullish: "#00d4aa", bearish: "#ff4757", neutral: "#ffd700", mixed: "#c084fc" };
-  const cc = sc[data.sentiment] || "#888";
+  const cc = sc[data.sentiment] || "var(--text3)";
   const VERDICT_CFG = {
     TAILWIND: { label: "MACRO TAILWIND", color: "#00d4aa", bg: "rgba(0,212,170,.1)",   border: "rgba(0,212,170,.25)",  icon: "▲" },
     HEADWIND: { label: "MACRO HEADWIND", color: "#ff4757", bg: "rgba(255,71,87,.1)",   border: "rgba(255,71,87,.25)",  icon: "▼" },
     MIXED:    { label: "MIXED SIGNALS",  color: "#ffd700", bg: "rgba(255,215,0,.08)",  border: "rgba(255,215,0,.2)",   icon: "◆" },
-    NEUTRAL:  { label: "NEUTRAL",        color: "#888",    bg: "rgba(255,255,255,.04)",border: "rgba(255,255,255,.1)", icon: "●" },
+    NEUTRAL:  { label: "NEUTRAL",        color: "var(--text3)",    bg: "var(--surface2)",border: "rgba(255,255,255,.1)", icon: "●" },
   };
   const vc = VERDICT_CFG[data.verdict] || VERDICT_CFG.NEUTRAL;
   return (
@@ -3696,19 +3696,19 @@ function FullView({ inst, data }) {
           <div style={{ fontSize: 22, fontWeight: 900, color: vc.color, lineHeight: 1, flexShrink: 0 }}>{vc.icon}</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: vc.color, letterSpacing: 1.5, marginBottom: 3 }}>{inst.flag} · {vc.label}</div>
-            <div style={{ fontSize: 13, color: "#e0e0e0", lineHeight: 1.4, fontWeight: 500 }}>{data.verdict_reason}</div>
+            <div style={{ fontSize: 13, color: "var(--text1)", lineHeight: 1.4, fontWeight: 500 }}>{data.verdict_reason}</div>
           </div>
         </div>
       )}
       <div style={{ background: "linear-gradient(135deg," + inst.color + "15,transparent)", border: "1px solid " + inst.color + "33", borderRadius: 12, padding: 20, marginBottom: 18 }}>
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 21, fontWeight: 800, color: inst.color, marginBottom: 8 }}>{inst.flag} {inst.label}</div>
-          <div style={{ fontSize: 9, color: "#888", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>MACRO THEME</div>
+          <div style={{ fontSize: 9, color: "var(--text3)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>MACRO THEME</div>
           <div style={{ fontSize: 14, color: "#c8d6e5", lineHeight: 1.6 }}>{data.macro_theme || data.headline_summary}</div>
         </div>
       </div>
       {data.geopolitical_risks && <div style={{ background: "rgba(255,140,0,.08)", border: "1px solid rgba(255,140,0,.25)", borderRadius: 8, padding: 14, marginBottom: 15 }}><div style={{ fontSize: 9, color: "#ff8c00", fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>GEOPOLITICAL RISK</div><div style={{ fontSize: 13, color: "#e0c88a", lineHeight: 1.6 }}>{data.geopolitical_risks}</div></div>}
-      <div style={{ fontSize: 9, color: "#888", letterSpacing: 2, fontWeight: 700, marginBottom: 11 }}>HIGH-IMPACT EVENTS</div>
+      <div style={{ fontSize: 9, color: "var(--text3)", letterSpacing: 2, fontWeight: 700, marginBottom: 11 }}>HIGH-IMPACT EVENTS</div>
       {data.events && data.events.map((e, i) => <EventCard key={i} ev={e} />)}
       {data.macro_context && data.macro_context !== data.headline_summary && data.macro_context.slice(0,40) !== data.headline_summary?.slice(0,40) && <div style={{ background: "rgba(0,212,255,.06)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 8, padding: 13, marginBottom: 13 }}><div style={{ fontSize: 9, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>WHAT TO WATCH</div><div style={{ fontSize: 13, color: "#a8d8ea", lineHeight: 1.65 }}>{data.macro_context}</div></div>}
       {data.teaching_moment && <div style={{ background: "rgba(192,132,252,.06)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 8, padding: 15 }}><div style={{ fontSize: 9, color: "#c084fc", fontWeight: 700, letterSpacing: 1.5, marginBottom: 7 }}>TEACH ME TO FISH</div><div style={{ fontSize: 13, color: "#d4b8f7", lineHeight: 1.75 }}>{data.teaching_moment}</div></div>}
@@ -3854,14 +3854,14 @@ function ScalperView({ inst, data, rawCalendar = [], onCalendarRefresh }) {
   return (
     <div>
       <div style={{ background: rl.bg, border: "1px solid " + rl.border, borderRadius: 12, padding: "22px 20px", marginBottom: 18, textAlign: "center" }}>
-        <div style={{ fontSize: 10, color: "#888", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>{inst.flag} {inst.label}  -  MACRO RISK CHECK</div>
+        <div style={{ fontSize: 10, color: "var(--text3)", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>{inst.flag} {inst.label}  -  MACRO RISK CHECK</div>
         <div style={{ fontSize: 32, fontWeight: 900, color: rl.color, marginBottom: 4, letterSpacing: -1 }}>{rl.label}</div>
         <div style={{ fontSize: 10, color: rl.color, opacity: 0.6, fontFamily: "monospace", letterSpacing: 1, marginBottom: 10 }}>{rl.sub}</div>
         <div style={{ height: 1, background: "rgba(255,255,255,.05)", marginBottom: 10 }} />
-        <div style={{ fontSize: 13, color: "#888", lineHeight: 1.6 }}>{data.risk_reason}</div>
+        <div style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.6 }}>{data.risk_reason}</div>
       </div>
-      <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, padding: 13, marginBottom: 14 }}><div style={{ fontSize: 9, color: "#666", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>SCALPER NOTE</div><div style={{ fontSize: 14, color: "#e0e0e0", lineHeight: 1.6, fontWeight: 500 }}>{data.scalper_note}</div></div>
-      {data.breaking && data.breaking.length > 0 && <div style={{ marginBottom: 14 }}><div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>JUST HIT THE WIRE</div>{data.breaking.map((b, i) => (<div key={i} style={{ background: "rgba(255,255,255,.02)", borderLeft: "3px solid rgba(0,212,255,.3)", borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}><div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, flex: 1 }}>{b.headline}</div><div style={{ textAlign: "right", flexShrink: 0 }}><div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{b.age}</div></div></div></div>))}</div>}
+      <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, padding: 13, marginBottom: 14 }}><div style={{ fontSize: 9, color: "#666", letterSpacing: 1.5, fontWeight: 700, marginBottom: 5 }}>SCALPER NOTE</div><div style={{ fontSize: 14, color: "var(--text1)", lineHeight: 1.6, fontWeight: 500 }}>{data.scalper_note}</div></div>
+      {data.breaking && data.breaking.length > 0 && <div style={{ marginBottom: 14 }}><div style={{ fontSize: 9, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>JUST HIT THE WIRE</div>{data.breaking.map((b, i) => (<div key={i} style={{ background: "var(--surface1)", borderLeft: "3px solid rgba(0,212,255,.3)", borderRadius: 8, padding: "11px 13px", marginBottom: 7 }}><div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><div style={{ fontSize: 13, color: "var(--text1)", fontWeight: 600, flex: 1 }}>{b.headline}</div><div style={{ textAlign: "right", flexShrink: 0 }}><div style={{ fontSize: 10, color: "var(--text3)", marginTop: 2 }}>{b.age}</div></div></div></div>))}</div>}
       {/* Released events from live calendar  -  high-impact US events that have passed */}
       {(() => {
         const released = rawCalendar.filter(ev =>
@@ -3899,7 +3899,7 @@ function ScalperView({ inst, data, rawCalendar = [], onCalendarRefresh }) {
                       </div>
                       <div style={{ fontSize: 13, color: read ? "#f0f0f0" : "#c0d0e0", fontWeight: 600 }}>{ev.event}</div>
                       {(ev.estimate || ev.prev) && (
-                        <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>
+                        <div style={{ fontSize: 10, color: "var(--text4)", marginTop: 2 }}>
                           {ev.estimate ? "Est: " + ev.estimate : ""}{ev.estimate && ev.prev ? " · " : ""}{ev.prev ? "Prev: " + ev.prev : ""}
                         </div>
                       )}
@@ -3910,29 +3910,29 @@ function ScalperView({ inst, data, rawCalendar = [], onCalendarRefresh }) {
                           {read.verdict}
                         </div>
                       )}
-                      {loading && <div style={{ fontSize: 10, color: "#555" }}>reading...</div>}
+                      {loading && <div style={{ fontSize: 10, color: "var(--text4)" }}>reading...</div>}
                     </div>
                   </div>
                   {/* Loading state */}
                   {loading && (
-                    <div style={{ marginTop: 8, fontSize: 11, color: "#888", fontStyle: "italic" }}>Analysing release...</div>
+                    <div style={{ marginTop: 8, fontSize: 11, color: "var(--text3)", fontStyle: "italic" }}>Analysing release...</div>
                   )}
                   {/* Collapsed summary line  -  always visible once read is ready */}
                   {read && !isOpen && (
-                    <div style={{ marginTop: 6, fontSize: 11, color: "#888", lineHeight: 1.4 }}>{read.headline}</div>
+                    <div style={{ marginTop: 6, fontSize: 11, color: "var(--text3)", lineHeight: 1.4 }}>{read.headline}</div>
                   )}
                   {/* Expanded detail */}
                   {read && isOpen && (
-                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,.06)" }}>
-                      <div style={{ fontSize: 8, color: "#888", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>WHAT IT MEANS FOR THIS SESSION</div>
+                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--surface3)" }}>
+                      <div style={{ fontSize: 8, color: "var(--text3)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>WHAT IT MEANS FOR THIS SESSION</div>
                       <div style={{ fontSize: 13, color: "#c8d6e5", lineHeight: 1.75, background: "rgba(0,0,0,.25)", padding: 11, borderRadius: 6, marginBottom: 10 }}>{read.session_impact}</div>
                       <div style={{ padding: "8px 10px", background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 6, marginBottom: 8 }}>
                         <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH NOW</div>
                         <div style={{ fontSize: 11, color: "#c8a84b", lineHeight: 1.5 }}>{read.watch_now}</div>
                       </div>
                       {read.fades_when && (
-                        <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4 }}>
-                          <span style={{ color: "#555", fontWeight: 700 }}>Fades when: </span>{read.fades_when}
+                        <div style={{ fontSize: 10, color: "var(--text3)", lineHeight: 1.4 }}>
+                          <span style={{ color: "var(--text4)", fontWeight: 700 }}>Fades when: </span>{read.fades_when}
                         </div>
                       )}
                     </div>
@@ -3940,7 +3940,7 @@ function ScalperView({ inst, data, rawCalendar = [], onCalendarRefresh }) {
                   {/* Tap hint */}
                   {read && (
                     <div style={{ marginTop: 6, display: "flex", justifyContent: "flex-end" }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: isOpen ? "#555" : "#ffd700", background: isOpen ? "transparent" : "rgba(255,215,0,.08)", border: isOpen ? "none" : "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: isOpen ? 0 : "2px 8px" }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: isOpen ? "var(--text4)" : "#ffd700", background: isOpen ? "transparent" : "rgba(255,215,0,.08)", border: isOpen ? "none" : "1px solid rgba(255,215,0,.2)", borderRadius: 4, padding: isOpen ? 0 : "2px 8px" }}>
                         {isOpen ? "▲ Hide explanation" : "▼ What does this mean?"}
                       </span>
                     </div>
@@ -3961,7 +3961,7 @@ function ScalperView({ inst, data, rawCalendar = [], onCalendarRefresh }) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                 <div style={{ flex: 1 }}>
                   {ev.passed && <div style={{ fontSize: 8, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>RELEASED</div>}
-                  <div style={{ fontSize: 13, color: ev.passed ? "#c0d0e0" : "#e0e0e0", fontWeight: 600 }}>{ev.event}</div>
+                  <div style={{ fontSize: 13, color: ev.passed ? "#c0d0e0" : "var(--text1)", fontWeight: 600 }}>{ev.event}</div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
                   {ev.time_est && <div style={{ fontSize: 11, color: ev.passed ? "#00d4ff" : "#ffd700", fontWeight: 700 }}>{ev.time_est.replace(/ (EST|EDT|ET)$/i, "")} ET</div>}
@@ -3972,20 +3972,20 @@ function ScalperView({ inst, data, rawCalendar = [], onCalendarRefresh }) {
               </div>
               {/* Pre-release: show expected impact */}
               {ev.expected_impact && !ev.passed && (
-                <div style={{ fontSize: 11, color: "#555", marginTop: 6, lineHeight: 1.5, paddingTop: 6, borderTop: "1px solid rgba(255,215,0,.08)" }}>
+                <div style={{ fontSize: 11, color: "var(--text4)", marginTop: 6, lineHeight: 1.5, paddingTop: 6, borderTop: "1px solid rgba(255,215,0,.08)" }}>
                   {ev.expected_impact}
                 </div>
               )}
               {/* Post-release: collapsible read */}
               {ev.passed && postLoading[i] && (
-                <div style={{ marginTop: 6, fontSize: 11, color: "#888", fontStyle: "italic" }}>Analysing release...</div>
+                <div style={{ marginTop: 6, fontSize: 11, color: "var(--text3)", fontStyle: "italic" }}>Analysing release...</div>
               )}
               {ev.passed && postReads[i] && !openReads[i] && (
-                <div style={{ marginTop: 6, fontSize: 11, color: "#888" }}>{postReads[i].headline}</div>
+                <div style={{ marginTop: 6, fontSize: 11, color: "var(--text3)" }}>{postReads[i].headline}</div>
               )}
               {ev.passed && postReads[i] && openReads[i] && (
-                <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,.06)" }}>
-                  <div style={{ fontSize: 8, color: "#888", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>WHAT IT MEANS FOR THIS SESSION</div>
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--surface3)" }}>
+                  <div style={{ fontSize: 8, color: "var(--text3)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>WHAT IT MEANS FOR THIS SESSION</div>
                   <div style={{ fontSize: 13, color: "#c8d6e5", lineHeight: 1.75, background: "rgba(0,0,0,.25)", padding: 11, borderRadius: 6, marginBottom: 10 }}>{postReads[i].session_impact}</div>
                   <div style={{ padding: "8px 10px", background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 6 }}>
                     <div style={{ fontSize: 8, color: "#ffd700", letterSpacing: 1.5, fontWeight: 700, marginBottom: 3 }}>WATCH NOW</div>
@@ -4009,9 +4009,9 @@ function Journal() {
   const [saved, setSaved] = useState(false);
   return (
     <div>
-      <div style={{ marginBottom: 22 }}><div style={{ fontSize: 19, fontWeight: 700, color: "#f0f0f0", marginBottom: 3 }}>Daily Reflection</div><div style={{ fontSize: 10, color: "#888", fontFamily: "monospace", letterSpacing: 1 }}>{today.toUpperCase()}</div></div>
+      <div style={{ marginBottom: 22 }}><div style={{ fontSize: 19, fontWeight: 700, color: "#f0f0f0", marginBottom: 3 }}>Daily Reflection</div><div style={{ fontSize: 10, color: "var(--text3)", fontFamily: "monospace", letterSpacing: 1 }}>{today.toUpperCase()}</div></div>
       <div style={{ background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.12)", borderRadius: 8, padding: 13, marginBottom: 22 }}><div style={{ fontSize: 13, color: "#c8a84b", lineHeight: 1.7, fontStyle: "italic" }}>The goal is not to be right about the market. The goal is to understand it better each day.</div></div>
-      {PROMPTS.map((p, i) => (<div key={i} style={{ marginBottom: 18 }}><label style={{ display: "block", fontSize: 13, color: "#777", marginBottom: 7 }}><span style={{ color: "#888", marginRight: 8, fontFamily: "monospace" }}>0{i + 1}.</span>{p}</label><textarea value={entries[i] || ""} onChange={e => setEntries(en => ({ ...en, [i]: e.target.value }))} placeholder="Write freely…" style={{ width: "100%", minHeight: 68, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, color: "#e0e0e0", fontSize: 13, padding: 11, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6, outline: "none", boxSizing: "border-box" }} /></div>))}
+      {PROMPTS.map((p, i) => (<div key={i} style={{ marginBottom: 18 }}><label style={{ display: "block", fontSize: 13, color: "#777", marginBottom: 7 }}><span style={{ color: "var(--text3)", marginRight: 8, fontFamily: "monospace" }}>0{i + 1}.</span>{p}</label><textarea value={entries[i] || ""} onChange={e => setEntries(en => ({ ...en, [i]: e.target.value }))} placeholder="Write freely…" style={{ width: "100%", minHeight: 68, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 8, color: "var(--text1)", fontSize: 13, padding: 11, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6, outline: "none", boxSizing: "border-box" }} /></div>))}
       <button onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2200); }} style={{ width: "100%", padding: 13, borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit", background: saved ? "rgba(0,212,170,.14)" : "rgba(192,132,252,.1)", color: saved ? "#00d4aa" : "#c084fc", fontSize: 13, fontWeight: 700 }}>{saved ? "REFLECTION SAVED" : "SAVE REFLECTION"}</button>
     </div>
   );
@@ -4032,12 +4032,12 @@ function Learn() {
   const [open, setOpen] = useState(null);
   return (
     <div>
-      <div style={{ marginBottom: 22 }}><div style={{ fontSize: 19, fontWeight: 700, color: "#f0f0f0", marginBottom: 3 }}>Learn to Fish</div><div style={{ fontSize: 13, color: "#888" }}>The macro concepts behind every market move</div></div>
-      {CONCEPTS.map((c, i) => (<div key={i} onClick={() => setOpen(open === i ? null : i)} style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 10, padding: 15, marginBottom: 9, cursor: "pointer" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><div style={{ fontSize: 13, fontWeight: 600, color: "#d0d0d0", flex: 1, marginRight: 8 }}>{c.title}</div><span style={{ color: "#888", flexShrink: 0 }}>{open === i ? "^" : "v"}</span></div>{open === i && <div style={{ marginTop: 13, fontSize: 13, color: "#999", lineHeight: 1.8, paddingTop: 13, borderTop: "1px solid rgba(255,255,255,.06)" }}>{c.body}</div>}</div>))}
+      <div style={{ marginBottom: 22 }}><div style={{ fontSize: 19, fontWeight: 700, color: "#f0f0f0", marginBottom: 3 }}>Learn to Fish</div><div style={{ fontSize: 13, color: "var(--text3)" }}>The macro concepts behind every market move</div></div>
+      {CONCEPTS.map((c, i) => (<div key={i} onClick={() => setOpen(open === i ? null : i)} style={{ background: "var(--surface1)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 10, padding: 15, marginBottom: 9, cursor: "pointer" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><div style={{ fontSize: 13, fontWeight: 600, color: "#d0d0d0", flex: 1, marginRight: 8 }}>{c.title}</div><span style={{ color: "var(--text3)", flexShrink: 0 }}>{open === i ? "^" : "v"}</span></div>{open === i && <div style={{ marginTop: 13, fontSize: 13, color: "#999", lineHeight: 1.8, paddingTop: 13, borderTop: "1px solid var(--surface3)" }}>{c.body}</div>}</div>))}
       {/* ── ASK A QUESTION ── */}
-      <div style={{ marginTop: 28, borderTop: "1px solid rgba(255,255,255,.06)", paddingTop: 24 }}>
+      <div style={{ marginTop: 28, borderTop: "1px solid var(--surface3)", paddingTop: 24 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f0f0", marginBottom: 4 }}>Ask a Macro Question</div>
-        <div style={{ fontSize: 12, color: "#888", marginBottom: 14 }}>Don't understand a term or concept? Ask and get a plain-English explanation.</div>
+        <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 14 }}>Don't understand a term or concept? Ask and get a plain-English explanation.</div>
         <LearnAsk />
       </div>
     </div>
@@ -4082,9 +4082,9 @@ function LearnAsk() {
           onChange={e => { setQuestion(e.target.value); setAnswer(null); setError(null); }}
           onKeyDown={e => e.key === "Enter" && ask()}
           placeholder="e.g. What does hawkish mean?"
-          style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 8, color: "#e0e0e0", fontSize: 13, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
+          style={{ flex: 1, background: "var(--surface2)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 8, color: "var(--text1)", fontSize: 13, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
         />
-        <button onClick={ask} disabled={loading || !question.trim()} style={{ padding: "10px 16px", borderRadius: 8, border: "none", cursor: loading || !question.trim() ? "not-allowed" : "pointer", background: loading || !question.trim() ? "rgba(192,132,252,.08)" : "rgba(192,132,252,.15)", color: loading || !question.trim() ? "#555" : "#c084fc", fontSize: 12, fontWeight: 700, fontFamily: "inherit", whiteSpace: "nowrap" }}>
+        <button onClick={ask} disabled={loading || !question.trim()} style={{ padding: "10px 16px", borderRadius: 8, border: "none", cursor: loading || !question.trim() ? "not-allowed" : "pointer", background: loading || !question.trim() ? "rgba(192,132,252,.08)" : "rgba(192,132,252,.15)", color: loading || !question.trim() ? "var(--text4)" : "#c084fc", fontSize: 12, fontWeight: 700, fontFamily: "inherit", whiteSpace: "nowrap" }}>
           {loading ? "…" : "Ask"}
         </button>
       </div>
@@ -4093,7 +4093,7 @@ function LearnAsk() {
           <button key={ex} onClick={() => { setQuestion(ex); setAnswer(null); }} style={{ fontSize: 10, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(192,132,252,.05)", border: "1px solid rgba(192,132,252,.15)", color: "#666" }}>{ex}</button>
         ))}
       </div>
-      {loading && <div style={{ padding: "14px 0", fontSize: 12, color: "#555" }}>Thinking…</div>}
+      {loading && <div style={{ padding: "14px 0", fontSize: 12, color: "var(--text4)" }}>Thinking…</div>}
       {error && <div style={{ fontSize: 12, color: "#ff4757" }}>{error}</div>}
       {answer && (
         <div style={{ background: "rgba(192,132,252,.06)", border: "1px solid rgba(192,132,252,.2)", borderRadius: 10, padding: "14px 16px" }}>
@@ -4180,6 +4180,14 @@ function AppInner({ navigate }) {
   const { user } = useUser();
   const { signOut } = useClerk();
   const [isPro, setIsPro] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem("md_theme") || "dark"; } catch(e) { return "dark"; }
+  });
+  // Apply theme to document root
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem("md_theme", theme); } catch(e) {}
+  }, [theme]);
   // Splash screen — shows "Brief First, Trade After" on first open each session
   const [showSplash, setShowSplash] = useState(() => {
     try { return !sessionStorage.getItem("md_splash_shown"); } catch(e) { return false; }
@@ -4514,7 +4522,7 @@ function AppInner({ navigate }) {
       {showSplash && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 99999,
-          background: "#0a0c0f",
+          background: "var(--bg)",
           display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "center",
           gap: 16,
@@ -4526,18 +4534,20 @@ function AppInner({ navigate }) {
             Brief First.<br /><span style={{ color: "#00d4ff" }}>Trade After.</span>
           </div>
           <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,transparent,#00d4ff,transparent)", borderRadius: 2, animation: "splashUp .5s ease .4s both" }} />
-          <div style={{ fontSize: 11, color: "#555", letterSpacing: 2, fontFamily: "monospace", animation: "splashUp .5s ease .5s both" }}>KNOW THE MACRO</div>
+          <div style={{ fontSize: 11, color: "var(--text4)", letterSpacing: 2, fontFamily: "monospace", animation: "splashUp .5s ease .5s both" }}>KNOW THE MACRO</div>
         </div>
       )}
-      <style>{`*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: #0a0c0f; } #root { width: 100%; min-height: 100vh; background: #0a0c0f; } .md-app-root { width: 100%; min-height: 100vh; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (min-width: 768px) { .header-inner { padding: 18px 40px 0 !important; max-width: 100% !important; } .main-content { padding: 28px 40px 80px !important; max-width: 100% !important; } .header-inner > div { max-width: 1200px; margin: 0 auto; width: 100%; } .md-app-root { display: flex; flex-direction: column; } } @media (min-width: 1100px) { .main-content { padding: 32px 60px 80px !important; max-width: 100% !important; } .main-content > * { max-width: 1100px; margin-left: auto; margin-right: auto; } .header-inner { padding: 18px 60px 0 !important; max-width: 100% !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } } @keyframes briefStream { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+      <style>{`*, *::before, *::after { box-sizing: border-box; } :root { --bg: #0a0c0f; --bg2: #0d1117; --surface1: var(--surface1); --surface2: var(--surface2); --surface3: var(--surface3); --border: var(--border); --border2: var(--border2); --text1: #e0e0e0; --text2: #ccc; --text3: #888; --text4: #555; --text5: #444; --textdim: #333; }
+[data-theme="light"] { --bg: #f0f4f8; --bg2: #ffffff; --surface1: rgba(0,0,0,.02); --surface2: rgba(0,0,0,.04); --surface3: rgba(0,0,0,.06); --border: rgba(0,0,0,.08); --border2: rgba(0,0,0,.14); --text1: #0d1117; --text2: #1a2030; --text3: #3a4558; --text4: #5a6478; --text5: #7a8898; --textdim: #9aaabb; }
+html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: var(--bg); } #root { width: 100%; min-height: 100vh; background: #0a0c0f; } .md-app-root { width: 100%; min-height: 100vh; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (min-width: 768px) { .header-inner { padding: 18px 40px 0 !important; max-width: 100% !important; } .main-content { padding: 28px 40px 80px !important; max-width: 100% !important; } .header-inner > div { max-width: 1200px; margin: 0 auto; width: 100%; } .md-app-root { display: flex; flex-direction: column; } } @media (min-width: 1100px) { .main-content { padding: 32px 60px 80px !important; max-width: 100% !important; } .main-content > * { max-width: 1100px; margin-left: auto; margin-right: auto; } .header-inner { padding: 18px 60px 0 !important; max-width: 100% !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } } @keyframes briefStream { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
       {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} isOnTrial={isOnTrial} trialExpired={!isPro && !isOnTrial && !!user?.publicMetadata?.signup_at} />}
 
       {/* ── STREAMING INDICATOR — progress bar while brief loads ── */}
       {loading && !data && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999, height: 3, background: "linear-gradient(90deg, transparent, #00d4ff, transparent)", backgroundSize: "200% 100%", animation: "briefStream 1.2s linear infinite" }} />
       )}
-      <div className="md-app-root" style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
-        <div className="header-inner safe-top" style={{ background: "linear-gradient(180deg,#0d1117,#0a0c0f)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "16px 20px 0", position: "sticky", top: 0, zIndex: 100 }}>
+      <div className="md-app-root" style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)", fontFamily: "Inter, system-ui, sans-serif", transition: "background .2s ease, color .2s ease" }}>
+        <div className="header-inner safe-top" style={{ background: "linear-gradient(180deg,var(--bg2),var(--bg))", borderBottom: "1px solid var(--surface3)", padding: "16px 20px 0", position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ maxWidth: "100%", margin: "0 auto", width: "100%" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 13 }}>
               {/* ── TOP NAV ── */}
@@ -4546,15 +4556,15 @@ function AppInner({ navigate }) {
                 <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: -0.5, color: "#fff", lineHeight: 1 }}>
                   MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span>
                 </div>
-                <div style={{ fontSize: 8, color: "#444", letterSpacing: 2.5, fontFamily: "monospace" }}>BRIEF FIRST · TRADE AFTER</div>
+                <div style={{ fontSize: 8, color: "var(--text5)", letterSpacing: 2.5, fontFamily: "monospace" }}>BRIEF FIRST · TRADE AFTER</div>
               </div>
               {/* Right actions */}
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 8, fontFamily: "monospace", color: "#444", letterSpacing: 1 }}>
+                <span style={{ fontSize: 8, fontFamily: "monospace", color: "var(--text5)", letterSpacing: 1 }}>
                   {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" }).toUpperCase()}
                 </span>
                 {!isPro && (
-                  <button onClick={() => triggerUpgrade("limit")} style={{ fontSize: 9, padding: "4px 9px", borderRadius: 5, background: remaining <= 1 ? "rgba(255,71,87,.12)" : "rgba(255,255,255,.04)", border: "1px solid " + (remaining <= 1 ? "rgba(255,71,87,.35)" : "rgba(255,255,255,.1)"), color: remaining <= 1 ? "#ff4757" : "#666", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>{remaining} left</button>
+                  <button onClick={() => triggerUpgrade("limit")} style={{ fontSize: 9, padding: "4px 9px", borderRadius: 5, background: remaining <= 1 ? "rgba(255,71,87,.12)" : "var(--surface2)", border: "1px solid " + (remaining <= 1 ? "rgba(255,71,87,.35)" : "rgba(255,255,255,.1)"), color: remaining <= 1 ? "#ff4757" : "#666", cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>{remaining} left</button>
                 )}
                 {isPro && !isOnTrial && <span style={{ fontSize: 9, padding: "4px 9px", borderRadius: 5, background: "rgba(0,212,255,.08)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontWeight: 700 }}>PRO</span>}
                 {isOnTrial && <span onClick={() => triggerUpgrade("trial")} style={{ fontSize: 9, padding: "4px 9px", borderRadius: 5, background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.3)", color: "#f59e0b", fontWeight: 700, cursor: "pointer" }}>TRIAL</span>}
@@ -4563,8 +4573,14 @@ function AppInner({ navigate }) {
                   if (window._deferredInstallPrompt) { window._deferredInstallPrompt.prompt(); }
                   else { alert("iOS Safari: tap Share → Add to Home Screen\nAndroid Chrome: tap Menu → Add to Home Screen"); }
                 }} style={{ fontSize: 9, fontFamily: "monospace", color: "#00d4ff", padding: "4px 9px", border: "1px solid rgba(0,212,255,.25)", borderRadius: 5, background: "rgba(0,212,255,.06)", cursor: "pointer", fontWeight: 700 }}>⊕ APP</button>
-                <div style={{ display: "flex", alignItems: "stretch", border: "1px solid rgba(255,255,255,.12)", borderRadius: 6, overflow: "visible" }}>
-                  <button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "#ccc", padding: "6px 11px", background: "rgba(255,255,255,.04)", border: "none", borderRight: "1px solid rgba(255,255,255,.1)", cursor: "pointer", fontWeight: 700, borderRadius: "6px 0 0 6px" }}>HELP</button>
+                {/* Theme toggle */}
+                <button onClick={() => setTheme(t => t === "dark" ? "light" : "dark")}
+                  title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                  style={{ fontSize: 13, padding: "5px 8px", borderRadius: 6, border: "1px solid var(--border2)", background: "var(--surface2)", cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {theme === "dark" ? "☀️" : "🌙"}
+                </button>
+                <div style={{ display: "flex", alignItems: "stretch", border: "1px solid var(--border2)", borderRadius: 6, overflow: "visible" }}>
+                  <button onClick={() => navigate("/help")} style={{ fontSize: 9, fontFamily: "monospace", color: "var(--text2)", padding: "6px 11px", background: "var(--surface2)", border: "none", borderRight: "1px solid rgba(255,255,255,.1)", cursor: "pointer", fontWeight: 700, borderRadius: "6px 0 0 6px" }}>HELP</button>
                   <button onClick={() => signOut({ redirectUrl: "/" })} title="Sign out" style={{ fontSize: 14, fontWeight: 700, color: "#ff4757", padding: "6px 11px", background: "rgba(255,71,87,.1)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "0 6px 6px 0", minWidth: 38 }}>⏻</button>
                 </div>
               </div>
@@ -4584,7 +4600,7 @@ function AppInner({ navigate }) {
                 }} style={{ padding: "10px 11px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: "rgba(0,212,255,.06)", border: "1px solid rgba(0,212,255,.2)", color: "#00d4ff", fontSize: 14, flexShrink: 0, opacity: 0.75 }} title="Back">←</button>
               )}
               {[{ id: "full", label: "Full Brief", sub: "Pre-trade research" }, { id: "scalper", label: "Events Brief", sub: effectivelyPro ? "Event impact before you enter" : "Pro only 🔒" }].map(m => (
-                <button key={m.id} onClick={() => switchMode(m.id)} style={{ flex: 1, padding: "10px 10px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: mode === m.id ? "rgba(0,212,255,.1)" : "rgba(255,255,255,.02)", border: mode === m.id ? "1px solid rgba(0,212,255,.25)" : "1px solid rgba(255,255,255,.05)", color: mode === m.id ? "#00d4ff" : (m.id === "scalper" && !effectivelyPro ? "#2a2a2a" : "#444") }}>
+                <button key={m.id} onClick={() => switchMode(m.id)} style={{ flex: 1, padding: "10px 10px", minHeight: 44, borderRadius: 7, cursor: "pointer", fontFamily: "inherit", background: mode === m.id ? "rgba(0,212,255,.1)" : "var(--surface1)", border: mode === m.id ? "1px solid rgba(0,212,255,.25)" : "1px solid rgba(255,255,255,.05)", color: mode === m.id ? "#00d4ff" : (m.id === "scalper" && !effectivelyPro ? "#2a2a2a" : "var(--text5)") }}>
                   <div style={{ fontSize: 11, fontWeight: 700 }}>{m.label}</div>
                   <div style={{ fontSize: 9, marginTop: 2, opacity: 0.7 }}>{m.sub}</div>
                 </button>
@@ -4606,7 +4622,7 @@ function AppInner({ navigate }) {
             {/* ── TODAY'S BRIEFS — cached instrument chips ── */}
             {todaysBriefs.length > 0 && (
               <div style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: 8, color: "#555", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6, fontFamily: "monospace" }}>TODAY'S BRIEFS</div>
+                <div style={{ fontSize: 8, color: "var(--text4)", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6, fontFamily: "monospace" }}>TODAY'S BRIEFS</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {todaysBriefs.map((b, i) => {
                     const isActive = inst?.key === b.key;
@@ -4631,9 +4647,9 @@ function AppInner({ navigate }) {
                           letterSpacing: 0.5,
                           background: isActive
                             ? (b.color || "#00d4ff") + "22"
-                            : "rgba(255,255,255,.04)",
-                          border: "1px solid " + (isActive ? (b.color || "#00d4ff") + "88" : "rgba(255,255,255,.12)"),
-                          color: isActive ? (b.color || "#00d4ff") : "#ccc",
+                            : "var(--surface2)",
+                          border: "1px solid " + (isActive ? (b.color || "#00d4ff") + "88" : "var(--border2)"),
+                          color: isActive ? (b.color || "#00d4ff") : "var(--text2)",
                           boxShadow: isActive ? "0 0 8px " + (b.color || "#00d4ff") + "33" : "none",
                           transition: "all .15s",
                           position: "relative",
@@ -4658,11 +4674,11 @@ function AppInner({ navigate }) {
               </div>
             )}
             <div style={{ display: "flex", gap: 7, marginBottom: 11 }}>
-              <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && run(query.trim())} placeholder={mode === "scalper" ? "ES, NQ, CL, GC, 6E…" : "Euro, Gold, GBP, ES, NQ, Oil, BTC…"} style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.09)", borderRadius: 8, color: "#e0e0e0", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }} />
-              <button onClick={() => run(query.trim())} disabled={loading} style={{ padding: "12px 16px", minHeight: 44, borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", background: loading ? "rgba(255,255,255,.02)" : "rgba(0,212,255,.1)", color: loading ? "#2a2a2a" : "#00d4ff", border: "1px solid rgba(0,212,255,.2)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>{loading ? "…" : "BRIEF ME"}</button>
+              <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && run(query.trim())} placeholder={mode === "scalper" ? "ES, NQ, CL, GC, 6E…" : "Euro, Gold, GBP, ES, NQ, Oil, BTC…"} style={{ flex: 1, background: "var(--surface2)", border: "1px solid rgba(255,255,255,.09)", borderRadius: 8, color: "var(--text1)", fontSize: 14, padding: "10px 13px", outline: "none", fontFamily: "inherit", minWidth: 0 }} />
+              <button onClick={() => run(query.trim())} disabled={loading} style={{ padding: "12px 16px", minHeight: 44, borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", background: loading ? "var(--surface1)" : "rgba(0,212,255,.1)", color: loading ? "#2a2a2a" : "#00d4ff", border: "1px solid rgba(0,212,255,.2)", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", fontFamily: "inherit" }}>{loading ? "…" : "BRIEF ME"}</button>
             </div>
             <div style={{ display: "flex", gap: 5, marginBottom: 13, flexWrap: "wrap" }}>
-              {CHIPS.map(({ label, key }) => (<button key={key} onClick={() => { setQuery(label); setTab("brief"); run(label); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", color: "#888" }}>{label}</button>))}
+              {CHIPS.map(({ label, key }) => (<button key={key} onClick={() => { setQuery(label); setTab("brief"); run(label); }} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", background: "var(--surface1)", border: "1px solid var(--surface3)", color: "var(--text3)" }}>{label}</button>))}
             </div>
             <div style={{ display: "flex", overflowX: "auto" }}>
               {TABS.map(t => (
@@ -4695,7 +4711,7 @@ function AppInner({ navigate }) {
                         .finally(() => setFeedLoading(false));
                     }
                   }
-                }} style={{ flex: 1, minWidth: 60, padding: "11px 4px", minHeight: 44, border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "#333", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent"), whiteSpace: "nowrap" }}>
+                }} style={{ flex: 1, minWidth: 60, padding: "11px 4px", minHeight: 44, border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? "#00d4ff" : "var(--textdim)", borderBottom: "2px solid " + (tab === t.id ? "#00d4ff" : "transparent"), whiteSpace: "nowrap" }}>
                   {t.label}
                   {t.id === "stocks" && !effectivelyPro && <span style={{ marginLeft: 3, fontSize: 8 }}>🔒</span>}
                   {t.id === "stocks" && effectivelyPro && <span style={{ marginLeft: 4, fontSize: 8, color: "#f59e0b", opacity: 0.6 }}>●</span>}
@@ -4714,11 +4730,11 @@ function AppInner({ navigate }) {
               <div style={{ marginBottom: 14, padding: "12px 16px", borderRadius: 9, background: "rgba(245,158,11,.08)", border: "1px solid rgba(245,158,11,.25)", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b", marginBottom: 3 }}>Your 7-day trial has ended</div>
-                  <div style={{ fontSize: 11, color: "#888", lineHeight: 1.5 }}>Upgrade to keep knowing the macro before every trade.</div>
+                  <div style={{ fontSize: 11, color: "var(--text3)", lineHeight: 1.5 }}>Upgrade to keep knowing the macro before every trade.</div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   <button onClick={() => triggerUpgrade("trial_expired")} style={{ fontSize: 10, fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,.12)", border: "1px solid rgba(245,158,11,.3)", borderRadius: 6, padding: "5px 11px", cursor: "pointer", fontFamily: "inherit" }}>Upgrade</button>
-                  <button onClick={() => { try { sessionStorage.setItem("md_trial_banner_dismissed", "true"); } catch(e) {} const el = document.getElementById("md-trial-banner"); if (el) el.style.display = "none"; }} style={{ fontSize: 10, color: "#888", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "5px 8px" }}>x</button>
+                  <button onClick={() => { try { sessionStorage.setItem("md_trial_banner_dismissed", "true"); } catch(e) {} const el = document.getElementById("md-trial-banner"); if (el) el.style.display = "none"; }} style={{ fontSize: 10, color: "var(--text3)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "5px 8px" }}>x</button>
                 </div>
               </div>
             );
@@ -4753,8 +4769,8 @@ function AppInner({ navigate }) {
             {!loading && !error && !data && !inst && (
               <div style={{ textAlign: "center", padding: "56px 20px" }}>
                 <div style={{ fontSize: 44, marginBottom: 14 }}>+</div>
-                <div style={{ fontSize: 14, color: "#888", marginBottom: 7 }}>{mode === "scalper" ? "Enter your futures contract for a live risk check" : "Enter any instrument for your briefing"}</div>
-                <div style={{ fontSize: 11, color: "#555" }}>{mode === "scalper" ? "ES · NQ · CL · GC · 6E · RTY · YM" : "Euro · Gold · Silver · Oil · BTC · NQ"}</div>
+                <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 7 }}>{mode === "scalper" ? "Enter your futures contract for a live risk check" : "Enter any instrument for your briefing"}</div>
+                <div style={{ fontSize: 11, color: "var(--text4)" }}>{mode === "scalper" ? "ES · NQ · CL · GC · 6E · RTY · YM" : "Euro · Gold · Silver · Oil · BTC · NQ"}</div>
               </div>
             )}
             {!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}
@@ -4831,7 +4847,7 @@ function AppInner({ navigate }) {
                     setPostSessionLoading(false);
                   }}
                   disabled={postSessionLoading}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 8, border: "1px solid rgba(255,165,0,.25)", background: "rgba(255,165,0,.06)", color: postSessionLoading ? "#444" : "#ffa500", fontSize: 12, fontWeight: 700, cursor: postSessionLoading ? "wait" : "pointer", fontFamily: "inherit" }}>
+                  style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 8, border: "1px solid rgba(255,165,0,.25)", background: "rgba(255,165,0,.06)", color: postSessionLoading ? "var(--text5)" : "#ffa500", fontSize: 12, fontWeight: 700, cursor: postSessionLoading ? "wait" : "pointer", fontFamily: "inherit" }}>
                   {postSessionLoading ? "Generating…" : mode === "scalper" ? "📊 Session Summary Card" : "🌙 Post-Session Card"}
                 </button>
               </div>
@@ -4927,13 +4943,13 @@ function AppInner({ navigate }) {
 
               {/* ── NOTIFICATION OPT-IN/OUT STRIP ── */}
               {pushSupported && (
-                <div style={{ marginBottom: 14, padding: "12px 14px", background: alertsEnabled ? "rgba(0,212,255,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (alertsEnabled ? "rgba(0,212,255,.2)" : "rgba(255,255,255,.07)"), borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ marginBottom: 14, padding: "12px 14px", background: alertsEnabled ? "rgba(0,212,255,.06)" : "var(--surface1)", border: "1px solid " + (alertsEnabled ? "rgba(0,212,255,.2)" : "rgba(255,255,255,.07)"), borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
                   {/* Text */}
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: alertsEnabled ? "#00d4ff" : "#888", marginBottom: 2 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: alertsEnabled ? "#00d4ff" : "var(--text3)", marginBottom: 2 }}>
                       {alertsEnabled ? "🔔 Breaking alerts ON" : "🔕 Breaking alerts OFF"}
                     </div>
-                    <div style={{ fontSize: 10, color: "#555", lineHeight: 1.4 }}>
+                    <div style={{ fontSize: 10, color: "var(--text4)", lineHeight: 1.4 }}>
                       {alertsEnabled
                         ? "You'll be notified for political alerts and high-impact breaking narratives."
                         : "Get notified for political alerts and high-impact breaking narratives."}
@@ -5016,7 +5032,7 @@ function AppInner({ navigate }) {
                       width: 20,
                       height: 20,
                       borderRadius: "50%",
-                      background: alertsEnabled ? "#fff" : "#555",
+                      background: alertsEnabled ? "#fff" : "var(--text4)",
                       boxShadow: "0 1px 4px rgba(0,0,0,.4)",
                       transition: "left .25s ease, background .25s ease",
                       pointerEvents: "none",
@@ -5058,15 +5074,15 @@ function AppInner({ navigate }) {
                       setFeedLoading(false);
                     }}
                     disabled={feedLoading}
-                    style={{ fontSize: 10, color: feedLoading ? "#333" : "#ff4757", background: "none", border: "1px solid rgba(255,71,87,.2)", borderRadius: 6, padding: "4px 10px", cursor: feedLoading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+                    style={{ fontSize: 10, color: feedLoading ? "var(--textdim)" : "#ff4757", background: "none", border: "1px solid rgba(255,71,87,.2)", borderRadius: 6, padding: "4px 10px", cursor: feedLoading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
                     {feedLoading ? "Fetching…" : "↻ Refresh"}
                   </button>
                 </div>
 
                 {feedLastFetched && (
-                  <div style={{ fontSize: 9, color: "#555", fontFamily: "monospace", marginBottom: 10 }}>
+                  <div style={{ fontSize: 9, color: "var(--text4)", fontFamily: "monospace", marginBottom: 10 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    <span style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>Updated {feedLastFetched.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
+                    <span style={{ fontSize: 9, color: "var(--text4)", fontFamily: "monospace" }}>Updated {feedLastFetched.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
                     {lastFetchCount !== null && lastFetchCount > 0 && (
                       <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: "rgba(0,229,255,.1)", color: "#00e5ff", border: "1px solid rgba(0,229,255,.2)", fontFamily: "monospace" }}>
                         +{lastFetchCount} new
@@ -5081,11 +5097,11 @@ function AppInner({ navigate }) {
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {narrativeFeed.length > 0 && narrativeFeed[0] && !narrativeFeed[0].political_alert && (
                       <div style={{ padding: "7px 12px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)", borderRadius: 7, fontSize: 10, color: "#00d4ff", display: "flex", justifyContent: "space-between" }}>
-                      <div style={{ padding: "7px 12px", background: lastFetchCount > 0 ? "rgba(0,229,255,.06)" : "rgba(255,255,255,.02)", border: "1px solid " + (lastFetchCount > 0 ? "rgba(0,229,255,.15)" : "rgba(255,255,255,.05)"), borderRadius: 7, fontSize: 10, color: lastFetchCount > 0 ? "#00e5ff" : "#333", display: "flex", justifyContent: "space-between" }}>
+                      <div style={{ padding: "7px 12px", background: lastFetchCount > 0 ? "rgba(0,229,255,.06)" : "var(--surface1)", border: "1px solid " + (lastFetchCount > 0 ? "rgba(0,229,255,.15)" : "rgba(255,255,255,.05)"), borderRadius: 7, fontSize: 10, color: lastFetchCount > 0 ? "#00e5ff" : "var(--textdim)", display: "flex", justifyContent: "space-between" }}>
                         <span>{lastFetchCount > 0 ? `↻ ${lastFetchCount} new ${lastFetchCount === 1 ? "story" : "stories"} fetched` : "↻ Feed up to date"}</span>
-                        <span style={{ color: "#555" }}>{narrativeFeed.length} today</span>
+                        <span style={{ color: "var(--text4)" }}>{narrativeFeed.length} today</span>
                       </div>
-                        <span style={{ color: "#555" }}>{narrativeFeed.length} narratives today</span>
+                        <span style={{ color: "var(--text4)" }}>{narrativeFeed.length} narratives today</span>
                       </div>
                     )}
                     {narrativeFeed.map((n, i) => (
@@ -5094,8 +5110,8 @@ function AppInner({ navigate }) {
                         style={{
                           background: n.political_alert
                             ? (selectedNarrative?.id === n.id ? "rgba(255,71,87,.1)" : "rgba(255,71,87,.05)")
-                            : (selectedNarrative?.id === n.id ? "rgba(255,71,87,.06)" : "rgba(255,255,255,.02)"),
-                          border: "1px solid " + (n.political_alert ? "rgba(255,71,87,.3)" : selectedNarrative?.id === n.id ? "rgba(255,71,87,.2)" : "rgba(255,255,255,.06)"),
+                            : (selectedNarrative?.id === n.id ? "rgba(255,71,87,.06)" : "var(--surface1)"),
+                          border: "1px solid " + (n.political_alert ? "rgba(255,71,87,.3)" : selectedNarrative?.id === n.id ? "rgba(255,71,87,.2)" : "var(--surface3)"),
                           borderLeft: "3px solid " + (n.political_alert ? "#ff4757" : n.urgency === "CRITICAL" ? "#ff4757" : n.urgency === "HIGH" ? "#ffa500" : "#ffd700"),
                           borderRadius: "0 8px 8px 0", padding: "11px 13px", cursor: "pointer",
                         }}>
@@ -5113,24 +5129,24 @@ function AppInner({ navigate }) {
                         )}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span style={{ fontSize: 9, fontWeight: 700, color: n.political_alert ? "#ff4757" : n.tag === "BREAKING" ? "#ff4757" : "#555", fontFamily: "monospace" }}>
+                            <span style={{ fontSize: 9, fontWeight: 700, color: n.political_alert ? "#ff4757" : n.tag === "BREAKING" ? "#ff4757" : "var(--text4)", fontFamily: "monospace" }}>
                               {n.political_alert ? "🔴" : n.tag === "BREAKING" ? "⚡" : "📰"} {n.political_alert ? "POLITICAL" : n.tag}
                             </span>
-                            <span style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>{n.age || n.published_at?.slice(11,16)}</span>
+                            <span style={{ fontSize: 9, color: "var(--text4)", fontFamily: "monospace" }}>{n.age || n.published_at?.slice(11,16)}</span>
                           </div>
                           <span style={{ fontSize: 9, fontWeight: 700, color: n.urgency === "CRITICAL" ? "#ff4757" : n.urgency === "HIGH" ? "#ffa500" : "#ffd700", flexShrink: 0 }}>{n.urgency}</span>
                         </div>
-                        <div style={{ fontSize: 12, color: n.political_alert ? "#ffb3b3" : "#e0e0e0", fontWeight: n.political_alert ? 700 : 600, lineHeight: 1.4, marginBottom: selectedNarrative?.id === n.id ? 10 : 0 }}>{n.headline}</div>
+                        <div style={{ fontSize: 12, color: n.political_alert ? "#ffb3b3" : "var(--text1)", fontWeight: n.political_alert ? 700 : 600, lineHeight: 1.4, marginBottom: selectedNarrative?.id === n.id ? 10 : 0 }}>{n.headline}</div>
 
                         {/* Expanded view */}
                         {selectedNarrative?.id === n.id && (
                           <div>
-                            <div style={{ fontSize: 12, color: "#888", lineHeight: 1.6, fontStyle: "italic", marginBottom: 10 }}>"{n.narrative_summary}"</div>
+                            <div style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.6, fontStyle: "italic", marginBottom: 10 }}>"{n.narrative_summary}"</div>
                             {n.instruments?.map((inst, j) => {
                               const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
-                              const c = FC[inst.flow] || "#555";
+                              const c = FC[inst.flow] || "var(--text4)";
                               return (
-                                <div key={j} style={{ display: "flex", gap: 8, padding: "6px 9px", background: "rgba(255,255,255,.02)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0", marginBottom: 5 }}>
+                                <div key={j} style={{ display: "flex", gap: 8, padding: "6px 9px", background: "var(--surface1)", borderLeft: "2px solid " + c, borderRadius: "0 5px 5px 0", marginBottom: 5 }}>
                                   <div style={{ flexShrink: 0, minWidth: 52 }}>
                                     <div style={{ fontSize: 10, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
                                     <div style={{ fontSize: 8, color: c, fontWeight: 700, letterSpacing: 0 }}>{inst.flow}</div>
@@ -5171,19 +5187,19 @@ function AppInner({ navigate }) {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ padding: "24px 20px", textAlign: "center", border: "1px dashed rgba(255,255,255,.06)", borderRadius: 8 }}>
+                  <div style={{ padding: "24px 20px", textAlign: "center", border: "1px dashed var(--surface3)", borderRadius: 8 }}>
                     {feedLastFetched ? (
                       <>
                         <div style={{ fontSize: 22, marginBottom: 10 }}>📭</div>
-                        <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, marginBottom: 6 }}>No breaking narratives right now</div>
-                        <div style={{ fontSize: 11, color: "#888", lineHeight: 1.7 }}>
+                        <div style={{ fontSize: 13, color: "var(--text1)", fontWeight: 600, marginBottom: 6 }}>No breaking narratives right now</div>
+                        <div style={{ fontSize: 11, color: "var(--text3)", lineHeight: 1.7 }}>
                           Markets are quiet  -  no macro-moving headlines in the current news cycle.<br/>
-                          <span style={{ color: "#555" }}>Last checked {feedLastFetched.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
+                          <span style={{ color: "var(--text4)" }}>Last checked {feedLastFetched.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
                         </div>
                       </>
                     ) : (
                       <>
-                        <div style={{ fontSize: 12, color: "#555", lineHeight: 1.7 }}>
+                        <div style={{ fontSize: 12, color: "var(--text4)", lineHeight: 1.7 }}>
                           Tap Refresh to load today's narratives<br/>
                           <span style={{ fontSize: 10 }}>Checks for macro-moving headlines</span>
                         </div>
@@ -5198,7 +5214,7 @@ function AppInner({ navigate }) {
               {/* Header */}
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 11, color: "#ff4757", letterSpacing: 2, fontWeight: 700, marginBottom: 6 }}>⚡ BREAKING NARRATIVE</div>
-                <div style={{ fontSize: 13, color: "#888", lineHeight: 1.6 }}>
+                <div style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.6 }}>
                   See a headline you don't understand? Paste it in  -  get a clear macro explanation and how it affects your instruments.
                   Also monitors the live wire for market-moving events every 15 minutes.
                 </div>
@@ -5211,7 +5227,7 @@ function AppInner({ navigate }) {
                   onChange={e => setBreakingHeadline(e.target.value)}
                   placeholder={"Paste any headline, tweet or Discord narrative you don't understand...\n\ne.g. \"Fed signals higher for longer\"  -  what does this mean for my EUR/USD trade?\n\nor: \"OPEC+ cuts 1M barrels\"  -  how does this hit Oil and the Dollar?"}
                   rows={4}
-                  style={{ width: "100%", background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.15)", borderRadius: 10, color: "#e0e0e0", fontSize: 13, padding: "12px 14px", outline: "none", fontFamily: "inherit", lineHeight: 1.6, resize: "none" }}
+                  style={{ width: "100%", background: "rgba(255,71,87,.04)", border: "1px solid rgba(255,71,87,.15)", borderRadius: 10, color: "var(--text1)", fontSize: 13, padding: "12px 14px", outline: "none", fontFamily: "inherit", lineHeight: 1.6, resize: "none" }}
                 />
               </div>
               {/* Interpret button */}
@@ -5245,7 +5261,7 @@ function AppInner({ navigate }) {
                   setBreakingLoading(false);
                 }}
                 disabled={breakingLoading || !breakingHeadline.trim()}
-                style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: breakingLoading || !breakingHeadline.trim() ? "rgba(255,71,87,.08)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: breakingLoading || !breakingHeadline.trim() ? "#333" : "#fff", fontSize: 14, fontWeight: 800, cursor: breakingLoading || !breakingHeadline.trim() ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: 0.5, marginBottom: 20 }}>
+                style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: breakingLoading || !breakingHeadline.trim() ? "rgba(255,71,87,.08)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: breakingLoading || !breakingHeadline.trim() ? "var(--textdim)" : "#fff", fontSize: 14, fontWeight: 800, cursor: breakingLoading || !breakingHeadline.trim() ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: 0.5, marginBottom: 20 }}>
                 {breakingLoading ? "Interpreting…" : "⚡ INTERPRET NOW"}
               </button>
               {breakingError && <div style={{ color: "#ff4757", fontSize: 13, marginBottom: 16 }}>{breakingError}</div>}
@@ -5258,21 +5274,21 @@ function AppInner({ navigate }) {
                       <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, color: breakingData.urgency === "CRITICAL" ? "#ff4757" : breakingData.urgency === "HIGH" ? "#ffa500" : "#ffd700" }}>
                         {breakingData.urgency === "CRITICAL" ? "🔴" : breakingData.urgency === "HIGH" ? "🟠" : "🟡"} {breakingData.urgency}
                       </div>
-                      <div style={{ fontSize: 9, color: "#888", fontFamily: "monospace" }}>BREAKING NARRATIVE</div>
+                      <div style={{ fontSize: 9, color: "var(--text3)", fontFamily: "monospace" }}>BREAKING NARRATIVE</div>
                     </div>
-                    <div style={{ fontSize: 13, color: "#e0e0e0", lineHeight: 1.65, fontStyle: "italic" }}>
+                    <div style={{ fontSize: 13, color: "var(--text1)", lineHeight: 1.65, fontStyle: "italic" }}>
                       "{breakingData.narrative_summary}"
                     </div>
                   </div>
                   {/* Instrument impacts */}
                   {breakingData.instruments && breakingData.instruments.length > 0 && (
                     <div style={{ marginBottom: 16 }}>
-                      <div style={{ fontSize: 9, color: "#888", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>INSTRUMENT IMPACT</div>
+                      <div style={{ fontSize: 9, color: "var(--text3)", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>INSTRUMENT IMPACT</div>
                       {breakingData.instruments.map((inst, i) => {
                         const FC = { DEMAND: "#00d4aa", PRESSURE: "#ff4757", VOLATILE: "#ffd700", WATCH: "#c084fc" };
-                        const c = FC[inst.flow] || "#555";
+                        const c = FC[inst.flow] || "var(--text4)";
                         return (
-                          <div key={i} style={{ display: "flex", gap: 12, padding: "11px 14px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderLeft: "3px solid " + c, borderRadius: "0 8px 8px 0", marginBottom: 8, alignItems: "flex-start" }}>
+                          <div key={i} style={{ display: "flex", gap: 12, padding: "11px 14px", background: "var(--surface1)", border: "1px solid var(--surface3)", borderLeft: "3px solid " + c, borderRadius: "0 8px 8px 0", marginBottom: 8, alignItems: "flex-start" }}>
                             <div style={{ display: "flex", flexDirection: "column", gap: 3, flexShrink: 0, minWidth: 60 }}>
                               <div style={{ fontSize: 11, fontWeight: 800, color: "#fff" }}>{inst.name}</div>
                               <div style={{ fontSize: 8, fontWeight: 700, color: c, letterSpacing: 0 }}>{inst.flow || "WATCH"}</div>
@@ -5288,7 +5304,7 @@ function AppInner({ navigate }) {
                     {breakingData.tensions && (
                       <div style={{ padding: "12px 14px", background: "rgba(255,165,0,.04)", border: "1px solid rgba(255,165,0,.15)", borderRadius: 8, marginBottom: 10 }}>
                         <div style={{ fontSize: 8, color: "#ffa500", letterSpacing: 1.5, fontWeight: 700, marginBottom: 6 }}>⚡ CONFLICTING FORCES</div>
-                        <div style={{ fontSize: 12, color: "#888", lineHeight: 1.5 }}>{breakingData.tensions}</div>
+                        <div style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.5 }}>{breakingData.tensions}</div>
                       </div>
                     )}
                     {breakingData.watch_for && (
@@ -5319,7 +5335,7 @@ function AppInner({ navigate }) {
                 <div style={{ marginBottom: 16, padding: "12px 14px", background: "rgba(0,212,255,.05)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                   <div>
                     <div style={{ fontSize: 10, fontWeight: 700, color: "#00d4ff", marginBottom: 2 }}>Active: {inst.flag} {inst.label}</div>
-                    <div style={{ fontSize: 10, color: "#555" }}>Refresh brief with latest macro context</div>
+                    <div style={{ fontSize: 10, color: "var(--text4)" }}>Refresh brief with latest macro context</div>
                   </div>
                   <button onClick={() => { setTab("brief"); setData(null); run(inst.label, mode); }}
                     style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(0,212,255,.3)", background: "rgba(0,212,255,.1)", color: "#00d4ff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
@@ -5331,7 +5347,7 @@ function AppInner({ navigate }) {
               {!breakingData && !breakingLoading && (
                 <div style={{ textAlign: "center", padding: "40px 20px" }}>
                   <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
-                  <div style={{ fontSize: 13, color: "#555", lineHeight: 1.7 }}>
+                  <div style={{ fontSize: 13, color: "var(--text4)", lineHeight: 1.7 }}>
                     Paste any market-moving headline<br/>and get an instant macro read
                   </div>
                   <div style={{ marginTop: 16, fontSize: 11, color: "#1a1a1a" }}>
