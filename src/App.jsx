@@ -4544,8 +4544,8 @@ function AppInner({ navigate }) {
       {loading && !data && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999, height: 3, background: "linear-gradient(90deg, transparent, #00d4ff, transparent)", backgroundSize: "200% 100%", animation: "briefStream 1.2s linear infinite" }} />
       )}
-      <div className="md-app-root" style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif", transition: "background .2s ease, color .2s ease" }}>
-        <div className="header-inner safe-top" style={{ background: "linear-gradient(180deg,#0d1117,#0a0c0f)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "16px 20px 0", position: "sticky", top: 0, zIndex: 100 }}>
+      <div className="md-app-root" style={{ minHeight: "100vh", background: theme === "light" ? "#f4f6f9" : "#0a0c0f", color: theme === "light" ? "#000000" : "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif", transition: "background .2s ease, color .2s ease" }}>
+        <div className="header-inner safe-top" style={{ background: theme === "light" ? "linear-gradient(180deg,#ffffff,#f4f6f9)" : "linear-gradient(180deg,#0d1117,#0a0c0f)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "16px 20px 0", position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ maxWidth: "100%", margin: "0 auto", width: "100%" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 13 }}>
               {/* ── TOP NAV ── */}
