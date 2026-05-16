@@ -296,7 +296,7 @@ function EmailCapture() {
 
 function LandingPage({ navigate }) {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)", fontFamily: "Inter, system-ui, sans-serif", margin: 0 }}>
+    <div style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif", margin: 0, overscrollBehavior: "none" }}>
       <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } } @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } } .fade-up { animation: fadeUp 0.7s ease forwards; } .cta-btn:hover { opacity: 0.85; transform: translateY(-1px); } .cta-btn { transition: all 0.15s; } .chip:hover { border-color: rgba(0,212,255,.4) !important; color: #00d4ff !important; } .chip { transition: all 0.15s; cursor: default; }`}</style>
       <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 32px", borderBottom: "1px solid rgba(255,255,255,.05)", position: "sticky", top: 0, background: "rgba(10,12,15,.95)", backdropFilter: "blur(10px)", zIndex: 100 }}>
         <div style={{ display:"flex", alignItems:"center" }}>
@@ -1369,7 +1369,7 @@ function InstrumentHeatmap({ watchList, userId, onTap }) {
             style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", background: vc.bg, border: "1px solid " + vc.border, transition: "all .15s" }}>
             <div style={{ width: 7, height: 7, borderRadius: "50%", background: vc.dot, flexShrink: 0 }} />
             <span style={{ fontSize: 11, fontWeight: 800, color: vc.color, fontFamily: "monospace" }}>{inst.flag}</span>
-            {verdict && <span style={{ fontSize: 8, color: vc.color, opacity: 0.8, letterSpacing: 0.5 }}>{verdict}</span>}
+            {verdict && <span style={{ fontSize: 8, fontWeight: 700, color: vc.color, letterSpacing: 0.5, background: vc.dot + "22", padding: "1px 4px", borderRadius: 3 }}>{verdict}</span>}
           </button>
         ))}
       </div>
@@ -1759,7 +1759,7 @@ function UpgradeModal({ reason, onClose, userId, email, isOnTrial, trialExpired 
 function AuthScreen() {
   const [view, setView] = useState("sign-up");
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ minHeight: "100vh", background: "#0a0c0f", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20 }}>
 
       {/* Logo */}
       <div style={{ marginBottom: 24, textAlign: "center" }}>
@@ -3172,7 +3172,7 @@ function BreakingShareCard({ data, onClose }) {
         {/* Scrollable card content */}
         <div style={{ overflowY: "auto", padding: "10px 16px 0", flexGrow: 1 }}>
           {/* CARD — captured by html2canvas */}
-          <div id="breaking-card-el" style={{ background: "var(--bg)", borderRadius: 14, padding: 16, position: "relative", overflow: "hidden", marginBottom: 12 }}>
+          <div id="breaking-card-el" style={{ background: "#0a0c0f", borderRadius: 14, padding: 16, position: "relative", overflow: "hidden", marginBottom: 12 }}>
             <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,71,87,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,71,87,.02) 1px,transparent 1px)", backgroundSize: "32px 32px" }} />
             <div style={{ position: "absolute", top: -40, left: -40, width: 160, height: 160, pointerEvents: "none", background: "radial-gradient(circle,rgba(255,71,87,.07),transparent 70%)" }} />
 
@@ -3439,7 +3439,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
 
         {/* CARD */}
         <div id="share-card-el" style={{
-          background: "var(--bg)", borderRadius: 20,
+          background: "#0a0c0f", borderRadius: 20,
           padding: (isPostSession || isPostSessionBrief) ? 18 : 22,
           paddingBottom: 24,
           width: "100%",
@@ -4538,7 +4538,9 @@ function AppInner({ navigate }) {
         </div>
       )}
       <style>{`*, *::before, *::after { box-sizing: border-box; } :root { --bg: #0a0c0f; --bg2: #0d1117; --surface1: var(--surface1); --surface2: var(--surface2); --surface3: var(--surface3); --border: var(--border); --border2: var(--border2); --text1: #e0e0e0; --text2: #ccc; --text3: #888; --text4: #555; --text5: #444; --textdim: #333; }
-[data-theme="light"] { --bg: #f0f4f8; --bg2: #ffffff; --surface1: rgba(0,0,0,.02); --surface2: rgba(0,0,0,.04); --surface3: rgba(0,0,0,.06); --border: rgba(0,0,0,.08); --border2: rgba(0,0,0,.14); --text1: #0d1117; --text2: #1a2030; --text3: #3a4558; --text4: #5a6478; --text5: #7a8898; --textdim: #9aaabb; }
+[data-theme="light"] { --bg: #f2f4f7; --bg2: #ffffff; --surface1: rgba(0,0,0,.04); --surface2: rgba(0,0,0,.06); --surface3: rgba(0,0,0,.09); --border: rgba(0,0,0,.12); --border2: rgba(0,0,0,.18); --text1: #0d1117; --text2: #1e2533; --text3: #2e3a4a; --text4: #404e62; --text5: #546070; --textdim: #6a7a8e; }
+[data-theme="light"] .md-app-root { background: #f2f4f7; }
+[data-theme="light"] .md-app-root .verdict-banner { filter: saturate(1.2) brightness(0.92); }
 html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: var(--bg); } #root { width: 100%; min-height: 100vh; background: #0a0c0f; } .md-app-root { width: 100%; min-height: 100vh; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (min-width: 768px) { .header-inner { padding: 18px 40px 0 !important; max-width: 100% !important; } .main-content { padding: 28px 40px 80px !important; max-width: 100% !important; } .header-inner > div { max-width: 1200px; margin: 0 auto; width: 100%; } .md-app-root { display: flex; flex-direction: column; } } @media (min-width: 1100px) { .main-content { padding: 32px 60px 80px !important; max-width: 100% !important; } .main-content > * { max-width: 1100px; margin-left: auto; margin-right: auto; } .header-inner { padding: 18px 60px 0 !important; max-width: 100% !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } } @keyframes briefStream { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
       {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} isOnTrial={isOnTrial} trialExpired={!isPro && !isOnTrial && !!user?.publicMetadata?.signup_at} />}
 
