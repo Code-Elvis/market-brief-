@@ -146,7 +146,7 @@ function HelpPage({ navigate }) {
           <div style={{ width:5, height:5, borderRadius:"50%", background:"#00d4ff", animation:"helpPulse 2s infinite" }} />
           <span style={{ fontSize:10, color:"#00d4ff", fontWeight:700, letterSpacing:1.5 }}>HELP CENTRE</span>
         </div>
-        <h1 style={{ fontSize:"clamp(24px,5vw,40px)", fontWeight:900, color:"#fff", letterSpacing:"-1px", lineHeight:1.1, marginBottom:10 }}>How can we <span style={{ color:"#00d4ff" }}>help you?</span></h1>
+        <h1 style={{ fontSize:"clamp(24px,5vw,40px)", fontWeight:900, color:"var(--text1)", letterSpacing:"-1px", lineHeight:1.1, marginBottom:10 }}>How can we <span style={{ color:"#00d4ff" }}>help you?</span></h1>
         <p style={{ fontSize:13, color:"var(--text4)", lineHeight:1.7, marginBottom:24 }}>Everything you need to know about MarketDebriefs.</p>
         <div style={{ position:"relative", maxWidth:460, margin:"0 auto" }}>
           <input value={search} onChange={e => { setSearch(e.target.value); setOpenItem(null); }} placeholder="Search questions…" style={{ width:"100%", padding:"11px 42px 11px 15px", background:"var(--surface2)", border:"1px solid rgba(255,255,255,.1)", borderRadius:9, color:"var(--text1)", fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
@@ -159,7 +159,7 @@ function HelpPage({ navigate }) {
           <div key={section.id} style={{ marginBottom:40 }}>
             <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, paddingBottom:11, borderBottom:"1px solid rgba(255,255,255,.05)" }}>
               <div style={{ width:32, height:32, borderRadius:8, background:section.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>{section.icon}</div>
-              <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{section.title}</div>
+              <div style={{ fontSize:13, fontWeight:700, color:"var(--text1)" }}>{section.title}</div>
               <div style={{ marginLeft:"auto", fontSize:10, fontFamily:"monospace", color:"var(--text4)" }}>{section.items.length} articles</div>
             </div>
             {section.items.map((item, i) => {
@@ -178,7 +178,7 @@ function HelpPage({ navigate }) {
           </div>
         ))}
         <div style={{ marginTop:16, padding:"26px 22px", background:"linear-gradient(135deg,rgba(0,212,255,.06),transparent)", border:"1px solid rgba(0,212,255,.15)", borderRadius:14, textAlign:"center" }}>
-          <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:7 }}>Still need help?</div>
+          <div style={{ fontSize:17, fontWeight:800, color:"var(--text1)", marginBottom:7 }}>Still need help?</div>
           <div style={{ fontSize:13, color:"var(--text4)", lineHeight:1.7, marginBottom:18, maxWidth:360, margin:"0 auto 18px" }}>Can't find what you're looking for? We read every message and reply within 24 hours.</div>
           <a href="mailto:support@marketdebriefs.com" style={{ display:"inline-block", background:"linear-gradient(135deg,#00d4ff,#0099cc)", color:"#000", padding:"11px 26px", borderRadius:8, fontSize:13, fontWeight:800, fontFamily:"inherit", textDecoration:"none" }}>✉ EMAIL SUPPORT</a>
           <div style={{ marginTop:10, fontSize:11, color:"var(--text4)", fontFamily:"monospace" }}>support@marketdebriefs.com · 24-hour response</div>
@@ -297,7 +297,7 @@ function EmailCapture() {
 function LandingPage({ navigate }) {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)", fontFamily: "Inter, system-ui, sans-serif", margin: 0 }}>
-      <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } body { background: #0a0c0f; } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } } @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } } .fade-up { animation: fadeUp 0.7s ease forwards; } .cta-btn:hover { opacity: 0.85; transform: translateY(-1px); } .cta-btn { transition: all 0.15s; } .chip:hover { border-color: rgba(0,212,255,.4) !important; color: #00d4ff !important; } .chip { transition: all 0.15s; cursor: default; }`}</style>
+      <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } } @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } } .fade-up { animation: fadeUp 0.7s ease forwards; } .cta-btn:hover { opacity: 0.85; transform: translateY(-1px); } .cta-btn { transition: all 0.15s; } .chip:hover { border-color: rgba(0,212,255,.4) !important; color: #00d4ff !important; } .chip { transition: all 0.15s; cursor: default; }`}</style>
       <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 32px", borderBottom: "1px solid rgba(255,255,255,.05)", position: "sticky", top: 0, background: "rgba(10,12,15,.95)", backdropFilter: "blur(10px)", zIndex: 100 }}>
         <div style={{ display:"flex", alignItems:"center" }}>
   <svg width="148" height="26" viewBox="0 0 460 72" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -320,7 +320,7 @@ function LandingPage({ navigate }) {
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#00d4ff", animation: "pulse 2s infinite" }} />
           <span style={{ fontSize: 11, color: "#00d4ff", fontWeight: 600, letterSpacing: 1 }}>INSTITUTIONAL INTELLIGENCE · INDEPENDENT TRADERS</span>
         </div>
-        <h1 style={{ fontSize: "clamp(32px, 6vw, 58px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-1.5px", color: "#fff", marginBottom: 20 }}>Know the macro<br /><span style={{ color: "#00d4ff" }}>before you trade.</span></h1>
+        <h1 style={{ fontSize: "clamp(32px, 6vw, 58px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-1.5px", color: "var(--text1)", marginBottom: 20 }}>Know the macro<br /><span style={{ color: "#00d4ff" }}>before you trade.</span></h1>
         <p style={{ fontSize: "clamp(14px, 2vw, 17px)", color: "#aaa", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 36px" }}>Bloomberg tells you what happened.<br /><span style={{ color: "var(--text3)" }}>Market Debriefs tells you what it means.</span></p>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.3)", borderRadius: 20, padding: "4px 14px", marginBottom: 16 }}>
           <span style={{ fontSize: 10, color: "#f59e0b", fontWeight: 800, letterSpacing: 1 }}>7-DAY FREE TRIAL</span>
@@ -360,7 +360,7 @@ function LandingPage({ navigate }) {
         <div style={{ textAlign: "center", fontSize: 11, color: "#00e5ff", letterSpacing: 3, fontWeight: 700, marginBottom: 28, opacity: 0.7 }}>WHY ANSWERS BEAT DATA</div>
 
         {/* Hero */}
-        <div style={{ textAlign: "center", fontSize: "clamp(28px, 5vw, 56px)", fontWeight: 900, color: "#fff", lineHeight: 1.2, letterSpacing: -1, marginBottom: 24, fontFamily: "Georgia, serif" }}>
+        <div style={{ textAlign: "center", fontSize: "clamp(28px, 5vw, 56px)", fontWeight: 900, color: "var(--text1)", lineHeight: 1.2, letterSpacing: -1, marginBottom: 24, fontFamily: "Georgia, serif" }}>
           <span style={{ color: "#999", textDecoration: "line-through", textDecorationColor: "#ff4757", textDecorationThickness: 2 }}>Data</span> tells you what.<br />
           <span style={{ color: "#00e5ff" }}>Answers</span> tell you what to do.
         </div>
@@ -465,7 +465,7 @@ function LandingPage({ navigate }) {
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 32px 80px" }}>
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div style={{ fontSize: 11, color: "var(--text3)", letterSpacing: 2, fontWeight: 700, marginBottom: 12 }}>THE TRADER WORKFLOW</div>
-          <div style={{ fontSize: "clamp(20px, 3.5vw, 28px)", fontWeight: 900, color: "#fff", letterSpacing: -0.5, lineHeight: 1.2 }}>
+          <div style={{ fontSize: "clamp(20px, 3.5vw, 28px)", fontWeight: 900, color: "var(--text1)", letterSpacing: -0.5, lineHeight: 1.2 }}>
             Five steps. Every session.<br/>
             <span style={{ color: "#00d4ff" }}>Brief First, Trade After.</span>
           </div>
@@ -540,7 +540,7 @@ function LandingPage({ navigate }) {
                   <span style={{ fontSize: 16 }}>{s.icon}</span>
                   <div style={{ fontSize: 9, color: s.phaseColor, fontWeight: 700, letterSpacing: 1.5, opacity: 0.6 }}>{s.phase}</div>
                 </div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", marginBottom: 6, letterSpacing: -0.3 }}>{s.title}</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "var(--text1)", marginBottom: 6, letterSpacing: -0.3 }}>{s.title}</div>
                 <div style={{ fontSize: 13, color: "#999", lineHeight: 1.7, marginBottom: 8 }}>{s.desc}</div>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 20, background: s.detailColor + "10", border: "1px solid " + s.detailColor + "30" }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: s.detailColor, letterSpacing: 0.5 }}>{s.detail}</span>
@@ -611,7 +611,7 @@ function LandingPage({ navigate }) {
             <div key={p.name} style={{ background: p.highlight ? "rgba(0,212,255,.06)" : p.isTrial ? "rgba(245,158,11,.06)" : "var(--surface1)", border: `1px solid ${p.highlight ? "rgba(0,212,255,.25)" : p.isTrial ? "rgba(245,158,11,.3)" : "var(--surface3)"}`, borderRadius: 12, padding: 20, textAlign: "left", position: "relative" }}>
               {p.isTrial && <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "#f59e0b", color: "#000", fontSize: 9, fontWeight: 800, padding: "2px 10px", borderRadius: 10, letterSpacing: 1, whiteSpace: "nowrap" }}>START HERE</div>}
               <div style={{ fontSize: 12, fontWeight: 700, color: p.highlight ? "#00d4ff" : p.isTrial ? "#f59e0b" : "var(--text4)", marginBottom: 6 }}>{p.name}</div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", marginBottom: 14 }}>{p.price}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: "var(--text1)", marginBottom: 14 }}>{p.price}</div>
               {p.features.map(f => (
                 <div key={f} style={{ fontSize: 12, color: "#aaa", marginBottom: 5, display: "flex", gap: 7 }}>
                   <span style={{ color: p.highlight ? "#00d4ff" : p.isTrial ? "#f59e0b" : "var(--textdim)" }}>✓</span>{f}
@@ -631,7 +631,7 @@ function LandingPage({ navigate }) {
 
           <div style={{ position: "relative", zIndex: 1 }}>
             <div style={{ fontSize: 11, color: "#00d4ff", letterSpacing: 2, fontWeight: 700, marginBottom: 14, opacity: 0.7 }}>FREE DAILY MACRO BRIEF</div>
-            <div style={{ fontSize: "clamp(20px, 3.5vw, 28px)", fontWeight: 900, color: "#fff", letterSpacing: -0.5, lineHeight: 1.25, marginBottom: 10 }}>
+            <div style={{ fontSize: "clamp(20px, 3.5vw, 28px)", fontWeight: 900, color: "var(--text1)", letterSpacing: -0.5, lineHeight: 1.25, marginBottom: 10 }}>
               Get the macro context<br />
               <span style={{ color: "#00d4ff" }}>delivered to your inbox.</span>
             </div>
@@ -648,7 +648,7 @@ function LandingPage({ navigate }) {
       {/* ── FINAL CTA ── */}
       <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 32px 100px", textAlign: "center" }}>
         <div style={{ padding: "48px 32px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.1)", borderRadius: 16 }}>
-          <div style={{ fontSize: "clamp(22px, 4vw, 34px)", fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: 16, letterSpacing: "-0.5px" }}>
+          <div style={{ fontSize: "clamp(22px, 4vw, 34px)", fontWeight: 900, color: "var(--text1)", lineHeight: 1.2, marginBottom: 16, letterSpacing: "-0.5px" }}>
             Stop trading blind.<br /><span style={{ color: "#00d4ff" }}>Know the macro.</span>
           </div>
           <p style={{ fontSize: 13, color: "#aaa", lineHeight: 1.75, marginBottom: 28, maxWidth: 420, margin: "0 auto 28px" }}>
@@ -713,7 +713,7 @@ function LegalShell({ title, badge, children, navigate }) {
         hr.legal { border: none; border-top: 1px solid var(--surface3); margin: 24px 0; }
       `}</style>
       <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 24px", borderBottom: "1px solid var(--surface3)", position: "sticky", top: 0, background: "rgba(10,12,15,.96)", backdropFilter: "blur(10px)", zIndex: 100 }}>
-        <div onClick={() => navigate("/")} style={{ cursor: "pointer", fontSize: 14, fontWeight: 800, color: "#fff" }}>
+        <div onClick={() => navigate("/")} style={{ cursor: "pointer", fontSize: 14, fontWeight: 800, color: "var(--text1)" }}>
           MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span>
         </div>
         <button onClick={() => navigate("/")} style={{ fontSize: 9, fontFamily: "monospace", color: "var(--text1)", padding: "3px 7px", border: "1px solid rgba(255,255,255,.25)", borderRadius: 4, background: "var(--border)", cursor: "pointer", fontWeight: 700 }}>← BACK</button>
@@ -722,7 +722,7 @@ function LegalShell({ title, badge, children, navigate }) {
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 12px", borderRadius: 20, border: "1px solid rgba(0,212,255,.2)", background: "rgba(0,212,255,.05)", marginBottom: 16 }}>
           <span style={{ fontSize: 9, color: "#00d4ff", fontWeight: 700, letterSpacing: 1.5 }}>{badge}</span>
         </div>
-        <h1 style={{ fontSize: "clamp(22px,4vw,34px)", fontWeight: 900, color: "#fff", letterSpacing: -0.5, marginBottom: 6 }}>{title}</h1>
+        <h1 style={{ fontSize: "clamp(22px,4vw,34px)", fontWeight: 900, color: "var(--text1)", letterSpacing: -0.5, marginBottom: 6 }}>{title}</h1>
         <div style={{ fontSize: 11, color: "var(--text4)", fontFamily: "monospace", marginBottom: 32 }}>Last updated: May 2026 · marketdebriefs.com</div>
         {children}
       </div>
@@ -946,7 +946,7 @@ function AffiliatePage({ navigate }) {
       <h2 className="legal-h2">Apply Now</h2>
       <p className="legal-p">Ready to join? Email <strong>affiliates@marketdebriefs.com</strong> with a brief introduction and a link to your primary channel or audience. We typically respond within 3 business days.</p>
       <div style={{ marginTop: 20, padding: "20px 20px", background: "rgba(0,212,255,.04)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 10, textAlign: "center" }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Become a MarketDebriefs Affiliate</div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text1)", marginBottom: 8 }}>Become a MarketDebriefs Affiliate</div>
         <div style={{ fontSize: 12, color: "#999", marginBottom: 16 }}>30% recurring commission · Monthly payouts · Real-time dashboard</div>
         <a href="mailto:affiliates@marketdebriefs.com" style={{ display: "inline-block", background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", padding: "11px 28px", borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: "none", fontFamily: "Inter, system-ui, sans-serif" }}>Apply via Email →</a>
       </div>
@@ -1910,7 +1910,7 @@ function BreakingGate({ onUpgrade }) {
       {/* Hero */}
       <div style={{ textAlign: "center", marginBottom: 28 }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
-        <div style={{ fontSize: 17, fontWeight: 900, color: "#fff", marginBottom: 10, letterSpacing: -0.5 }}>Breaking Narratives</div>
+        <div style={{ fontSize: 17, fontWeight: 900, color: "var(--text1)", marginBottom: 10, letterSpacing: -0.5 }}>Breaking Narratives</div>
         <div style={{ fontSize: 13, color: "var(--text4)", lineHeight: 1.75, maxWidth: 340, margin: "0 auto" }}>
           See a headline in Discord or on Twitter and have no idea how it affects your trade?
           <span style={{ color: "var(--text1)" }}> Paste it in. Get the full macro explanation instantly.</span>
@@ -3179,7 +3179,7 @@ function BreakingShareCard({ data, onClose }) {
             <div style={{ position: "relative", zIndex: 1 }}>
               {/* Logo + badge */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div style={{ fontSize: 12, fontWeight: 900, color: "#fff" }}>MARKET<span style={{ color: "#ff4757" }}>DEBRIEFS</span></div>
+                <div style={{ fontSize: 12, fontWeight: 900, color: "var(--text1)" }}>MARKET<span style={{ color: "#ff4757" }}>DEBRIEFS</span></div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, background: urgencyBg, border: "1px solid " + urgencyColor + "44" }}>
                     <span style={{ fontSize: 9 }}>{data.urgency === "CRITICAL" ? "🔴" : data.urgency === "HIGH" ? "🟠" : "🟡"}</span>
@@ -3458,14 +3458,14 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
           <div style={{ position: "relative", zIndex: 1 }}>
             {/* Logo + card type */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: (isPostSession || isPostSessionBrief) ? 10 : 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: "var(--text1)", letterSpacing: -0.5 }}>
                 MARKET<span style={{ color: accent }}>DEBRIEFS</span>
               </div>
               <div style={{ fontSize: 9, color: accent, fontFamily: "monospace", letterSpacing: 1.5, opacity: 0.7 }}>{cardLabel}</div>
             </div>
 
             {/* Instrument + motto */}
-            <div style={{ fontSize: isEquity ? 22 : isScalper ? 24 : 26, fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1, marginBottom: 2 }}>
+            <div style={{ fontSize: isEquity ? 22 : isScalper ? 24 : 26, fontWeight: 900, color: "var(--text1)", letterSpacing: -1, lineHeight: 1, marginBottom: 2 }}>
               {isEquity ? (data.ticker || inst.label).toUpperCase() : inst.label}
             </div>
             <div style={{ fontSize: 8, color: accent, fontFamily: "monospace", letterSpacing: 0.8, opacity: 0.7, marginBottom: 4 }}>
@@ -4530,7 +4530,7 @@ function AppInner({ navigate }) {
         }}>
           <style>{`@keyframes splashFadeOut { from { opacity: 1; } to { opacity: 0; pointer-events: none; } } @keyframes splashUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#00d4ff", letterSpacing: 4, fontFamily: "monospace", animation: "splashUp .5s ease .1s both" }}>MARKETDEBRIEFS</div>
-          <div style={{ fontSize: "clamp(22px,6vw,40px)", fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1.15, textAlign: "center", animation: "splashUp .5s ease .25s both" }}>
+          <div style={{ fontSize: "clamp(22px,6vw,40px)", fontWeight: 900, color: "var(--text1)", letterSpacing: -1, lineHeight: 1.15, textAlign: "center", animation: "splashUp .5s ease .25s both" }}>
             Brief First.<br /><span style={{ color: "#00d4ff" }}>Trade After.</span>
           </div>
           <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,transparent,#00d4ff,transparent)", borderRadius: 2, animation: "splashUp .5s ease .4s both" }} />
@@ -4553,7 +4553,7 @@ html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; height: 100%;
               {/* ── TOP NAV ── */}
               {/* Brand */}
               <div onClick={() => navigate("/")} style={{ cursor: "pointer", display: "flex", flexDirection: "column", gap: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: -0.5, color: "#fff", lineHeight: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: -0.5, color: "var(--text1)", lineHeight: 1 }}>
                   MARKET<span style={{ color: "#00d4ff" }}>DEBRIEFS</span>
                 </div>
                 <div style={{ fontSize: 8, color: "var(--text5)", letterSpacing: 2.5, fontFamily: "monospace" }}>BRIEF FIRST · TRADE AFTER</div>
