@@ -1335,6 +1335,48 @@ Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
   );
 }
 
+
+// ── INSTRUMENT HEATMAP ────────────────────────────────────────────────────────
+// Shows macro verdict for each watched instrument at a glance.
+// Only renders when the user has watch list instruments with cached briefs.
+function InstrumentHeatmap({ watchList, userId, onTap }) {
+  if (!watchList || watchList.length === 0) return null;
+
+  const VERDICT_COLOURS = {
+    TAILWIND: { bg: "rgba(0,212,170,.12)",  border: "rgba(0,212,170,.35)", color: "#00d4aa", dot: "#00d4aa" },
+    HEADWIND: { bg: "rgba(255,71,87,.12)",  border: "rgba(255,71,87,.35)", color: "#ff4757", dot: "#ff4757" },
+    MIXED:    { bg: "rgba(255,215,0,.1)",   border: "rgba(255,215,0,.3)",  color: "#ffd700", dot: "#ffd700" },
+    NEUTRAL:  { bg: "rgba(255,255,255,.04)",border: "rgba(255,255,255,.12)",color: "#666",   dot: "#444"   },
+  };
+
+  const items = watchList.map(inst => {
+    const cached = userId ? bcGet(userId, inst.key, "full") : null;
+    const verdict = cached?.data?.verdict || null;
+    const vc = VERDICT_COLOURS[verdict] || VERDICT_COLOURS.NEUTRAL;
+    return { inst, verdict, vc, hasData: !!cached };
+  });
+
+  // Only render if at least one instrument has a verdict
+  const hasAnyVerdict = items.some(i => i.verdict);
+  if (!hasAnyVerdict) return null;
+
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 8, color: "#555", letterSpacing: 2, fontWeight: 700, marginBottom: 7, fontFamily: "monospace" }}>MACRO HEATMAP</div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {items.map(({ inst, verdict, vc, hasData }, i) => (
+          <button key={i} onClick={() => onTap(inst.label)}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", background: vc.bg, border: "1px solid " + vc.border, transition: "all .15s" }}>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: vc.dot, flexShrink: 0 }} />
+            <span style={{ fontSize: 11, fontWeight: 800, color: vc.color, fontFamily: "monospace" }}>{inst.flag}</span>
+            {verdict && <span style={{ fontSize: 8, color: vc.color, opacity: 0.8, letterSpacing: 0.5 }}>{verdict}</span>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── APP SHELL ─────────────────────────────────────────────────────────────────
 function AppShell({ navigate }) {
   const { isLoaded, userId } = useAuth();
@@ -1451,7 +1493,7 @@ function detect(query) {
 function sysPrompt(mode) {
   const base = "You are a professional market intelligence analyst. Respond ONLY with valid JSON. No markdown. No preamble. Start with { and end with }.\n" + "CRITICAL RULES  -  NEVER BREAK THESE:\n" + "1. NEVER mention specific price levels, support/resistance numbers, targets, stops, or historical price ranges.\n" + "2. EVENTS must be STRICTLY UPCOMING  -  scheduled in the future from the current time. NEVER include events that have already occurred or already been released today. If an event has already happened, exclude it entirely.\n" + "3. For events, only include the 2-3 most market-moving SCHEDULED releases coming up in the next 48 hours that directly affect this instrument. Include the exact scheduled time.\n" + "4. Your job is macro context and forward-looking event risk  -  not technical analysis, not past events.";
   if (mode === "scalper") return base + ' SCALPER MODE schema: {"instrument":"string","risk_level":"GREEN|YELLOW|RED","risk_reason":"string","scalper_note":"string","breaking":[{"headline":"string","direction":"BULLISH|BEARISH|NEUTRAL","age":"string"}],"imminent":[{"event":"string","time_est":"string","due_in":"string","passed":false,"expected_impact":"string"}]}. CRITICAL RULES: (1) Only include events from the REAL CALENDAR DATA provided in the prompt  -  do not add events from memory. (2) Copy time_est and due_in exactly from the calendar data provided. (3) passed = true if event time has already passed. (4) expected_impact = ONE sentence explaining what this event means specifically for THIS instrument  -  the macro mechanism, not a generic description. (5) risk_level based on next UPCOMING event time: GREEN=nothing in 2hrs (CLEAR), YELLOW=something in 2hrs (CAUTION), RED=something in 30min (STAND DOWN). NOT a directional signal.';
-  return base + ' FULL BRIEF schema: {"instrument":"string","macro_theme":"string","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}. STRICT FIELD RULES  -  each field serves a DIFFERENT purpose, never repeat content across fields: macro_theme = 4-7 word neutral phrase ONLY e.g. "Central bank divergence vs safe haven demand". headline_summary = ONE sentence describing the SINGLE most important macro force acting on this instrument RIGHT NOW. macro_context = ONE sentence about what SPECIFIC EVENT OR DATA to watch for NEXT  -  must be forward-looking and completely different from headline_summary, e.g. "Watch Wednesday FOMC minutes for rate path signals." geopolitical_risks = only populate if an active geopolitical event is directly relevant, otherwise use empty string "". IF macro_context would repeat headline_summary, write something genuinely different or use "".';
+  return base + ' FULL BRIEF schema: {"instrument":"string","verdict":"TAILWIND|HEADWIND|MIXED|NEUTRAL","verdict_reason":"string","macro_theme":"string","headline_summary":"string","events":[{"title":"string","time":"string","impact":"HIGH|MEDIUM","direction":"BULLISH|BEARISH|NEUTRAL","summary":"string","why_it_moves_price":"string","confidence":"HIGH|MEDIUM|LOW"}],"geopolitical_risks":"string","macro_context":"string","teaching_moment":"string"}. verdict = one word: TAILWIND (macro favours longs), HEADWIND (macro favours shorts), MIXED (conflicting forces), NEUTRAL (no strong bias). verdict_reason = ONE sentence max 80 chars — the single most important reason for the verdict. STRICT FIELD RULES  -  each field serves a DIFFERENT purpose, never repeat content across fields: macro_theme = 4-7 word neutral phrase ONLY e.g. "Central bank divergence vs safe haven demand". headline_summary = ONE sentence describing the SINGLE most important macro force acting on this instrument RIGHT NOW. macro_context = ONE sentence about what SPECIFIC EVENT OR DATA to watch for NEXT  -  must be forward-looking and completely different from headline_summary, e.g. "Watch Wednesday FOMC minutes for rate path signals." geopolitical_risks = only populate if an active geopolitical event is directly relevant, otherwise use empty string "". IF macro_context would repeat headline_summary, write something genuinely different or use "".';
 }
 
 function userPrompt(inst, mode, calendarEvents = []) {
@@ -1473,8 +1515,8 @@ function userPrompt(inst, mode, calendarEvents = []) {
   return "Current time: " + now + ". Full macro briefing for " + inst.label + ". List only the most important UPCOMING scheduled events after this exact time that will move this instrument in the next 48 hours. Include their scheduled time. Do NOT include any events that have already happened today. Focus on CURRENT central bank stance and live geopolitical risks. No price levels.";
 }
 
-async function callClaude(system, userMsg) {
-  const res = await fetch("/api/brief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system, messages: [{ role: "user", content: userMsg }] }) });
+async function callClaude(system, userMsg, maxTokens) {
+  const res = await fetch("/api/brief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: maxTokens || 1000, system, messages: [{ role: "user", content: userMsg }] }) });
   if (!res.ok) throw new Error("API error " + res.status);
   const data = await res.json();
   if (data.error) throw new Error(data.error.message || "API error");
@@ -1484,7 +1526,81 @@ async function callClaude(system, userMsg) {
   return JSON.parse(match[0]);
 }
 
-async function getBriefing(inst, mode, calendarEvents = []) { return callClaude(sysPrompt(mode), userPrompt(inst, mode, calendarEvents)); }
+// Streaming version — calls onChunk(partialJson) as tokens arrive
+// Returns the final parsed JSON when complete
+async function callClaudeStream(system, userMsg, onChunk) {
+  const res = await fetch("/api/brief?stream=true", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      stream: true,
+      system,
+      messages: [{ role: "user", content: userMsg }],
+    }),
+  });
+  if (!res.ok) throw new Error("API error " + res.status);
+
+  const reader  = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let fullText = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const raw = line.slice(6).trim();
+      if (raw === "[DONE]") continue;
+      try {
+        const evt = JSON.parse(raw);
+        if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
+          fullText += evt.delta.text;
+          // Try to parse partial JSON and call onChunk with whatever fields exist so far
+          const match = fullText.match(/\{[\s\S]*/);
+          if (match && onChunk) {
+            try {
+              // Attempt to close partial JSON for incremental rendering
+              const partial = match[0];
+              // Find known complete fields to extract
+              const fields = {};
+              const verdictM = partial.match(/"verdict"\s*:\s*"([^"]+)"/);
+              const reasonM  = partial.match(/"verdict_reason"\s*:\s*"([^"]+)"/);
+              const themeM   = partial.match(/"macro_theme"\s*:\s*"([^"]+)"/);
+              const headlineM = partial.match(/"headline_summary"\s*:\s*"([^"]+)"/);
+              const geoM     = partial.match(/"geopolitical_risks"\s*:\s*"([^"]+)"/);
+              if (verdictM)   fields.verdict         = verdictM[1];
+              if (reasonM)    fields.verdict_reason  = reasonM[1];
+              if (themeM)     fields.macro_theme     = themeM[1];
+              if (headlineM)  fields.headline_summary = headlineM[1];
+              if (geoM)       fields.geopolitical_risks = geoM[1];
+              if (Object.keys(fields).length > 0) onChunk(fields);
+            } catch(e) {}
+          }
+        }
+      } catch(e) {}
+    }
+  }
+
+  // Parse final complete JSON
+  const finalMatch = fullText.match(/\{[\s\S]*\}/);
+  if (!finalMatch) throw new Error("No JSON in stream response");
+  return JSON.parse(finalMatch[0]);
+}
+
+async function getBriefing(inst, mode, calendarEvents = [], onChunk) {
+  if (onChunk) {
+    return callClaudeStream(sysPrompt(mode), userPrompt(inst, mode, calendarEvents), onChunk);
+  }
+  return callClaude(sysPrompt(mode), userPrompt(inst, mode, calendarEvents));
+}
 
 async function getSectorImpact(macroContext) {
   const now = new Date().toLocaleString("en-GB", { weekday:"long", year:"numeric", month:"long", day:"numeric", hour:"2-digit", minute:"2-digit", timeZone:"America/New_York" });
@@ -3566,8 +3682,24 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
 function FullView({ inst, data }) {
   const sc = { bullish: "#00d4aa", bearish: "#ff4757", neutral: "#ffd700", mixed: "#c084fc" };
   const cc = sc[data.sentiment] || "#888";
+  const VERDICT_CFG = {
+    TAILWIND: { label: "MACRO TAILWIND", color: "#00d4aa", bg: "rgba(0,212,170,.1)",   border: "rgba(0,212,170,.25)",  icon: "▲" },
+    HEADWIND: { label: "MACRO HEADWIND", color: "#ff4757", bg: "rgba(255,71,87,.1)",   border: "rgba(255,71,87,.25)",  icon: "▼" },
+    MIXED:    { label: "MIXED SIGNALS",  color: "#ffd700", bg: "rgba(255,215,0,.08)",  border: "rgba(255,215,0,.2)",   icon: "◆" },
+    NEUTRAL:  { label: "NEUTRAL",        color: "#888",    bg: "rgba(255,255,255,.04)",border: "rgba(255,255,255,.1)", icon: "●" },
+  };
+  const vc = VERDICT_CFG[data.verdict] || VERDICT_CFG.NEUTRAL;
   return (
     <div>
+      {data.verdict && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: vc.bg, border: "1px solid " + vc.border, borderRadius: 10, marginBottom: 12 }}>
+          <div style={{ fontSize: 22, fontWeight: 900, color: vc.color, lineHeight: 1, flexShrink: 0 }}>{vc.icon}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: vc.color, letterSpacing: 1.5, marginBottom: 3 }}>{inst.flag} · {vc.label}</div>
+            <div style={{ fontSize: 13, color: "#e0e0e0", lineHeight: 1.4, fontWeight: 500 }}>{data.verdict_reason}</div>
+          </div>
+        </div>
+      )}
       <div style={{ background: "linear-gradient(135deg," + inst.color + "15,transparent)", border: "1px solid " + inst.color + "33", borderRadius: 12, padding: 20, marginBottom: 18 }}>
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 21, fontWeight: 800, color: inst.color, marginBottom: 8 }}>{inst.flag} {inst.label}</div>
@@ -4227,12 +4359,16 @@ function AppInner({ navigate }) {
           console.warn("Calendar fetch failed, falling back to Claude knowledge:", e.message);
         }
       }
-      const result = await getBriefing(found, mm, calendarEvents);
       // Push current state to back history before loading new brief
       if (inst && data) {
         setNavHistory(h => [...h.slice(-9), { inst, data, mode }]);
         setNavForward([]);
       }
+      // Stream: update UI progressively as tokens arrive
+      setInst(found); // set instrument immediately so header shows
+      const result = await getBriefing(found, mm, calendarEvents, (partial) => {
+        setData(prev => prev ? { ...prev, ...partial } : { ...partial });
+      });
       setData(result);
       setDataCache(prev => ({ ...prev, [mm]: { inst: found, data: result } }));
       setTab("brief");
@@ -4393,39 +4529,12 @@ function AppInner({ navigate }) {
           <div style={{ fontSize: 11, color: "#555", letterSpacing: 2, fontFamily: "monospace", animation: "splashUp .5s ease .5s both" }}>KNOW THE MACRO</div>
         </div>
       )}
-      <style>{`*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: #0a0c0f; } #root { width: 100%; min-height: 100vh; background: #0a0c0f; } .md-app-root { width: 100%; min-height: 100vh; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (min-width: 768px) { .header-inner { padding: 18px 40px 0 !important; max-width: 100% !important; } .main-content { padding: 28px 40px 80px !important; max-width: 100% !important; } .header-inner > div { max-width: 1200px; margin: 0 auto; width: 100%; } .md-app-root { display: flex; flex-direction: column; } } @media (min-width: 1100px) { .main-content { padding: 32px 60px 80px !important; max-width: 100% !important; } .main-content > * { max-width: 1100px; margin-left: auto; margin-right: auto; } .header-inner { padding: 18px 60px 0 !important; max-width: 100% !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }`}</style>
+      <style>{`*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: #0a0c0f; } #root { width: 100%; min-height: 100vh; background: #0a0c0f; } .md-app-root { width: 100%; min-height: 100vh; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (min-width: 768px) { .header-inner { padding: 18px 40px 0 !important; max-width: 100% !important; } .main-content { padding: 28px 40px 80px !important; max-width: 100% !important; } .header-inner > div { max-width: 1200px; margin: 0 auto; width: 100%; } .md-app-root { display: flex; flex-direction: column; } } @media (min-width: 1100px) { .main-content { padding: 32px 60px 80px !important; max-width: 100% !important; } .main-content > * { max-width: 1100px; margin-left: auto; margin-right: auto; } .header-inner { padding: 18px 60px 0 !important; max-width: 100% !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } } @keyframes briefStream { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
       {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} isOnTrial={isOnTrial} trialExpired={!isPro && !isOnTrial && !!user?.publicMetadata?.signup_at} />}
 
-      {/* ── BRIEF LOADING OVERLAY  -  keeps user in app during fetch ── */}
-      {loading && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 9999,
-          background: "rgba(6,14,14,.94)",
-          display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center",
-          gap: 24, padding: 32,
-        }}>
-          <div style={{ position: "relative", width: 72, height: 72 }}>
-            <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid rgba(0,212,255,.15)", animation: "md-ping 1.6s cubic-bezier(0,0,.2,1) infinite" }} />
-            <div style={{ position: "absolute", inset: 8, borderRadius: "50%", border: "2px solid rgba(0,212,255,.25)", animation: "md-ping 1.6s cubic-bezier(0,0,.2,1) infinite .4s" }} />
-            <div style={{ position: "absolute", inset: 18, borderRadius: "50%", background: "rgba(0,212,255,.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⚡</div>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 11, color: "#00d4ff", letterSpacing: 2, fontWeight: 700, fontFamily: "monospace", marginBottom: 8 }}>MARKETDEBRIEFS</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 6 }}>Generating brief…</div>
-            <div style={{ fontSize: 12, color: "#555", marginBottom: 20 }}>{inst?.label || "Loading macro context"}</div>
-            <div style={{
-              padding: "12px 20px",
-              background: "rgba(255,165,0,.06)",
-              border: "1px solid rgba(255,165,0,.18)",
-              borderRadius: 10,
-              maxWidth: 260, margin: "0 auto",
-            }}>
-              <div style={{ fontSize: 12, color: "#ffa500", fontWeight: 700, marginBottom: 4 }}>⚠️ Stay in this tab</div>
-              <div style={{ fontSize: 11, color: "#888", lineHeight: 1.6 }}>Leaving the app will interrupt the brief and cause it to fail</div>
-            </div>
-          </div>
-        </div>
+      {/* ── STREAMING INDICATOR — progress bar while brief loads ── */}
+      {loading && !data && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999, height: 3, background: "linear-gradient(90deg, transparent, #00d4ff, transparent)", backgroundSize: "200% 100%", animation: "briefStream 1.2s linear infinite" }} />
       )}
       <div className="md-app-root" style={{ minHeight: "100vh", background: "#0a0c0f", color: "#e0e0e0", fontFamily: "Inter, system-ui, sans-serif" }}>
         <div className="header-inner safe-top" style={{ background: "linear-gradient(180deg,#0d1117,#0a0c0f)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "16px 20px 0", position: "sticky", top: 0, zIndex: 100 }}>
@@ -4616,6 +4725,12 @@ function AppInner({ navigate }) {
           })()}
           {/* Brief results always visible above other tabs */}
           <div style={{ display: tab === "stocks" || tab === "breaking" || tab === "learn" || tab === "record" ? "none" : "block" }}>
+            {/* ── INSTRUMENT HEATMAP ── */}
+            <InstrumentHeatmap
+              watchList={watchList}
+              userId={user?.id}
+              onTap={(label) => { setQuery(label); run(label); }}
+            />
             {/* ── MORNING DASHBOARD ── */}
             {!loading && !data && (
               <MorningDashboard
@@ -5036,11 +5151,20 @@ function AppInner({ navigate }) {
                                 <div style={{ fontSize: 11, color: "#666", lineHeight: 1.4 }}>{n.watch_for}</div>
                               </div>
                             )}
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setBreakingData(n); setShowShareCard(true); }}
-                              style={{ width: "100%", padding: "9px", borderRadius: 7, border: "1px solid rgba(255,71,87,.25)", background: "rgba(255,71,87,.06)", color: "#ff4757", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                              ↗ Share This Narrative Card
-                            </button>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              {inst && data && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setTab("brief"); setData(null); run(inst.label, mode); }}
+                                  style={{ flex: 1, padding: "9px", borderRadius: 7, border: "1px solid rgba(0,212,255,.25)", background: "rgba(0,212,255,.06)", color: "#00d4ff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                                  ↺ Rebrief {inst.flag}
+                                </button>
+                              )}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setBreakingData(n); setShowShareCard(true); }}
+                                style={{ flex: 1, padding: "9px", borderRadius: 7, border: "1px solid rgba(255,71,87,.25)", background: "rgba(255,71,87,.06)", color: "#ff4757", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                                ↗ Share Card
+                              </button>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -5187,6 +5311,19 @@ function AppInner({ navigate }) {
                     }}
                     style={{ width: "100%", padding: "11px", borderRadius: 8, border: "1px solid rgba(255,71,87,.25)", background: "rgba(255,71,87,.06)", color: "#ff4757", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                     ↗ Share Breaking Narrative Card
+                  </button>
+                </div>
+              )}
+              {/* One-Tap Rebrief */}
+              {inst && data && !breakingLoading && (
+                <div style={{ marginBottom: 16, padding: "12px 14px", background: "rgba(0,212,255,.05)", border: "1px solid rgba(0,212,255,.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#00d4ff", marginBottom: 2 }}>Active: {inst.flag} {inst.label}</div>
+                    <div style={{ fontSize: 10, color: "#555" }}>Refresh brief with latest macro context</div>
+                  </div>
+                  <button onClick={() => { setTab("brief"); setData(null); run(inst.label, mode); }}
+                    style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(0,212,255,.3)", background: "rgba(0,212,255,.1)", color: "#00d4ff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                    ↺ Rebrief
                   </button>
                 </div>
               )}
