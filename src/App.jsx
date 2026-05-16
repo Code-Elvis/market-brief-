@@ -4537,24 +4537,7 @@ function AppInner({ navigate }) {
           <div style={{ fontSize: 11, color: "#555", letterSpacing: 2, fontFamily: "monospace", animation: "splashUp .5s ease .5s both" }}>KNOW THE MACRO</div>
         </div>
       )}
-      <style>{`*, *::before, *::after { box-sizing: border-box; } :root { --bg: #0a0c0f; --bg2: #0d1117; --surface1: rgba(255,255,255,.02); --surface2: rgba(255,255,255,.04); --surface3: rgba(255,255,255,.06); --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.12); --text1: #e0e0e0; --text2: #ccc; --text3: #888; --text4: #555; --text5: #444; --textdim: #333; }
-[data-theme="light"] {
-  --bg:      #f4f6f9;
-  --bg2:     #ffffff;
-  --surface1: rgba(0,0,0,.03);
-  --surface2: rgba(0,0,0,.05);
-  --surface3: rgba(0,0,0,.08);
-  --border:   rgba(0,0,0,.1);
-  --border2:  rgba(0,0,0,.16);
-  --text1:    #000000;
-  --text2:    #000000;
-  --text3:    #000000;
-  --text4:    #000000;
-  --text5:    #000000;
-  --textdim:  #333333;
-}
-html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: #0a0c0f; } #root { width: 100%; min-height: 100vh; background: #0a0c0f; } .md-app-root { width: 100%; min-height: 100vh; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (min-width: 768px) { .header-inner { padding: 18px 40px 0 !important; max-width: 100% !important; } .main-content { padding: 28px 40px 80px !important; max-width: 100% !important; } .header-inner > div { max-width: 1200px; margin: 0 auto; width: 100%; } .md-app-root { display: flex; flex-direction: column; } } @media (min-width: 1100px) { .main-content { padding: 32px 60px 80px !important; max-width: 100% !important; } .main-content > * { max-width: 1100px; margin-left: auto; margin-right: auto; } .header-inner { padding: 18px 60px 0 !important; max-width: 100% !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } } @keyframes briefStream { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  .share-card-capture { --text1: #e0e0e0 !important; --text2: #ccc !important; --text3: #888 !important; --text4: #555 !important; --text5: #444 !important; --textdim: #333 !important; --bg: #0a0c0f !important; --bg2: #0d1117 !important; --surface1: rgba(255,255,255,.02) !important; --surface2: rgba(255,255,255,.04) !important; --surface3: rgba(255,255,255,.06) !important; --border: rgba(255,255,255,.08) !important; }`}</style>
+      <style>{`*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; height: 100%; overscroll-behavior: none; -webkit-overflow-scrolling: touch; background: #0a0c0f; } #root { width: 100%; min-height: 100vh; background: #0a0c0f; } .md-app-root { width: 100%; min-height: 100vh; } textarea { box-sizing: border-box; } @supports (padding-top: env(safe-area-inset-top)) { .safe-top { padding-top: env(safe-area-inset-top) !important; } .safe-bottom { padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; } } @media (min-width: 768px) { .header-inner { padding: 18px 40px 0 !important; max-width: 100% !important; } .main-content { padding: 28px 40px 80px !important; max-width: 100% !important; } .header-inner > div { max-width: 1200px; margin: 0 auto; width: 100%; } .md-app-root { display: flex; flex-direction: column; } } @media (min-width: 1100px) { .main-content { padding: 32px 60px 80px !important; max-width: 100% !important; } .main-content > * { max-width: 1100px; margin-left: auto; margin-right: auto; } .header-inner { padding: 18px 60px 0 !important; max-width: 100% !important; } } @media (max-width: 480px) { .main-content { padding: 14px 14px 60px !important; } .header-inner { padding: 14px 14px 0 !important; } } @keyframes md-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } } @keyframes briefStream { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
       {showUpgrade && <UpgradeModal reason={upgradeReason} onClose={() => setShowUpgrade(false)} userId={user?.id} email={user?.primaryEmailAddress?.emailAddress} isOnTrial={isOnTrial} trialExpired={!isPro && !isOnTrial && !!user?.publicMetadata?.signup_at} />}
 
       {/* ── STREAMING INDICATOR — progress bar while brief loads ── */}
