@@ -1377,6 +1377,86 @@ function InstrumentHeatmap({ watchList, userId, onTap }) {
   );
 }
 
+
+// ── SESSION RISK SCORE ────────────────────────────────────────────────────────
+// Aggregates: time to next HIGH event + active geopolitical narratives +
+// current macro verdict → single RISK signal shown before every trade.
+function SessionRiskBanner({ rawCalendarEvents, narrativeFeed, data, inst, mode }) {
+  const [risk, setRisk] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!inst || !data) { setRisk(null); return; }
+
+    // ── Factor 1: Time to next HIGH-impact event ─────────────────────────────
+    const estNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+    const upcoming = (rawCalendarEvents || []).filter(e => !e.passed && e.impact === "high");
+    let minsToEvent = Infinity;
+    for (const ev of upcoming) {
+      if (!ev.time_est) continue;
+      const [h, m] = ev.time_est.split(":").map(Number);
+      const evTime = new Date(estNow); evTime.setHours(h, m, 0, 0);
+      const diff = (evTime - estNow) / 60000;
+      if (diff > 0 && diff < minsToEvent) minsToEvent = diff;
+    }
+
+    // ── Factor 2: Active CRITICAL/HIGH narratives ────────────────────────────
+    const hotNarratives = (narrativeFeed || []).filter(n =>
+      n.urgency === "CRITICAL" || n.political_alert
+    ).length;
+
+    // ── Factor 3: Macro verdict ───────────────────────────────────────────────
+    const verdict = data.verdict; // TAILWIND | HEADWIND | MIXED | NEUTRAL
+
+    // ── Score ─────────────────────────────────────────────────────────────────
+    let score = 0;
+    // Event proximity
+    if (minsToEvent <= 10)  score += 3;
+    else if (minsToEvent <= 30) score += 2;
+    else if (minsToEvent <= 60) score += 1;
+    // Hot narratives
+    score += Math.min(hotNarratives * 2, 4);
+    // Verdict
+    if (verdict === "HEADWIND") score += 2;
+    else if (verdict === "MIXED") score += 1;
+
+    // ── Signal ────────────────────────────────────────────────────────────────
+    let level, label, colour, bg, advice;
+    if (score >= 6) {
+      level = "AVOID"; label = "⛔ HIGH RISK";
+      colour = "#ff4757"; bg = "rgba(255,71,87,.1)";
+      advice = minsToEvent <= 30
+        ? `HIGH-impact event in ${Math.round(minsToEvent)}m. Consider sitting out.`
+        : "Multiple risk factors active. Not ideal conditions to enter.";
+    } else if (score >= 3) {
+      level = "ELEVATED"; label = "⚠️ ELEVATED RISK";
+      colour = "#f59e0b"; bg = "rgba(245,158,11,.08)";
+      advice = minsToEvent <= 60
+        ? `Event risk in ~${Math.round(minsToEvent)}m. Size down or wait for the release.`
+        : "Elevated macro risk. Trade smaller, keep stops tight.";
+    } else {
+      level = "LOW"; label = "✓ RISK: LOW";
+      colour = "#00d4aa"; bg = "rgba(0,212,170,.08)";
+      advice = "Macro conditions are relatively clean. Normal risk management applies.";
+    }
+
+    setRisk({ level, label, colour, bg, advice, minsToEvent: minsToEvent === Infinity ? null : Math.round(minsToEvent) });
+  }, [rawCalendarEvents, narrativeFeed, data, inst]);
+
+  if (!risk || mode !== "full") return null;
+
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 14px", background: risk.bg, border: "1px solid " + risk.colour + "44", borderRadius: 9, marginBottom: 12 }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: risk.colour, letterSpacing: 1.5, marginBottom: 3 }}>
+          {risk.label}
+          {risk.minsToEvent && <span style={{ marginLeft: 8, fontSize: 9, opacity: 0.7, fontWeight: 400 }}>next event {risk.minsToEvent}m</span>}
+        </div>
+        <div style={{ fontSize: 11, color: "var(--text1)", lineHeight: 1.45 }}>{risk.advice}</div>
+      </div>
+    </div>
+  );
+}
+
 // ── APP SHELL ─────────────────────────────────────────────────────────────────
 function AppShell({ navigate }) {
   const { isLoaded, userId } = useAuth();
@@ -3099,6 +3179,40 @@ function DynamicCalendar({ size = 18 }) {
 }
 
 // ── BREAKING NARRATIVE SHARE CARD ───────────────────────────────────────────
+
+// ── LIVE AGO COUNTER ─────────────────────────────────────────────────────────
+// Ticks every 30 seconds, shows elapsed time since fetchedAt
+function LiveAgo({ fetchedAt, staticAge }) {
+  const [label, setLabel] = React.useState("");
+
+  React.useEffect(() => {
+    function compute() {
+      // Use fetchedAt if available, otherwise fall back to static age string
+      if (!fetchedAt) { setLabel(staticAge || ""); return; }
+      const diffMs  = Date.now() - fetchedAt;
+      const diffMin = Math.floor(diffMs / 60000);
+      const diffHr  = Math.floor(diffMin / 60);
+      const diffDay = Math.floor(diffHr / 24);
+      if (diffDay > 0) {
+        const remHr = diffHr % 24;
+        setLabel(remHr > 0 ? `${diffDay}d ${remHr}h ago` : `${diffDay}d ago`);
+      } else if (diffHr > 0) {
+        const remMin = diffMin % 60;
+        setLabel(remMin > 0 ? `${diffHr}h ${remMin}m ago` : `${diffHr}h ago`);
+      } else if (diffMin > 0) {
+        setLabel(`${diffMin}m ago`);
+      } else {
+        setLabel("just now");
+      }
+    }
+    compute();
+    const iv = setInterval(compute, 30000);
+    return () => clearInterval(iv);
+  }, [fetchedAt, staticAge]);
+
+  return <span>{label}</span>;
+}
+
 function BreakingShareCard({ data, onClose }) {
   const [sharing, setSharing] = useState(false);
   const [shared, setShared]   = useState(false);
@@ -4386,7 +4500,7 @@ function AppInner({ navigate }) {
         bcSet(user.id, found.key, mm, found, result);
         setTodaysBriefs(bcGetIndex(user.id));
         // Track record — only for Full Brief with clear sentiment
-        if (mm === "full" && result?.sentiment && result?.ticker) {
+        if (mm === "full" && result?.sentiment) {
           trRecordCall(user.id, found.key, found.label, found.flag, found.color, mm, result.sentiment, result.headline_summary || "");
           setTrackRecord(trGet(user.id));
         }
@@ -4692,7 +4806,7 @@ function AppInner({ navigate }) {
                           if (d.narratives?.length > 0) {
                             setNarrativeFeed(prev => {
                               const existingIds = new Set(prev.map(n => n.id));
-                              const newOnes = d.narratives.filter(n => !existingIds.has(n.id));
+                              const newOnes = d.narratives.filter(n => !existingIds.has(n.id)).map(n => ({ ...n, fetchedAt: n.fetchedAt || Date.now() }));
                               setLastFetchCount(newOnes.length);
                               const merged = [...newOnes, ...prev].slice(0, 40);
                               const updated = [...merged.filter(n => n.political_alert), ...merged.filter(n => !n.political_alert)];
@@ -4771,7 +4885,18 @@ function AppInner({ navigate }) {
                 <div style={{ fontSize: 11, color: "#555" }}>{mode === "scalper" ? "ES · NQ · CL · GC · 6E · RTY · YM" : "Euro · Gold · Silver · Oil · BTC · NQ"}</div>
               </div>
             )}
-            {!loading && data && inst && mode === "full" && <FullView inst={inst} data={data} />}
+            {!loading && data && inst && mode === "full" && (
+              <>
+                <SessionRiskBanner
+                  rawCalendarEvents={rawCalendarEvents}
+                  narrativeFeed={narrativeFeed}
+                  data={data}
+                  inst={inst}
+                  mode={mode}
+                />
+                <FullView inst={inst} data={data} />
+              </>
+            )}
             {!loading && data && inst && mode === "scalper" && <ScalperView inst={inst} data={data} rawCalendar={rawCalendarEvents} onCalendarRefresh={setRawCalendarEvents} />}
             {!loading && data && inst && (
               <div style={{ marginTop: 20, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
@@ -4994,7 +5119,12 @@ function AppInner({ navigate }) {
                           await fetch("/api/push-subscribe", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ subscription: sub.toJSON() }),
+                            body: JSON.stringify({
+                              subscription: sub.toJSON(),
+                              userId: user?.id,
+                              watchList: wlGet(user?.id || "").map(i => i.key),
+                              stockWatchList: swlGet(user?.id || "").map(i => i.ticker),
+                            }),
                           });
                           setAlertsEnabled(true);
                           try { localStorage.setItem("md_alerts_enabled", "true"); } catch(e) {}
@@ -5056,7 +5186,7 @@ function AppInner({ navigate }) {
                         if (d.narratives?.length > 0) {
                           setNarrativeFeed(prev => {
                             const existingIds = new Set(prev.map(n => n.id));
-                            const newOnes = d.narratives.filter(n => !existingIds.has(n.id));
+                            const newOnes = d.narratives.filter(n => !existingIds.has(n.id)).map(n => ({ ...n, fetchedAt: n.fetchedAt || Date.now() }));
                             setLastFetchCount(newOnes.length);
                             const merged = [...newOnes, ...prev].slice(0, 40);
                             const updated = [...merged.filter(n => n.political_alert), ...merged.filter(n => !n.political_alert)];
@@ -5130,7 +5260,7 @@ function AppInner({ navigate }) {
                             <span style={{ fontSize: 9, fontWeight: 700, color: n.political_alert ? "#ff4757" : n.tag === "BREAKING" ? "#ff4757" : "#555", fontFamily: "monospace" }}>
                               {n.political_alert ? "🔴" : n.tag === "BREAKING" ? "⚡" : "📰"} {n.political_alert ? "POLITICAL" : n.tag}
                             </span>
-                            <span style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}>{n.age || n.published_at?.slice(11,16)}</span>
+                            <span style={{ fontSize: 9, color: "#555", fontFamily: "monospace" }}><LiveAgo fetchedAt={n.fetchedAt} staticAge={n.age || n.published_at?.slice(11,16)} /></span>
                           </div>
                           <span style={{ fontSize: 9, fontWeight: 700, color: n.urgency === "CRITICAL" ? "#ff4757" : n.urgency === "HIGH" ? "#ffa500" : "#ffd700", flexShrink: 0 }}>{n.urgency}</span>
                         </div>
@@ -5246,8 +5376,9 @@ function AppInner({ navigate }) {
                       age: "just now",
                       published_at: new Date().toISOString(),
                     };
+                    const stampedNarrative = { ...manualNarrative, fetchedAt: Date.now() };
                     setNarrativeFeed(prev => {
-                        const updated = [manualNarrative, ...prev].slice(0, 40);
+                        const updated = [stampedNarrative, ...prev].slice(0, 40);
                         const today = new Date().toISOString().slice(0, 10);
                         try { localStorage.setItem("md_narrative_feed", JSON.stringify({ date: today, feed: updated })); } catch(e) {}
                         return updated;
