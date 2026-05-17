@@ -58,17 +58,26 @@
       --text5:    #000000;
       --textdim:  #000000;
     }
-    /* Force ALL text in the app to black in light mode.
-       Excludes share cards (locked dark) and elements with explicit brand colours. */
+    /* Force ALL text in the app to black in light mode */
     [data-theme="light"] .md-app-root,
     [data-theme="light"] .md-app-root * {
       color: #000000 !important;
     }
-    /* Brand colour elements override via inline style where needed */
-    /* Share cards always stay dark */
+    /* Borders and outlines must stay visible in light mode */
+    [data-theme="light"] .md-app-root input,
+    [data-theme="light"] .md-app-root textarea {
+      border-color: #000000 !important;
+      outline-color: #000000 !important;
+    }
+    /* Share cards: always dark — restore all text to light */
     [data-theme="light"] .share-card-capture,
     [data-theme="light"] .share-card-capture * {
       color: #e0e0e0 !important;
+    }
+    /* Share card action buttons (Done, Pre Session, Post Session etc)
+       sit outside the card capture element — restore white text on coloured backgrounds */
+    [data-theme="light"] .share-action-btn {
+      color: #ffffff !important;
     }
     .share-card-capture {
       --text1: #e0e0e0 !important;
