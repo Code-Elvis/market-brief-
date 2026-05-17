@@ -58,6 +58,18 @@
       --text5:    #000000;
       --textdim:  #000000;
     }
+    /* Force ALL text in the app to black in light mode.
+       Excludes share cards (locked dark) and elements with explicit brand colours. */
+    [data-theme="light"] .md-app-root,
+    [data-theme="light"] .md-app-root * {
+      color: #000000 !important;
+    }
+    /* Brand colour elements override via inline style where needed */
+    /* Share cards always stay dark */
+    [data-theme="light"] .share-card-capture,
+    [data-theme="light"] .share-card-capture * {
+      color: #e0e0e0 !important;
+    }
     .share-card-capture {
       --text1: #e0e0e0 !important;
       --text2: #ccc !important;
