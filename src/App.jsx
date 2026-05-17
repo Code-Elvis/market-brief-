@@ -1305,7 +1305,7 @@ Brief First, Trade After. Get your full briefs @ marketdebriefs.com`;
           background: sharing ? "rgba(0,212,255,.05)" : "linear-gradient(135deg,#00d4ff,#0099cc)",
           color: sharing ? "var(--text4)" : "#000",
           fontSize: 13, fontWeight: 800, cursor: sharing ? "wait" : "pointer", fontFamily: "inherit", marginBottom: 16,
-        }}>
+        }} className="share-action-btn">
           {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share My Track Record"}
         </button>
       )}
@@ -3248,10 +3248,10 @@ function BreakingShareCard({ data, onClose }) {
         {/* Action buttons — always visible, never scrolled away */}
         <div style={{ padding: "10px 16px 20px", flexShrink: 0, borderTop: "1px solid rgba(255,255,255,.06)", background: "#0a0c0f" }}>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={handleShare} disabled={sharing} style={{ flex: 1, padding: "12px", borderRadius: 8, border: "none", cursor: sharing ? "wait" : "pointer", background: sharing ? "rgba(255,71,87,.05)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: sharing ? "#333" : "#fff", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>
+            <button onClick={handleShare} disabled={sharing} className="share-action-btn" style={{ flex: 1, padding: "12px", borderRadius: 8, border: "none", cursor: sharing ? "wait" : "pointer", background: sharing ? "rgba(255,71,87,.05)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: sharing ? "#333" : "#fff", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>
               {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share Card"}
             </button>
-            <button onClick={onClose} style={{ padding: "12px 20px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Done</button>
+            <button onClick={onClose} className="share-action-btn" style={{ padding: "12px 20px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)", color: "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Done</button>
           </div>
           <div style={{ fontSize: 10, color: "#333", textAlign: "center", marginTop: 8 }}>Mobile — shares to any app · Desktop — downloads as PNG</div>
         </div>
@@ -3643,10 +3643,10 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
         {/* Pre / Post session toggle */}
         {!isEventSummary && (
           <div style={{ display: "flex", width: "100%", background: "#0d1117", borderRadius: 8, border: "1px solid rgba(255,255,255,.07)", overflow: "hidden" }}>
-            <button onClick={() => setIsPostSession(false)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: !isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: !isPostSession ? "#00d4ff" : "#333", borderBottom: !isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
+            <button onClick={() => setIsPostSession(false)} className="share-action-btn" style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: !isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: !isPostSession ? "#00d4ff" : "#333", borderBottom: !isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
               ☀️ Pre-Session
             </button>
-            <button onClick={() => setIsPostSession(true)} style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: isPostSession ? "#00d4ff" : "#333", borderBottom: isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
+            <button onClick={() => setIsPostSession(true)} className="share-action-btn" style={{ flex: 1, padding: "10px 0", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: isPostSession ? "rgba(0,212,255,.1)" : "transparent", color: isPostSession ? "#00d4ff" : "#333", borderBottom: isPostSession ? "2px solid #00d4ff" : "2px solid transparent", transition: "all .15s" }}>
               🌙 Post-Session
             </button>
           </div>
@@ -3668,7 +3668,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
             padding: "12px 20px", borderRadius: 8,
             border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)",
             color: "#555", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-          }}>Done</button>
+          }} className="share-action-btn">Done</button>
         </div>
 
         <div style={{ fontSize: 11, color: "#555", textAlign: "center" }}>
