@@ -126,13 +126,24 @@ export default async function handler(req, res) {
       });
 
       for (const sub of subs) {
+        // Priority 6: scope to subscribers who watch affected instruments
+        // If subscriber has a watchList, only notify if one of the affected instruments matches
+        const subscription = sub.subscription || sub; // handle both old and new format
+        const subWatchList = sub.watchList || [];
+        if (subWatchList.length > 0) {
+          // Check if any affected instrument matches subscriber's watchlist
+          const affected = instruments.map(i => i.toLowerCase().replace(/\s/g, "").replace("/",""));
+          const watched  = subWatchList.map(k => k.toLowerCase());
+          const relevant = affected.some(a => watched.some(w => a.includes(w) || w.includes(a)));
+          if (!relevant) continue; // skip — not relevant to this user's instruments
+        }
+        // If no watchList stored yet, send to everyone (backwards compat)
         try {
-          await webPush.sendNotification(sub, payload);
+          await webPush.sendNotification(subscription, payload);
           totalSent++;
         } catch(e) {
           if (e.statusCode === 410) {
-            // Subscription expired — remove it
-            const updated = subs.filter(s => s.endpoint !== sub.endpoint);
+            const updated = subs.filter(s => (s.subscription || s).endpoint !== (subscription.endpoint || subscription));
             await kv.set(KV_SUBSCRIPTIONS, updated);
           }
         }
