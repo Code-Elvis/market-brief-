@@ -5105,7 +5105,11 @@ function AppInner({ navigate }) {
                             alert("To receive alerts, enable notifications for this site in your browser or phone settings.");
                             return;
                           }
-                          const reg = await navigator.serviceWorker.ready;
+                          // Timeout if SW not ready within 5s
+                          const reg = await Promise.race([
+                            navigator.serviceWorker.ready,
+                            new Promise((_, reject) => setTimeout(() => reject(new Error("SW timeout")), 5000))
+                          ]);
                           const vapidKey = document.querySelector("meta[name=vapid-public-key]")?.content;
                           if (!vapidKey) {
                             setAlertsEnabled(true);
