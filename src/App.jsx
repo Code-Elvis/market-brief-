@@ -5120,10 +5120,10 @@ function AppInner({ navigate }) {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
-                              subscription: sub.toJSON(),
-                              userId: user?.id,
-                              watchList: wlGet(user?.id || "").map(i => i.key),
-                              stockWatchList: swlGet(user?.id || "").map(i => i.ticker),
+                              endpoint:      sub.endpoint,
+                              keys:          sub.toJSON().keys,
+                              userId:        user?.id,
+                              watchList:     wlGet(user?.id || "").map(i => i.key),
                             }),
                           });
                           setAlertsEnabled(true);
