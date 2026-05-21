@@ -3561,7 +3561,7 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.9)", zIndex: 2000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}
       onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, maxHeight: "92vh", display: "flex", flexDirection: "column", background: "#0a0c0f", borderRadius: "20px 20px 0 0", boxShadow: "0 -8px 40px rgba(0,0,0,.7)", overflowY: "auto", overflowX: "hidden }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, maxHeight: "92vh", display: "flex", flexDirection: "column", background: "#0a0c0f", borderRadius: "20px 20px 0 0", boxShadow: "0 -8px 40px rgba(0,0,0,.7)", overflowY: "auto", overflowX: "hidden" }}>
 
         {/* CARD */}
         <div id="share-card-el" className="share-card-capture" style={{
