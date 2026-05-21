@@ -4220,6 +4220,15 @@ function LearnAsk() {
 }
 
 
+
+// Convert base64 VAPID key to Uint8Array for pushManager.subscribe()
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64  = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw     = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
 // ── BRIEF CACHE ───────────────────────────────────────────────────────────────
 // Per-user, per-instrument, per-day localStorage cache.
 // Key: md:brief:{userId}:{instrumentKey}:{mode}:{date}
@@ -5118,7 +5127,7 @@ function AppInner({ navigate }) {
                           }
                           const sub = await reg.pushManager.subscribe({
                             userVisibleOnly: true,
-                            applicationServerKey: vapidKey,
+                            applicationServerKey: urlBase64ToUint8Array(vapidKey),
                           });
                           await fetch("/api/push-subscribe", {
                             method: "POST",
