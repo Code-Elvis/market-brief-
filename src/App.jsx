@@ -324,7 +324,7 @@ function LandingPage({ navigate }) {
         <p style={{ fontSize: "clamp(14px, 2vw, 17px)", color: "var(--text1)", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 36px" }}>Bloomberg tells you what happened.<br /><span style={{ color: "var(--text3)" }}>Market Debriefs tells you what it means.</span></p>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.3)", borderRadius: 20, padding: "4px 14px", marginBottom: 16 }}>
           <span style={{ fontSize: 10, color: "#f59e0b", fontWeight: 800, letterSpacing: 1 }}>7-DAY FREE TRIAL</span>
-          <span style={{ fontSize: 10, color: "var(--text1)" }}>Stop missing moves while you sleep</span>
+          <span style={{ fontSize: 10, color: "var(--text1)" }}>Know the macro before the market moves</span>
         </div>
         <div style={{ marginBottom: 0 }} />
         <button onClick={() => navigate("/app")} className="cta-btn" style={{ background: "linear-gradient(135deg,#00d4ff,#0099cc)", color: "#000", border: "none", padding: "15px 36px", borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginBottom: 14 }}>START FREE 7-DAY TRIAL →</button>
@@ -1021,7 +1021,9 @@ function trSave(userId, records) {
   catch(e) {}
 }
 function trRecordCall(userId, instKey, instLabel, instFlag, instColor, mode, sentiment, headline) {
-  if (!userId || !sentiment || sentiment === "neutral" || sentiment === "mixed" || mode !== "full") return;
+  // Accept bullish/bearish/neutral/mixed — all are valid sentiments
+  const validSentiment = sentiment && sentiment !== "undefined";
+  if (!userId || !validSentiment || mode !== "full") return;
   const records = trGet(userId);
   const today   = new Date().toISOString().slice(0, 10);
   // Dedupe same instrument same day
@@ -1763,14 +1765,20 @@ async function getEventSessionSummary(inst, releasedEvents) {
   const eventList = releasedEvents.map(ev =>
     ev.event + (ev.estimate ? " (Est: " + ev.estimate + ")" : "") + (ev.prev ? " (Prev: " + ev.prev + ")" : "")
   ).join(", ");
-  const sys = "You are a professional macro market analyst. Write a concise mid/end-of-session summary of what high-impact events fired today and what they meant for a specific instrument. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
-    " RULES: Never mention specific price levels. Be direct about macro mechanisms." +
+  const sys = "You are a professional macro market analyst and intraday session watchman. Analyze only the events that have ACTUALLY FIRED today for a specific instrument. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
+    " RULES: 1) Only reference events that have already been released today — ignore tomorrow or future events. 2) If only 1 event has fired, summarize just that 1 event thoroughly. 3) Never invent events that haven't happened. 4) Never mention specific price levels. 5) If no events have fired yet today, say so clearly. 6) Be direct about what the data meant for the instrument — was it bullish or bearish pressure and why." +
     " SCHEMA: {\"session_headline\":\"string\",\"events_summary\":[{\"event\":\"string\",\"verdict\":\"HAWKISH|DOVISH|BULLISH|BEARISH|NEUTRAL\",\"impact\":\"string\"}],\"net_bias\":\"string\",\"watch_next\":\"string\"}." +
     " session_headline: ONE sentence describing the overall macro tone of the session based on releases." +
     " events_summary: each released event and what it meant for this instrument." +
     " net_bias: overall net effect of today's releases on this instrument in ONE sentence." +
     " watch_next: the next key event or theme to watch.";
-  const msg = "Current time: " + now + " EST. Instrument: " + inst.label + ". High-impact events released today: " + (eventList || "none specifically flagged") + ". Summarise what these releases meant for " + inst.label + " during today's session. What was the net macro tone? What should the trader watch next?";
+  const evCount = releasedEvents.length;
+  const msg = "Current time: " + now + " EST. Instrument: " + inst.label + ". " +
+    (evCount === 0
+      ? "No high-impact events have been released yet today. State clearly that no events have fired yet and there is nothing to summarize."
+      : evCount === 1
+        ? "Only 1 event has been released today: " + eventList + ". Give a thorough analysis of this single event and what it means for " + inst.label + "."
+        : evCount + " events have been released today: " + eventList + ". Summarize what each meant for " + inst.label + " and what the net macro tone is for this session.");
   return callClaude(sys, msg);
 }
 
@@ -3141,10 +3149,13 @@ function EquityScalperView({ ticker, data, loading, error }) {
           <div style={{ fontSize: 9, color: "#f59e0b", letterSpacing: 2, fontWeight: 700, marginBottom: 9 }}>COMING UP  -  {(data.ticker || ticker).toUpperCase()}</div>
           {data.imminent.map((ev, i) => (
             <div key={i} style={{ background: "rgba(245,158,11,.05)", border: "1px solid rgba(245,158,11,.15)", borderRadius: 8, padding: "11px 13px", marginBottom: 7, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600 }}>{ev.event}</div>
-              <div style={{ textAlign: "right", marginLeft: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600, marginBottom: 4 }}>{ev.event}</div>
+                {ev.why_it_moves_price && <div style={{ fontSize: 10, color: "#888", lineHeight: 1.5 }}>{ev.why_it_moves_price}</div>}
+                {!ev.why_it_moves_price && ev.expected_impact && <div style={{ fontSize: 10, color: "#888", lineHeight: 1.5 }}>{ev.expected_impact}</div>}
+              </div>
+              <div style={{ textAlign: "right", marginLeft: 12, flexShrink: 0 }}>
                 <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700 }}>{ev.due_in ? "~" + ev.due_in : ""}</div>
-                <div style={{ fontSize: 11, color: "#e0e0e0", marginTop: 2 }}>{ev.expected_impact}</div>
               </div>
             </div>
           ))}
@@ -3361,7 +3372,7 @@ function BreakingShareCard({ data, onClose }) {
 
         {/* Action buttons — always visible, never scrolled away */}
         <div style={{ padding: "10px 16px 20px", flexShrink: 0, borderTop: "1px solid rgba(255,255,255,.06)", background: "#0a0c0f" }}>
-          <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ display: "flex", gap: 10, position: "sticky", bottom: 0, background: "#0a0c0f", padding: "8px 0 4px", marginTop: 4, borderTop: "1px solid rgba(255,255,255,.06)" }}>
             <button onClick={handleShare} disabled={sharing} className="share-action-btn" style={{ flex: 1, padding: "12px", borderRadius: 8, border: "none", cursor: sharing ? "wait" : "pointer", background: sharing ? "rgba(255,71,87,.05)" : "linear-gradient(135deg,#ff4757,#cc0011)", color: sharing ? "#333" : "#fff", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>
               {sharing ? "Preparing…" : shared ? "✓ Shared!" : "↗ Share Card"}
             </button>
@@ -3519,12 +3530,13 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
         await navigator.share({
           files: [file],
           text: (() => {
+            const flag = inst.flag || inst.label;
             const name = inst.label;
-            if (isEventSummary) return name + " Session Debrief — MarketDebriefs\n\nEvery high-impact event today and what it meant for this instrument. Full analysis, nothing held back.\n\nBrief First, Trade After. marketdebriefs.com";
-            if (isPostSession || isPostSessionBrief) return name + " Post-Session Debrief — MarketDebriefs\n\nWhat drove the move. What it signals. What to watch next session. Complete picture.\n\nBrief First, Trade After. marketdebriefs.com";
-            if (isScalper) return name + " Event Risk Check — MarketDebriefs\n\nFull event impact analysis: every scheduled release, every macro risk, what to watch.\n\nBrief First, Trade After. marketdebriefs.com";
-            if (isEquity) return name + " Equity Debrief — MarketDebriefs\n\nFull macro context: earnings, tailwinds, headwinds, institutional flow, next catalyst. Nothing held back.\n\nBrief First, Trade After. marketdebriefs.com";
-            return name + " Macro Brief — MarketDebriefs\n\nFull pre-session intelligence: macro theme, geopolitical risks, upcoming events and exactly why they matter for this instrument.\n\nBrief First, Trade After. marketdebriefs.com";
+            if (isEventSummary)           return `${flag} ${name} — Session Summary\nBrief First, Trade After. marketdebriefs.com`;
+            if (isPostSession || isPostSessionBrief) return `${flag} ${name} — Post-Session Brief\nBrief First, Trade After. marketdebriefs.com`;
+            if (isScalper)                return `${flag} ${name} — Events Brief\nBrief First, Trade After. marketdebriefs.com`;
+            if (isEquity)                 return `${flag} ${name} — Equity Brief\nBrief First, Trade After. marketdebriefs.com`;
+            return `${flag} ${name} — Pre-Session Brief\nBrief First, Trade After. marketdebriefs.com`;
           })(),
         });
         setShared(true);
@@ -3547,9 +3559,9 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.9)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.9)", zIndex: 2000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}
       onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, width: "100%", maxWidth: 400 }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, maxHeight: "92vh", display: "flex", flexDirection: "column", background: "#0a0c0f", borderRadius: "20px 20px 0 0", boxShadow: "0 -8px 40px rgba(0,0,0,.7)", overflowY: "auto", overflowX: "hidden }}>
 
         {/* CARD */}
         <div id="share-card-el" className="share-card-capture" style={{
@@ -4509,9 +4521,12 @@ function AppInner({ navigate }) {
         bcSet(user.id, found.key, mm, found, result);
         setTodaysBriefs(bcGetIndex(user.id));
         // Track record — only for Full Brief with clear sentiment
-        if (mm === "full" && result?.sentiment) {
-          trRecordCall(user.id, found.key, found.label, found.flag, found.color, mm, result.sentiment, result.headline_summary || "");
-          setTrackRecord(trGet(user.id));
+        if (mm === "full") {
+          const sentiment = result?.sentiment || (result?.verdict === "TAILWIND" ? "bullish" : result?.verdict === "HEADWIND" ? "bearish" : null);
+          if (sentiment) {
+            trRecordCall(user.id, found.key, found.label, found.flag, found.color, mm, sentiment, result?.headline_summary || result?.verdict_reason || "");
+            setTrackRecord(trGet(user.id));
+          }
         }
       }
       if (mm === "full" && result) {
@@ -4559,6 +4574,16 @@ function AppInner({ navigate }) {
             if (result) { bcSet(user.id, inst.key, "full", inst, result); setTodaysBriefs(bcGetIndex(user.id)); }
           } catch(e) {}
           await new Promise(r => setTimeout(r, 1000));
+          // Also pre-load Events Brief (scalper) for each watchlist instrument
+          if (bcGet(user.id, inst.key, "scalper")) continue;
+          try {
+            const calRes = await fetch("/api/calendar");
+            const calData = await calRes.json();
+            const calEvents = calData.events || [];
+            const scalperResult = await getBriefing(inst, "scalper", calEvents);
+            if (scalperResult) { bcSet(user.id, inst.key, "scalper", inst, scalperResult); setTodaysBriefs(bcGetIndex(user.id)); }
+          } catch(e) {}
+          await new Promise(r => setTimeout(r, 1200));
         }
       })();
     }
