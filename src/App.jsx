@@ -3573,16 +3573,6 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
         a.click();
         URL.revokeObjectURL(url);
         setShared(true); setTimeout(() => setShared(false), 3000);
-      } else {
-        // Desktop fallback  -  download the image
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "marketdebriefs-" + inst.label.replace(/\//g,"-") + ".png";
-        a.click();
-        URL.revokeObjectURL(url);
-        setShared(true);
-        setTimeout(() => setShared(false), 3000);
       }
     } catch (e) {
       console.error("Share failed:", e);
