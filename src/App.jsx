@@ -1722,7 +1722,7 @@ async function getEquityScalper(label) {
   const now = new Date().toLocaleString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const sys = "You are a professional equity risk assistant for traders. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
     " RULES: Never mention specific price levels. Focus only on CURRENT and IMMINENT risks for this specific stock." +
-    " EQUITY SCALPER schema: {\"ticker\":\"string\",\"risk_level\":\"GREEN|YELLOW|RED\",\"risk_reason\":\"string\",\"scalper_note\":\"string\",\"earnings_proximity\":\"SAFE|NEAR|IMMINENT\",\"breaking\":[{\"headline\":\"string\",\"direction\":\"BULLISH|BEARISH|NEUTRAL\",\"age\":\"string\"}],\"imminent\":[{\"event\":\"string\",\"due_in\":\"string\",\"expected_impact\":\"string\"}]}";
+    " EQUITY SCALPER schema: {\"ticker\":\"string\",\"risk_level\":\"GREEN|YELLOW|RED\",\"risk_reason\":\"string\",\"scalper_note\":\"string\",\"earnings_proximity\":\"SAFE|NEAR|IMMINENT\",\"breaking\":[{\"headline\":\"string\",\"direction\":\"BULLISH|BEARISH|NEUTRAL\",\"age\":\"string\"}],\"imminent\":[{\"event\":\"string\",\"due_in\":\"string\",\"expected_impact\":\"string\",\"why_it_moves_price\":\"string\"}]}";
   const msg = "Time: " + now + ". I am about to trade " + label + ". Give me a GREEN / YELLOW / RED equity scalper check. Flag: earnings proximity, any breaking company-specific news, analyst events, sector pressure, or macro events that directly affect this stock right now. No price levels.";
   return callClaude(sys, msg);
 }
@@ -1762,9 +1762,22 @@ async function getBreakingNarrative(headline) {
 
 async function getEventSessionSummary(inst, releasedEvents) {
   const now = new Date().toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true });
-  const eventList = releasedEvents.map(ev =>
-    ev.event + (ev.estimate ? " (Est: " + ev.estimate + ")" : "") + (ev.prev ? " (Prev: " + ev.prev + ")" : "")
-  ).join(", ");
+  // Include actual reading for released events — this is the real data
+  const eventList = releasedEvents.map(ev => {
+    let parts = [ev.event];
+    if (ev.actual  != null && ev.actual  !== "") parts.push("Actual: " + ev.actual);
+    if (ev.estimate != null && ev.estimate !== "") parts.push("Est: " + ev.estimate);
+    if (ev.prev    != null && ev.prev    !== "") parts.push("Prev: " + ev.prev);
+    // Determine surprise direction
+    if (ev.actual != null && ev.estimate != null && ev.actual !== "" && ev.estimate !== "") {
+      const act = parseFloat(String(ev.actual).replace(/[^0-9.-]/g, ""));
+      const est = parseFloat(String(ev.estimate).replace(/[^0-9.-]/g, ""));
+      if (!isNaN(act) && !isNaN(est)) {
+        parts.push(act > est ? "BEAT" : act < est ? "MISS" : "IN LINE");
+      }
+    }
+    return parts.join(", ");
+  }).join(" | ");
   const sys = "You are a professional macro market analyst and intraday session watchman. Analyze only the events that have ACTUALLY FIRED today for a specific instrument. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
     " RULES: 1) Only reference events that have already been released today — ignore tomorrow or future events. 2) If only 1 event has fired, summarize just that 1 event thoroughly. 3) Never invent events that haven't happened. 4) Never mention specific price levels. 5) If no events have fired yet today, say so clearly. 6) Be direct about what the data meant for the instrument — was it bullish or bearish pressure and why." +
     " SCHEMA: {\"session_headline\":\"string\",\"events_summary\":[{\"event\":\"string\",\"verdict\":\"HAWKISH|DOVISH|BULLISH|BEARISH|NEUTRAL\",\"impact\":\"string\"}],\"net_bias\":\"string\",\"watch_next\":\"string\"}." +
@@ -1787,10 +1800,25 @@ async function getPostReleaseRead(ev, instLabel) {
   const sys = "You are a professional macro market analyst. An economic event or data release has just occurred. Your job is to explain what the actual result means for traders right now  -  not what was expected, but what it signals for the current session. Respond ONLY with valid JSON. No markdown. Start with { and end with }." +
     " RULES: 1. NEVER mention specific price levels. 2. Be direct about the macro mechanism  -  what does this result actually mean for this instrument RIGHT NOW. 3. verdict: one word  -  HAWKISH, DOVISH, BULLISH, BEARISH, or NEUTRAL  -  whichever best describes the impact on the instrument. 4. session_impact: ONE sentence  -  what this means for the rest of the current trading session. 5. watch_now: what to watch for in the next 1-2 hours as a direct result." +
     " SCHEMA: {\"event\":\"string\",\"verdict\":\"HAWKISH|DOVISH|BULLISH|BEARISH|NEUTRAL\",\"headline\":\"string\",\"session_impact\":\"string\",\"watch_now\":\"string\",\"fades_when\":\"string\"}";
-  const contextLine = (ev.estimate || ev.prev)
-    ? " Estimate was: " + (ev.estimate || "n/a") + ". Previous reading: " + (ev.prev || "n/a") + "."
-    : "";
-  const msg = "Current time: " + now + " EST. Event just released: " + ev.event + "." + contextLine + " Instrument I am trading: " + instLabel + ". IMPORTANT: If estimate and previous are provided, use them to determine the direction of the surprise (higher or lower than expected) and make your verdict and explanation specific to that. For example if PPI came in higher than the estimate, it is HAWKISH for the Dollar. If it came in lower, it is DOVISH. Base your verdict on the actual numbers, not just the event name. Explain what this specific result means for " + instLabel + " right now. What is the macro mechanism? What should the trader watch for now?";
+  // Build context with actual reading (most important), estimate, and surprise direction
+  const act = ev.actual != null && ev.actual !== "" ? String(ev.actual) : null;
+  const est = ev.estimate != null && ev.estimate !== "" ? String(ev.estimate) : null;
+  const prv = ev.prev != null && ev.prev !== "" ? String(ev.prev) : null;
+  let surprise = "";
+  if (act && est) {
+    const actNum = parseFloat(act.replace(/[^0-9.-]/g, ""));
+    const estNum = parseFloat(est.replace(/[^0-9.-]/g, ""));
+    if (!isNaN(actNum) && !isNaN(estNum)) {
+      surprise = actNum > estNum ? " This was a BEAT vs expectations." : actNum < estNum ? " This was a MISS vs expectations." : " This came in LINE with expectations.";
+    }
+  }
+  const contextLine = [
+    act ? "Actual reading: " + act : "Actual reading: not yet available",
+    est ? "Estimate was: " + est : null,
+    prv ? "Previous: " + prv : null,
+    surprise || null,
+  ].filter(Boolean).join(". ") + ".";
+  const msg = "Current time: " + now + " EST. Event just released: " + ev.event + ". " + contextLine + " Instrument I am trading: " + instLabel + ". IMPORTANT: If estimate and previous are provided, use them to determine the direction of the surprise (higher or lower than expected) and make your verdict and explanation specific to that. For example if PPI came in higher than the estimate, it is HAWKISH for the Dollar. If it came in lower, it is DOVISH. Base your verdict on the actual numbers, not just the event name. Explain what this specific result means for " + instLabel + " right now. What is the macro mechanism? What should the trader watch for now?";
   return callClaude(sys, msg);
 }
 
@@ -3526,21 +3554,25 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
       const file = new File([blob], "marketdebriefs-" + inst.label.replace(/\//g,"-") + ".png", { type: "image/png" });
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        // Native share sheet  -  works on mobile (iOS/Android)
-        await navigator.share({
-          files: [file],
-          text: (() => {
-            const flag = inst.flag || inst.label;
-            const name = inst.label;
-            if (isEventSummary)           return `${flag} ${name} — Session Summary\nBrief First, Trade After. marketdebriefs.com`;
-            if (isPostSession || isPostSessionBrief) return `${flag} ${name} — Post-Session Brief\nBrief First, Trade After. marketdebriefs.com`;
-            if (isScalper)                return `${flag} ${name} — Events Brief\nBrief First, Trade After. marketdebriefs.com`;
-            if (isEquity)                 return `${flag} ${name} — Equity Brief\nBrief First, Trade After. marketdebriefs.com`;
-            return `${flag} ${name} — Pre-Session Brief\nBrief First, Trade After. marketdebriefs.com`;
-          })(),
-        });
+        // Mobile: share image file directly
+        const flag = inst.flag || inst.label;
+        const name = inst.label;
+        const typeName = isEventSummary ? "Session Summary" : (isPostSession || isPostSessionBrief) ? "Post-Session Brief" : isScalper ? "Events Brief" : isEquity ? "Equity Brief" : "Pre-Session Brief";
+        await navigator.share({ files: [file], text: `${flag} ${name} — ${typeName}\nBrief First, Trade After. marketdebriefs.com` });
         setShared(true);
         setTimeout(() => setShared(false), 3000);
+      } else {
+        // Desktop: download the image (user can then attach to tweet)
+        const flag = inst.flag || inst.label;
+        const name = inst.label;
+        const typeName = isEventSummary ? "session-summary" : (isPostSession || isPostSessionBrief) ? "post-session" : isScalper ? "events-brief" : isEquity ? "equity-brief" : "pre-session";
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `md-${(inst.flag||inst.label).toLowerCase()}-${typeName}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        setShared(true); setTimeout(() => setShared(false), 3000);
       } else {
         // Desktop fallback  -  download the image
         const url = URL.createObjectURL(blob);
@@ -3565,8 +3597,8 @@ function ShareCard({ inst, data, mode, cardType, isPostSessionBrief, isEventSumm
 
         {/* CARD */}
         <div id="share-card-el" className="share-card-capture" style={{
-          background: "#0a0c0f", borderRadius: 20,
-          padding: (isPostSession || isPostSessionBrief) ? 18 : 22,
+          background: "#0a0c0f", borderRadius: 14,
+          padding: 14,
           paddingBottom: 24,
           width: "100%",
           display: "flex", flexDirection: "column", justifyContent: "space-between",
@@ -4090,7 +4122,19 @@ function ScalperView({ inst, data, rawCalendar = [], onCalendarRefresh }) {
                   <div style={{ fontSize: 13, color: ev.passed ? "#e0e0e0" : "#e0e0e0", fontWeight: 600 }}>{ev.event}</div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  {ev.time_est && <div style={{ fontSize: 11, color: ev.passed ? "#00d4ff" : "#ffd700", fontWeight: 700 }}>{ev.time_est.replace(/ (EST|EDT|ET)$/i, "")} ET</div>}
+                  {ev.time_est && <div style={{ fontSize: 11, color: ev.passed ? "#00d4ff" : "#ffd700", fontWeight: 700 }}>
+                  {ev.time_est.replace(/ (EST|EDT|ET)$/i, "")} ET
+                  {ev.actual != null && ev.actual !== "" && (
+                    <span style={{ marginLeft: 8, color: "#00d4aa", fontSize: 11, fontWeight: 800 }}>
+                      A: {ev.actual}
+                      {ev.estimate && ev.actual !== ev.estimate && (
+                        <span style={{ marginLeft: 5, fontSize: 9, color: parseFloat(String(ev.actual).replace(/[^0-9.-]/g,"")) > parseFloat(String(ev.estimate).replace(/[^0-9.-]/g,"")) ? "#00d4aa" : "#ff4757" }}>
+                          {parseFloat(String(ev.actual).replace(/[^0-9.-]/g,"")) > parseFloat(String(ev.estimate).replace(/[^0-9.-]/g,"")) ? "▲ BEAT" : "▼ MISS"}
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </div>}
                   <div style={{ fontSize: 10, marginTop: 2, opacity: 0.85 }}>
                     <LiveCountdown timeEst={ev.time_est} passed={ev.passed} />
                   </div>
@@ -4568,22 +4612,25 @@ function AppInner({ navigate }) {
     if (savedWL.length > 0) {
       (async () => {
         for (const inst of savedWL) {
-          if (bcGet(user.id, inst.key, "full")) continue;
-          try {
-            const result = await getBriefing(inst, "full", []);
-            if (result) { bcSet(user.id, inst.key, "full", inst, result); setTodaysBriefs(bcGetIndex(user.id)); }
-          } catch(e) {}
-          await new Promise(r => setTimeout(r, 1000));
-          // Also pre-load Events Brief (scalper) for each watchlist instrument
-          if (bcGet(user.id, inst.key, "scalper")) continue;
-          try {
-            const calRes = await fetch("/api/calendar");
-            const calData = await calRes.json();
-            const calEvents = calData.events || [];
-            const scalperResult = await getBriefing(inst, "scalper", calEvents);
-            if (scalperResult) { bcSet(user.id, inst.key, "scalper", inst, scalperResult); setTodaysBriefs(bcGetIndex(user.id)); }
-          } catch(e) {}
-          await new Promise(r => setTimeout(r, 1200));
+          // Pre-load Full Brief
+          if (!bcGet(user.id, inst.key, "full")) {
+            try {
+              const result = await getBriefing(inst, "full", []);
+              if (result) { bcSet(user.id, inst.key, "full", inst, result); setTodaysBriefs(bcGetIndex(user.id)); }
+            } catch(e) {}
+            await new Promise(r => setTimeout(r, 1000));
+          }
+          // Pre-load Events Brief (scalper)
+          if (!bcGet(user.id, inst.key, "scalper")) {
+            try {
+              const calRes = await fetch("/api/calendar");
+              const calData = await calRes.json();
+              const calEvents = calData.events || [];
+              const scalperResult = await getBriefing(inst, "scalper", calEvents);
+              if (scalperResult) { bcSet(user.id, inst.key, "scalper", inst, scalperResult); setTodaysBriefs(bcGetIndex(user.id)); }
+            } catch(e) {}
+            await new Promise(r => setTimeout(r, 1200));
+          }
         }
       })();
     }
